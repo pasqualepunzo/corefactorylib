@@ -1,4 +1,4 @@
-package corefactorylib
+package lib
 
 import (
 	"encoding/json"
