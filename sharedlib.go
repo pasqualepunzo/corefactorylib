@@ -12,7 +12,7 @@ import (
 	"github.com/pasqualepunzo/corefactorylib/models"
 )
 
-func getIstanceDetail(iresReq models.IresRequest, canaryProduction string) (models.IstanzaMicro, models.LoggaErrore) {
+func GetIstanceDetail(iresReq models.IresRequest, canaryProduction string) (models.IstanzaMicro, models.LoggaErrore) {
 
 	logga("")
 	logga(" + + + + + + + + + + + + + + + + + + + +")
@@ -424,7 +424,7 @@ func getIstanceDetail(iresReq models.IresRequest, canaryProduction string) (mode
 	//os.Exit(0)
 	return ims, loggaErrore
 }
-func updateIstanzaMicroservice(canaryProduction, versioneMicroservizio string, istanza models.IstanzaMicro, micros models.Microservice, utente, enviro string) []models.KillemallStruct {
+func UpdateIstanzaMicroservice(canaryProduction, versioneMicroservizio string, istanza models.IstanzaMicro, micros models.Microservice, utente, enviro string) []models.KillemallStruct {
 
 	logga("")
 	logga(" + + + + + + + + + + + + + + + + + + + + ")
@@ -603,7 +603,7 @@ func updateIstanzaMicroservice(canaryProduction, versioneMicroservizio string, i
 	//os.Exit(0)
 	return killMany
 }
-func cloudBuils(docker, verPad, dirRepo string, swMonolith bool) string {
+func CloudBuils(docker, verPad, dirRepo string, swMonolith bool) string {
 
 	logga("")
 	logga("CLOUD BUILD for " + docker)
@@ -735,7 +735,7 @@ func cloudBuils(docker, verPad, dirRepo string, swMonolith bool) string {
 
 	return sha256
 }
-func updateDockerVersion(docker, ver, user, devMaster, sha, team, newTagName, releaseNote, parentBranch, cs, merged string) {
+func UpdateDockerVersion(docker, ver, user, devMaster, sha, team, newTagName, releaseNote, parentBranch, cs, merged string) {
 
 	logga("Getting token")
 	devopsToken, erro := getCoreFactoryToken()
