@@ -12,11 +12,9 @@ import (
 	"time"
 
 	"github.com/go-resty/resty/v2"
-	"github.com/pasqualepunzo/corefactorylib/models"
-	//"github.com/pasqualepunzo/corefactorylib/models"
 )
 
-func apiCallPOST(debug bool, args []map[string]interface{}, microservice, routing, token, dominio string) models.CallGetResponse {
+func apiCallPOST(debug bool, args []map[string]interface{}, microservice, routing, token, dominio string) CallGetResponse {
 
 	Logga("apiCallPOST")
 
@@ -36,11 +34,11 @@ func apiCallPOST(debug bool, args []map[string]interface{}, microservice, routin
 		dominio = "https://" + dominio
 	}
 
-	var resStruct models.CallGetResponse
+	var resStruct CallGetResponse
 
 	Logga(dominio + "/api/" + os.Getenv("coreapiVersion") + routing + " - " + microservice)
 
-	var LoggaErrore models.LoggaErrore
+	var LoggaErrore LoggaErrore
 	LoggaErrore.Errore = 0
 
 	client := resty.New()
@@ -114,7 +112,7 @@ func apiCallPOST(debug bool, args []map[string]interface{}, microservice, routin
 
 	return resStruct
 }
-func apiCallGET(debug bool, args map[string]string, microservice, routing, token, dominio string) models.CallGetResponse {
+func apiCallGET(debug bool, args map[string]string, microservice, routing, token, dominio string) CallGetResponse {
 
 	Logga("apiCallGET")
 
@@ -145,7 +143,7 @@ func apiCallGET(debug bool, args map[string]string, microservice, routing, token
 
 	Logga(dominio + "/api/" + os.Getenv("coreapiVersion") + routing + " - " + microservice)
 
-	var resStruct models.CallGetResponse
+	var resStruct CallGetResponse
 
 	client := resty.New()
 	if _env != "prod" {
@@ -253,7 +251,7 @@ func getApiHost() string {
 
 	return "https://" + urlDevops
 }
-func apiCallLOGIN(debug bool, args map[string]interface{}, microservice, routing, dominio string) (map[string]interface{}, models.LoggaErrore) {
+func apiCallLOGIN(debug bool, args map[string]interface{}, microservice, routing, dominio string) (map[string]interface{}, LoggaErrore) {
 
 	//debug = true
 
@@ -279,7 +277,7 @@ func apiCallLOGIN(debug bool, args map[string]interface{}, microservice, routing
 	Logga("Microservice : " + microservice)
 	Logga("Url : " + dominio + "/api/" + os.Getenv("coreapiVersion") + routing)
 
-	var LoggaErrore models.LoggaErrore
+	var LoggaErrore LoggaErrore
 	LoggaErrore.Errore = 0
 
 	callResponse := map[string]interface{}{}
@@ -317,7 +315,7 @@ func apiCallLOGIN(debug bool, args map[string]interface{}, microservice, routing
 	}
 	return callResponse, LoggaErrore
 }
-func apiCallPUT(debug bool, args map[string]interface{}, microservice, routing, token, dominio string) ([]byte, models.LoggaErrore) {
+func apiCallPUT(debug bool, args map[string]interface{}, microservice, routing, token, dominio string) ([]byte, LoggaErrore) {
 
 	if dominio == "" {
 		dominio = getApiHost()
@@ -325,7 +323,7 @@ func apiCallPUT(debug bool, args map[string]interface{}, microservice, routing, 
 		dominio = "https://" + dominio
 	}
 
-	var LoggaErrore models.LoggaErrore
+	var LoggaErrore LoggaErrore
 	LoggaErrore.Errore = 0
 
 	client := resty.New()
@@ -351,13 +349,13 @@ func apiCallPUT(debug bool, args map[string]interface{}, microservice, routing, 
 	return res.Body(), LoggaErrore
 }
 
-func getCoreFactoryToken() (string, models.LoggaErrore) {
+func getCoreFactoryToken() (string, LoggaErrore) {
 	/* ************************************************************************************************ */
 	// cerco il token di devops
 
 	Logga("Core factory Token")
 
-	var erro models.LoggaErrore
+	var erro LoggaErrore
 	erro.Errore = 0
 
 	urlDevops := getApiHost()

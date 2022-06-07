@@ -11,7 +11,6 @@ import (
 	"sync"
 
 	"github.com/go-resty/resty/v2"
-	"github.com/pasqualepunzo/corefactorylib/models"
 )
 
 /*
@@ -134,7 +133,7 @@ func PrintaErrore(errorLabel, log, errorSuggest string) {
 	fmt.Println("*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*")
 	fmt.Println()
 }
-func TelegramSendMessage(text string) models.LoggaErrore {
+func TelegramSendMessage(text string) LoggaErrore {
 	type telegramResStruct struct {
 		Ok     bool `json:"ok"`
 		Result struct {
@@ -156,7 +155,7 @@ func TelegramSendMessage(text string) models.LoggaErrore {
 		} `json:"result"`
 	}
 
-	var erro models.LoggaErrore
+	var erro LoggaErrore
 	erro.Errore = 0
 
 	clientTelegram := resty.New()

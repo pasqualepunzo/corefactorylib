@@ -8,17 +8,15 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/pasqualepunzo/corefactorylib/models"
 )
 
-func GetIstanceDetail(iresReq models.IresRequest, canaryProduction string) (models.IstanzaMicro, models.LoggaErrore) {
+func GetIstanceDetail(iresReq IresRequest, canaryProduction string) (IstanzaMicro, LoggaErrore) {
 
 	Logga("")
 	Logga(" + + + + + + + + + + + + + + + + + + + +")
 	Logga("getIstanceDetail begin")
 
-	var LoggaErrore models.LoggaErrore
+	var LoggaErrore LoggaErrore
 	LoggaErrore.Errore = 0
 
 	istanza := iresReq.Istanza
@@ -46,7 +44,7 @@ func GetIstanceDetail(iresReq models.IresRequest, canaryProduction string) (mode
 	profileDeploy64, _ := strconv.ParseInt(profileDeployStr, 10, 32)
 	profileDeploy := int32(profileDeploy64)
 
-	var ims models.IstanzaMicro
+	var ims IstanzaMicro
 	ims.Monolith = monolith
 	ims.ProfileDeploy = profileDeploy
 	ims.Tags = tagsArr
@@ -130,8 +128,8 @@ func GetIstanceDetail(iresReq models.IresRequest, canaryProduction string) (mode
 
 	profile := ""
 	var profileNum int
-	var clu models.ClusterSt
-	clus := make(map[string]models.ClusterSt, 0)
+	var clu ClusterSt
+	clus := make(map[string]ClusterSt, 0)
 	if len(restyKubeCluRes.BodyArray) > 0 {
 
 		for _, x := range restyKubeCluRes.BodyArray {
@@ -314,14 +312,14 @@ func GetIstanceDetail(iresReq models.IresRequest, canaryProduction string) (mode
 		return ims, LoggaErrore
 	}
 
-	var dbMetaConnMss []models.DbMetaConnMs
-	var dbDataConnMss []models.DbDataConnMs
-	var attributiMSs []models.AttributiMS
+	var dbMetaConnMss []DbMetaConnMs
+	var dbDataConnMss []DbDataConnMs
+	var attributiMSs []AttributiMS
 
 	if len(restyKubeAmbRes.BodyArray) > 0 {
 		for _, x := range restyKubeAmbRes.BodyArray {
 
-			var attributiMS models.AttributiMS
+			var attributiMS AttributiMS
 
 			attributiMS.Customer = x["XAMB14"].(string)
 			attributiMS.Market = strconv.FormatFloat(x["XAMB11"].(float64), 'f', 0, 64)
@@ -338,7 +336,7 @@ func GetIstanceDetail(iresReq models.IresRequest, canaryProduction string) (mode
 			ims.MasterPass = clus[x["CLUSTER"].(string)].MasterPasswd
 
 			//fmt.Println(x)
-			var dbMetaConnMs models.DbMetaConnMs
+			var dbMetaConnMs DbMetaConnMs
 			dbMetaConnMs.MetaHost = x["XAMB03"].(string)
 			dbMetaConnMs.MetaName = x["XAMB04"].(string)
 			dbMetaConnMs.MetaUser = x["XAMB05"].(string)
@@ -346,7 +344,7 @@ func GetIstanceDetail(iresReq models.IresRequest, canaryProduction string) (mode
 			dbMetaConnMs.MetaMicroAmb = x["XAMB19"].(string)
 			dbMetaConnMs.Cluster = x["CLUSTER"].(string)
 
-			var dbDataConnMs models.DbDataConnMs
+			var dbDataConnMs DbDataConnMs
 			dbDataConnMs.DataHost = x["XAMB07"].(string)
 			dbDataConnMs.DataName = x["XAMB08"].(string)
 			dbDataConnMs.DataUser = x["XAMB09"].(string)
@@ -378,7 +376,7 @@ func GetIstanceDetail(iresReq models.IresRequest, canaryProduction string) (mode
 	// DEPLOYLOG
 	Logga("Getting DEPLOYLOG")
 
-	var istanzaMicroVersioni []models.IstanzaMicroVersioni
+	var istanzaMicroVersioni []IstanzaMicroVersioni
 
 	argsDeploy := make(map[string]string)
 	argsDeploy["source"] = "devops-8"
@@ -401,7 +399,7 @@ func GetIstanceDetail(iresReq models.IresRequest, canaryProduction string) (mode
 
 	if len(restyDeployRes.BodyArray) > 0 {
 		for _, x := range restyDeployRes.BodyArray {
-			var istanzaMicroVersione models.IstanzaMicroVersioni
+			var istanzaMicroVersione IstanzaMicroVersioni
 
 			istanzaMicroVersione.TipoVersione = x["XDEPLOYLOG03"].(string)
 			istanzaMicroVersione.Versione = x["XDEPLOYLOG05"].(string)
@@ -424,7 +422,7 @@ func GetIstanceDetail(iresReq models.IresRequest, canaryProduction string) (mode
 	//os.Exit(0)
 	return ims, LoggaErrore
 }
-func UpdateIstanzaMicroservice(canaryProduction, versioneMicroservizio string, istanza models.IstanzaMicro, micros models.Microservice, utente, enviro string) []models.KillemallStruct {
+func UpdateIstanzaMicroservice(canaryProduction, versioneMicroservizio string, istanza IstanzaMicro, micros Microservice, utente, enviro string) []KillemallStruct {
 
 	Logga("")
 	Logga(" + + + + + + + + + + + + + + + + + + + + ")
@@ -446,8 +444,8 @@ func UpdateIstanzaMicroservice(canaryProduction, versioneMicroservizio string, i
 	// se canary devo rendere obsoleto il vecchio canarino  se esiste e inserire il nuovo canarino
 	// se production devo rendere obsoleto la vecchia produzione e rendere il canarino produzione
 
-	var killOne models.KillemallStruct
-	var killMany []models.KillemallStruct
+	var killOne KillemallStruct
+	var killMany []KillemallStruct
 
 	for _, versioni := range istanza.IstanzaMicroVersioni {
 
