@@ -1,7 +1,6 @@
 package corefactorylib
 
 import (
-	"corefactorylib/models"
 	"crypto/sha1"
 	"crypto/tls"
 	"encoding/hex"
@@ -13,6 +12,7 @@ import (
 	"time"
 
 	"github.com/go-resty/resty/v2"
+	"github.com/pasqualepunzo/corefactorylib/models"
 	//"github.com/pasqualepunzo/corefactorylib/models"
 )
 

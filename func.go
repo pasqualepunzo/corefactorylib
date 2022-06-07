@@ -2,7 +2,6 @@ package corefactorylib
 
 import (
 	"bytes"
-	"corefactorylib/models"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -12,6 +11,7 @@ import (
 	"sync"
 
 	"github.com/go-resty/resty/v2"
+	"github.com/pasqualepunzo/corefactorylib/models"
 )
 
 /*

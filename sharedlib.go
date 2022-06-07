@@ -1,7 +1,6 @@
 package corefactorylib
 
 import (
-	"corefactorylib/models"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -9,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/pasqualepunzo/corefactorylib/models"
 )
 
 func getIstanceDetail(iresReq models.IresRequest, canaryProduction string) (models.IstanzaMicro, models.LoggaErrore) {
