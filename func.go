@@ -134,7 +134,7 @@ func PrintaErrore(errorLabel, log, errorSuggest string) {
 	fmt.Println("*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*")
 	fmt.Println()
 }
-func telegramSendMessage(text string) models.LoggaErrore {
+func TelegramSendMessage(text string) models.LoggaErrore {
 	type telegramResStruct struct {
 		Ok     bool `json:"ok"`
 		Result struct {
@@ -191,7 +191,7 @@ func LogJson(msg interface{}) {
 	empJSON, _ := json.MarshalIndent(msg, "", "  ")
 	fmt.Printf("%s\n", string(empJSON))
 }
-func logga(i interface{}) {
+func Logga(i interface{}) {
 
 	switch v := i.(type) {
 	case int:

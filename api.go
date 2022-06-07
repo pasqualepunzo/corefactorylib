@@ -18,7 +18,7 @@ import (
 
 func apiCallPOST(debug bool, args []map[string]interface{}, microservice, routing, token, dominio string) models.CallGetResponse {
 
-	logga("apiCallPOST")
+	Logga("apiCallPOST")
 
 	type restyPOSTStruct []struct {
 		Code   int         `json:"code"`
@@ -38,10 +38,10 @@ func apiCallPOST(debug bool, args []map[string]interface{}, microservice, routin
 
 	var resStruct models.CallGetResponse
 
-	logga(dominio + "/api/" + os.Getenv("coreapiVersion") + routing + " - " + microservice)
+	Logga(dominio + "/api/" + os.Getenv("coreapiVersion") + routing + " - " + microservice)
 
-	var loggaErrore models.LoggaErrore
-	loggaErrore.Errore = 0
+	var LoggaErrore models.LoggaErrore
+	LoggaErrore.Errore = 0
 
 	client := resty.New()
 	client.Debug = debug
@@ -116,7 +116,7 @@ func apiCallPOST(debug bool, args []map[string]interface{}, microservice, routin
 }
 func apiCallGET(debug bool, args map[string]string, microservice, routing, token, dominio string) models.CallGetResponse {
 
-	logga("apiCallGET")
+	Logga("apiCallGET")
 
 	_env := os.Getenv("APP_ENV")
 
@@ -143,7 +143,7 @@ func apiCallGET(debug bool, args map[string]string, microservice, routing, token
 		dominio = "https://" + dominio
 	}
 
-	logga(dominio + "/api/" + os.Getenv("coreapiVersion") + routing + " - " + microservice)
+	Logga(dominio + "/api/" + os.Getenv("coreapiVersion") + routing + " - " + microservice)
 
 	var resStruct models.CallGetResponse
 
@@ -270,17 +270,17 @@ func apiCallLOGIN(debug bool, args map[string]interface{}, microservice, routing
 
 	args["uuid"] = args["uuid"].(string) + "-" + rnd
 
-	logga("")
-	logga("apiCallLOGIN")
-	logga("Args : ")
+	Logga("")
+	Logga("apiCallLOGIN")
+	Logga("Args : ")
 	jsonString, _ := json.Marshal(args)
-	logga(string(jsonString))
+	Logga(string(jsonString))
 
-	logga("Microservice : " + microservice)
-	logga("Url : " + dominio + "/api/" + os.Getenv("coreapiVersion") + routing)
+	Logga("Microservice : " + microservice)
+	Logga("Url : " + dominio + "/api/" + os.Getenv("coreapiVersion") + routing)
 
-	var loggaErrore models.LoggaErrore
-	loggaErrore.Errore = 0
+	var LoggaErrore models.LoggaErrore
+	LoggaErrore.Errore = 0
 
 	callResponse := map[string]interface{}{}
 
@@ -297,25 +297,25 @@ func apiCallLOGIN(debug bool, args map[string]interface{}, microservice, routing
 		Post(dominio + "/api/" + os.Getenv("coreapiVersion") + routing)
 
 	if err != nil { // HTTP ERRORE
-		loggaErrore.Errore = -1
-		loggaErrore.Log = err.Error()
+		LoggaErrore.Errore = -1
+		LoggaErrore.Log = err.Error()
 	} else {
 
 		if res.StatusCode() != 200 {
-			loggaErrore.Errore = -1
-			loggaErrore.Log = "Login failed - Access Denied"
+			LoggaErrore.Errore = -1
+			LoggaErrore.Log = "Login failed - Access Denied"
 
 		} else {
 
 			err1 := json.Unmarshal(res.Body(), &callResponse)
 			if err1 != nil {
-				loggaErrore.Errore = -1
-				loggaErrore.Log = err1.Error()
+				LoggaErrore.Errore = -1
+				LoggaErrore.Log = err1.Error()
 			}
 		}
 
 	}
-	return callResponse, loggaErrore
+	return callResponse, LoggaErrore
 }
 func apiCallPUT(debug bool, args map[string]interface{}, microservice, routing, token, dominio string) ([]byte, models.LoggaErrore) {
 
@@ -325,8 +325,8 @@ func apiCallPUT(debug bool, args map[string]interface{}, microservice, routing, 
 		dominio = "https://" + dominio
 	}
 
-	var loggaErrore models.LoggaErrore
-	loggaErrore.Errore = 0
+	var LoggaErrore models.LoggaErrore
+	LoggaErrore.Errore = 0
 
 	client := resty.New()
 	client.Debug = debug
@@ -341,21 +341,21 @@ func apiCallPUT(debug bool, args map[string]interface{}, microservice, routing, 
 		Put(dominio + "/api/" + os.Getenv("coreapiVersion") + routing)
 
 	if res.StatusCode() != 200 {
-		loggaErrore.Errore = -1
-		loggaErrore.Log = "Token error Cannot get a valid token"
+		LoggaErrore.Errore = -1
+		LoggaErrore.Log = "Token error Cannot get a valid token"
 
 	}
 	if err != nil {
 
 	}
-	return res.Body(), loggaErrore
+	return res.Body(), LoggaErrore
 }
 
 func getCoreFactoryToken() (string, models.LoggaErrore) {
 	/* ************************************************************************************************ */
 	// cerco il token di devops
 
-	logga("Core factory Token")
+	Logga("Core factory Token")
 
 	var erro models.LoggaErrore
 	erro.Errore = 0
