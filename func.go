@@ -1500,7 +1500,7 @@ func GetCustomerToken(accessToken, refappCustomer, resource, dominio string) (st
 		return "", erro
 	}
 }
-func getArrRepo(team, customSettings string) map[int]Repos {
+func GetArrRepo(team, customSettings string) map[int]Repos {
 
 	// cerco il token di Corefactory
 	devopsToken, erro := GetCoreFactoryToken()
