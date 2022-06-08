@@ -1,5 +1,10 @@
 package lib
 
+type Repos struct {
+	Repo string
+	Nome string
+	Sw   int
+}
 type loginAuth struct {
 	username, password string
 }

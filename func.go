@@ -1500,3 +1500,93 @@ func GetCustomerToken(accessToken, refappCustomer, resource, dominio string) (st
 		return "", erro
 	}
 }
+func getArrRepo(team, customSettings string) map[int]Repos {
+
+	// cerco il token di Corefactory
+	devopsToken, erro := GetCoreFactoryToken()
+	if erro.Errore < 0 {
+		Logga(erro.Log)
+	}
+
+	/* ************************************************************************************************ */
+	// KUBEMONOLITHREPO
+	Logga("Getting KUBEMONOLITHREPO")
+	args := make(map[string]string)
+	args["source"] = "devops-9"
+	args["center_dett"] = "visualizza"
+	args["$select"] = "XKUBEMONOLITHREPO04,XKUBEMONOLITHREPO05,XKUBEMONOLITHREPO06"
+	args["$filter"] = "equals(XKUBEMONOLITHREPO03,'" + team + "')"
+	args["$order"] += "XKUBEMONOLITHREPO05"
+
+	restyKUBEMONOLITHREPORes := ApiCallGET(false, args, "msdevops", "/devops/KUBEMONOLITHREPO", devopsToken, "")
+	if restyKUBEMONOLITHREPORes.Errore < 0 {
+		Logga(restyKUBEMONOLITHREPORes.Log)
+	}
+
+	i := 0
+	arrRepo := make(map[int]Repos)
+	var repo Repos
+	if len(restyKUBEMONOLITHREPORes.BodyArray) > 0 {
+		for _, x := range restyKUBEMONOLITHREPORes.BodyArray {
+
+			repo.Nome = x["XKUBEMONOLITHREPO04"].(string)
+			repo.Repo = x["XKUBEMONOLITHREPO05"].(string)
+			repo.Sw = int(x["XKUBEMONOLITHREPO06"].(float64))
+			arrRepo[i] = repo
+			i++
+
+		}
+		Logga("KUBEMONOLITHREPO OK")
+	} else {
+		Logga("KUBEMONOLITHREPO MISSING")
+	}
+
+	/* ************************************************************************************************ */
+
+	// se alla func non passo un custom setting
+	// vuol dire che li voglio tutti
+	fmt.Println(customSettings)
+	if customSettings == "" {
+
+		// qui ottengo i CS del team
+
+		/* ************************************************************************************************ */
+		// KUBEMONOLITHCS
+		Logga("Getting KUBEMONOLITHCS")
+		args := make(map[string]string)
+		args["source"] = "devops-9"
+		args["center_dett"] = "visualizza"
+		args["$select"] = "XKUBEMONOLITHCS06"
+		args["$filter"] = "equals(XKUBEMONOLITHCS03,'" + team + "')"
+
+		restyKUBEMONOLITHCSRes := ApiCallGET(false, args, "msdevops", "/devops/KUBEMONOLITHCS", devopsToken, "")
+		if restyKUBEMONOLITHCSRes.Errore < 0 {
+			Logga(restyKUBEMONOLITHCSRes.Log)
+		}
+
+		if len(restyKUBEMONOLITHCSRes.BodyArray) > 0 {
+			for _, x := range restyKUBEMONOLITHCSRes.BodyArray {
+
+				repo.Nome = x["XKUBEMONOLITHCS06"].(string)
+				repo.Repo = x["XKUBEMONOLITHCS06"].(string)
+				arrRepo[i] = repo
+				i++
+
+			}
+			Logga("KUBEMONOLITHCS OK")
+		} else {
+			Logga("KUBEMONOLITHCS MISSING")
+		}
+
+		/* ************************************************************************************************ */
+
+	} else {
+		fmt.Println("customSettings: " + customSettings)
+		repo.Nome = "customSettings"
+		repo.Repo = customSettings
+		arrRepo[i] = repo
+
+	}
+
+	return arrRepo
+}
