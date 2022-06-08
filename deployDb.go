@@ -8,12 +8,12 @@ import (
 	"strings"
 )
 
-func dropMetadato(ires IstanzaMicro, dbMetaName DbMetaConnMs) LoggaErrore {
+func DropMetadato(ires IstanzaMicro, dbMetaName DbMetaConnMs) LoggaErrore {
 
 	var loggaErrore LoggaErrore
 	loggaErrore.Errore = 0
 
-	masterDb, erro := getMasterConn("", dbMetaName.Cluster)
+	masterDb, erro := GetMasterConn("", dbMetaName.Cluster)
 	if erro.Errore < 0 {
 		Logga("getMasterConn")
 		Logga(erro.Log)
@@ -49,10 +49,10 @@ func dropMetadato(ires IstanzaMicro, dbMetaName DbMetaConnMs) LoggaErrore {
 	loggaErrore.Errore = 1
 	return loggaErrore
 }
-func dropDbData(ires IstanzaMicro, dbDataName DbDataConnMs) LoggaErrore {
+func DropDbData(ires IstanzaMicro, dbDataName DbDataConnMs) LoggaErrore {
 
 	var loggaErrore LoggaErrore
-	masterDb, erro := getMasterConn("", dbDataName.Cluster)
+	masterDb, erro := GetMasterConn("", dbDataName.Cluster)
 	if erro.Errore < 0 {
 		Logga("getMasterConn")
 		Logga(erro.Log)
@@ -83,13 +83,13 @@ func dropDbData(ires IstanzaMicro, dbDataName DbDataConnMs) LoggaErrore {
 	loggaErrore.Errore = 1
 	return loggaErrore
 }
-func comparedb(ires IstanzaMicro, dbDataName DbDataConnMs) (LoggaErrore, []string) {
+func Comparedb(ires IstanzaMicro, dbDataName DbDataConnMs) (LoggaErrore, []string) {
 
 	var loggaErrore LoggaErrore
 
 	var allCompareSql []string
 
-	masterDb, erro := getMasterConn("", dbDataName.Cluster)
+	masterDb, erro := GetMasterConn("", dbDataName.Cluster)
 	if erro.Errore < 0 {
 		Logga("getMasterConn")
 		Logga(erro.Log)
@@ -401,7 +401,7 @@ func CreateDbMeta(ires IstanzaMicro, dbMetaName DbMetaConnMs) LoggaErrore {
 	var loggaErrore LoggaErrore
 	loggaErrore.Errore = 0
 
-	masterDb, erro := getMasterConn("", dbMetaName.Cluster)
+	masterDb, erro := GetMasterConn("", dbMetaName.Cluster)
 	if erro.Errore < 0 {
 		Logga("getMasterConn")
 		Logga(erro.Log)
@@ -525,7 +525,7 @@ func Compareidx(ires IstanzaMicro, dbDataName DbDataConnMs, dbMetaName DbMetaCon
 	fmt.Println()
 	fmt.Println("Compare Index")
 
-	masterDb, erro := getMasterConn("", dbMetaName.Cluster)
+	masterDb, erro := GetMasterConn("", dbMetaName.Cluster)
 	if erro.Errore < 0 {
 		Logga("getMasterConn")
 		Logga(erro.Log)
@@ -794,7 +794,7 @@ func CreateDbData(ires IstanzaMicro, dbDataName DbDataConnMs) LoggaErrore {
 	// creazione dei DATABASE
 	var loggaErrore LoggaErrore
 
-	masterDb, erro := getMasterConn("", dbDataName.Cluster)
+	masterDb, erro := GetMasterConn("", dbDataName.Cluster)
 	if erro.Errore < 0 {
 		Logga("getMasterConn")
 		Logga(erro.Log)
@@ -842,7 +842,7 @@ func CreateDbData(ires IstanzaMicro, dbDataName DbDataConnMs) LoggaErrore {
 }
 func RenameDatabases(ires IstanzaMicro, dbMetaName DbMetaConnMs) {
 
-	masterDb, erro := getMasterConn("", dbMetaName.Cluster)
+	masterDb, erro := GetMasterConn("", dbMetaName.Cluster)
 	if erro.Errore < 0 {
 		Logga("getMasterConn")
 		Logga(erro.Log)
@@ -929,7 +929,7 @@ func RenameDatabases(ires IstanzaMicro, dbMetaName DbMetaConnMs) {
 		fmt.Println(err)
 	}
 }
-func getMasterConn(gruppoDeveloper, cluster string) (MasterConn, LoggaErrore) {
+func GetMasterConn(gruppoDeveloper, cluster string) (MasterConn, LoggaErrore) {
 
 	Logga("getMasterConn")
 	Logga("Cluster: " + cluster)
