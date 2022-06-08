@@ -1,5 +1,39 @@
 package lib
 
+type BranchResStruct struct {
+	Name   string `json:"name"`
+	Target struct {
+		Hash string `json:"hash"`
+	} `json:"target"`
+}
+
+type TagCreateResStruct struct {
+	Type  string `json:"type"`
+	Error struct {
+		Message string `json:"message"`
+	} `json:"error"`
+}
+type ProfileInfo struct {
+	Code    int `json:"code"`
+	Session struct {
+		GrantSession struct {
+			Gruppo      string `json:"gruppo"`
+			NomeCognome string `json:"nome_cognome"`
+			Email       string `json:"email"`
+		} `json:"grant_session"`
+		Market struct {
+			Binval  string `json:"binval"`
+			Decval  int    `json:"decval"`
+			Details struct {
+				Book        string `json:"book"`
+				Corefactory string `json:"corefactory"`
+				Corporate   string `json:"corporate"`
+				Fashion     string `json:"fashion"`
+				Food        string `json:"food"`
+			} `json:"details"`
+		} `json:"market"`
+	} `json:"session"`
+}
 type MasterConn struct {
 	Host        string `json:"host"`
 	MetaName    string `json:"metaName"`

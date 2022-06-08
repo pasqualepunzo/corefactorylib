@@ -14,6 +14,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/go-resty/resty/v2"
 )
 
 func Base64decode(str string) string {
@@ -926,4 +928,177 @@ func GetMicroserviceDetail(team, ims, gitDevMaster, buildVersion string) (Micros
 	// LogJson(microservices)
 	// os.Exit(0)
 	return microservices, loggaErrore
+}
+func GetPrifileInfo(token string) (map[string]interface{}, string) {
+
+	Logga("Getting getProfileInfo")
+
+	info := make(map[string]interface{})
+
+	args := make(map[string]string)
+	infoRes := ApiCallGET(false, args, "mscore", "/core/getProfileInfo", token, "")
+
+	erro := ""
+
+	if len(infoRes.BodyJson) > 0 {
+		restyProfileInfoResponse := ProfileInfo{}
+
+		b, _ := json.Marshal(infoRes.BodyJson)
+		json.Unmarshal(b, &restyProfileInfoResponse)
+
+		info["market"] = restyProfileInfoResponse.Session.Market.Decval
+		info["gruppo"] = restyProfileInfoResponse.Session.GrantSession.Gruppo
+		info["nome"] = restyProfileInfoResponse.Session.GrantSession.NomeCognome
+		info["email"] = restyProfileInfoResponse.Session.GrantSession.Email
+
+		Logga("GetProfileInfo OK")
+	} else {
+		erro = "-1"
+		Logga("GetProfileInfo MISSING")
+	}
+
+	return info, erro
+}
+func getBuildLastTag(team, docker, tipo string) (string, LoggaErrore) {
+
+	sprint, erro := GetCurrentBranchSprint(team, tipo)
+	if erro.Errore < 1 {
+		Logga(erro.Log)
+	}
+
+	var loggaErrore LoggaErrore
+	loggaErrore.Errore = 0
+
+	// cerco il token di Corefactory
+	Logga("Getting token")
+	devopsToken, erro := GetCoreFactoryToken()
+	if erro.Errore < 0 {
+		Logga(erro.Log)
+	} else {
+		Logga("Token OK")
+	}
+
+	/* ************************************************************************************************ */
+	// KUBEIMICROSERV
+	Logga("Getting KUBEDKRBUILD - func.go 1")
+	argsImicro := make(map[string]string)
+	argsImicro["source"] = "devops-8"
+	argsImicro["$select"] = "XKUBEDKRBUILD09"
+	argsImicro["center_dett"] = "dettaglio"
+	argsImicro["$filter"] = "equals(XKUBEDKRBUILD03,'" + docker + "') "
+	argsImicro["$filter"] += " and equals(XKUBEDKRBUILD08,'" + team + "') "
+	argsImicro["$filter"] += " and equals(XKUBEDKRBUILD10,'" + sprint + "') "
+	argsImicro["$order"] = "CDATA desc"
+	argsImicro["num_rows"] = " 1 "
+
+	restyKubeImicroservRes := ApiCallGET(false, argsImicro, "msdevops", "/devops/KUBEDKRBUILD", devopsToken, "")
+	if restyKubeImicroservRes.Errore < 0 {
+		Logga(restyKubeImicroservRes.Log)
+		loggaErrore.Errore = restyKubeImicroservRes.Errore
+		loggaErrore.Log = restyKubeImicroservRes.Log
+		return "", loggaErrore
+	}
+
+	tag := ""
+	if len(restyKubeImicroservRes.BodyJson) > 0 {
+
+		tag = restyKubeImicroservRes.BodyJson["XKUBEDKRBUILD09"].(string)
+		Logga("KUBEDKRBUILD OK")
+	} else {
+		Logga("KUBEDKRBUILD MISSING")
+	}
+	Logga("")
+	//	fmt.Println(tag)
+	/* ************************************************************************************************ */
+
+	return tag, loggaErrore
+}
+func GetCurrentBranchSprint(team, tipo string) (string, LoggaErrore) {
+
+	var loggaErrore LoggaErrore
+	loggaErrore.Errore = 0
+
+	// cerco il token di Corefactory
+	Logga("Getting token")
+	devopsToken, erro := GetCoreFactoryToken()
+	if erro.Errore < 0 {
+		Logga(erro.Log)
+	} else {
+		Logga("Token OK")
+	}
+
+	/* ************************************************************************************************ */
+	// KUBEIMICROSERV
+	Logga("Getting KUBETEAMBRANCH - func.go")
+	argsImicro := make(map[string]string)
+	argsImicro["source"] = "devops-8"
+	argsImicro["$select"] = "XKUBETEAMBRANCH05"
+	argsImicro["center_dett"] = "dettaglio"
+	argsImicro["$filter"] = "equals(XKUBETEAMBRANCH03,'" + team + "') "
+	argsImicro["$filter"] += " and equals(XKUBETEAMBRANCH04,'" + tipo + "') "
+
+	restyKubeImicroservRes := ApiCallGET(false, argsImicro, "msdevops", "/devops/KUBETEAMBRANCH", devopsToken, "")
+	if restyKubeImicroservRes.Errore < 0 {
+		loggaErrore.Errore = restyKubeImicroservRes.Errore
+		loggaErrore.Log = restyKubeImicroservRes.Log
+		return "", loggaErrore
+	}
+
+	sprintBranch := ""
+	if len(restyKubeImicroservRes.BodyJson) > 0 {
+		sprintBranch = restyKubeImicroservRes.BodyJson["XKUBETEAMBRANCH05"].(string)
+		Logga("KUBETEAMBRANCH OK")
+	} else {
+		Logga("KUBETEAMBRANCH MISSING - getCurrentBranchSprint")
+	}
+	Logga("")
+	/* ************************************************************************************************ */
+
+	return sprintBranch, loggaErrore
+}
+func createTag(branch, tag, repo string) {
+
+	// OTTENGO L' HASH del branch vivo
+	clientBranch := resty.New()
+	respBranch, errBranch := clientBranch.R().
+		EnableTrace().
+		SetBasicAuth(os.Getenv("bitbucketUser"), os.Getenv("bitbucketToken")).
+		Get(os.Getenv("bitbucketHost") + "/repositories/sf-kir/" + repo + "/refs/branches/" + branch)
+
+	if errBranch != nil {
+		Logga(errBranch.Error())
+	}
+
+	var branchRes BranchResStruct
+	err := json.Unmarshal(respBranch.Body(), &branchRes)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	//fmt.Println(branchRes.Target.Hash)
+
+	// STACCO IL TAG
+	body := `{"name": "` + tag + `","target": {  "hash": "` + branchRes.Target.Hash + `"}}`
+
+	client := resty.New()
+	client.Debug = false
+	restyResponse, errTag := client.R().
+		SetHeader("Content-Type", "application/json").
+		SetBasicAuth(os.Getenv("bitbucketUser"), os.Getenv("bitbucketToken")).
+		SetBody(body).
+		Post(os.Getenv("bitbucketHost") + "/repositories/sf-kir/" + repo + "/refs/tags")
+
+	if errTag != nil {
+		Logga(errTag.Error())
+	}
+	//fmt.Println(restyResponse)
+
+	var tagCreateRes TagCreateResStruct
+	err = json.Unmarshal(restyResponse.Body(), &tagCreateRes)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	if tagCreateRes.Type == "error" {
+		fmt.Println(repo, tagCreateRes.Error.Message)
+	}
+
 }
