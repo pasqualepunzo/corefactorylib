@@ -14,7 +14,7 @@ import (
 	"github.com/go-resty/resty/v2"
 )
 
-func apiCallPOST(debug bool, args []map[string]interface{}, microservice, routing, token, dominio string) CallGetResponse {
+func ApiCallPOST(debug bool, args []map[string]interface{}, microservice, routing, token, dominio string) CallGetResponse {
 
 	Logga("apiCallPOST")
 
@@ -29,7 +29,7 @@ func apiCallPOST(debug bool, args []map[string]interface{}, microservice, routin
 	}
 
 	if dominio == "" {
-		dominio = getApiHost()
+		dominio = GetApiHost()
 	} else {
 		dominio = "https://" + dominio
 	}
@@ -112,7 +112,7 @@ func apiCallPOST(debug bool, args []map[string]interface{}, microservice, routin
 
 	return resStruct
 }
-func apiCallGET(debug bool, args map[string]string, microservice, routing, token, dominio string) CallGetResponse {
+func ApiCallGET(debug bool, args map[string]string, microservice, routing, token, dominio string) CallGetResponse {
 
 	Logga("apiCallGET")
 
@@ -136,7 +136,7 @@ func apiCallGET(debug bool, args map[string]string, microservice, routing, token
 	}
 
 	if dominio == "" {
-		dominio = getApiHost()
+		dominio = GetApiHost()
 	} else {
 		dominio = "https://" + dominio
 	}
@@ -237,8 +237,7 @@ func apiCallGET(debug bool, args map[string]string, microservice, routing, token
 	//LogJson(resStruct)
 	return resStruct
 }
-
-func getApiHost() string {
+func GetApiHost() string {
 	// devopsProfile, _ := os.LookupEnv("APP_ENV")
 	// urlDevops := ""
 	// if devopsProfile == "prod" {
@@ -251,12 +250,12 @@ func getApiHost() string {
 
 	return "https://" + urlDevops
 }
-func apiCallLOGIN(debug bool, args map[string]interface{}, microservice, routing, dominio string) (map[string]interface{}, LoggaErrore) {
+func ApiCallLOGIN(debug bool, args map[string]interface{}, microservice, routing, dominio string) (map[string]interface{}, LoggaErrore) {
 
 	//debug = true
 
 	if dominio == "" {
-		dominio = getApiHost()
+		dominio = GetApiHost()
 	} else {
 		dominio = "https://" + dominio
 	}
@@ -315,10 +314,10 @@ func apiCallLOGIN(debug bool, args map[string]interface{}, microservice, routing
 	}
 	return callResponse, LoggaErrore
 }
-func apiCallPUT(debug bool, args map[string]interface{}, microservice, routing, token, dominio string) ([]byte, LoggaErrore) {
+func ApiCallPUT(debug bool, args map[string]interface{}, microservice, routing, token, dominio string) ([]byte, LoggaErrore) {
 
 	if dominio == "" {
-		dominio = getApiHost()
+		dominio = GetApiHost()
 	} else {
 		dominio = "https://" + dominio
 	}
@@ -348,8 +347,7 @@ func apiCallPUT(debug bool, args map[string]interface{}, microservice, routing, 
 	}
 	return res.Body(), LoggaErrore
 }
-
-func getCoreFactoryToken() (string, LoggaErrore) {
+func GetCoreFactoryToken() (string, LoggaErrore) {
 	/* ************************************************************************************************ */
 	// cerco il token di devops
 
@@ -358,7 +356,7 @@ func getCoreFactoryToken() (string, LoggaErrore) {
 	var erro LoggaErrore
 	erro.Errore = 0
 
-	urlDevops := getApiHost()
+	urlDevops := GetApiHost()
 	urlDevopsStripped := strings.Replace(urlDevops, "https://", "", -1)
 
 	ct := time.Now()
@@ -373,7 +371,7 @@ func getCoreFactoryToken() (string, LoggaErrore) {
 	argsAuth["resource"] = urlDevopsStripped
 	argsAuth["uuid"] = "devops-" + sha
 
-	restyAuthResponse, restyAuthErr := apiCallLOGIN(false, argsAuth, "msauth", "/auth/login", "")
+	restyAuthResponse, restyAuthErr := ApiCallLOGIN(false, argsAuth, "msauth", "/auth/login", "")
 	if restyAuthErr.Errore < 0 {
 		// QUI ERRORE
 		erro.Errore = -1
@@ -390,4 +388,61 @@ func getCoreFactoryToken() (string, LoggaErrore) {
 	}
 
 	return "", erro
+}
+func ApiCallDELETE(debug bool, args map[string]string, microservice, routing, token, dominio string) CallGetResponse {
+
+	if dominio == "" {
+		dominio = GetApiHost()
+	} else {
+		dominio = "https://" + dominio
+	}
+
+	type restyPOSTStruct struct {
+		Code   int         `json:"code"`
+		Errors interface{} `json:"errors"`
+	}
+
+	var resStruct CallGetResponse
+
+	Logga(dominio + "/api/" + os.Getenv("coreapiVersion") + routing + " - " + microservice)
+
+	//fmt.Println("apiCallDELETE", debug)
+	client := resty.New()
+	client.Debug = debug
+	client.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
+	res, err := client.R().
+		SetHeader("Content-Type", "application/json").
+		SetHeader("Accept", "application/json").
+		//SetHeader("canary-mode", "on").
+		SetHeader("microservice", microservice).
+		SetAuthToken(token).
+		SetQueryParams(args).
+		Delete(dominio + "/api/" + os.Getenv("coreapiVersion") + routing)
+
+	if err != nil { // HTTP ERRORE
+		resStruct.Errore = -1
+		resStruct.Log = err.Error()
+	} else {
+		if res.StatusCode() != 205 {
+			resStruct.Errore = -1
+			resStruct.Log = "Cannot delete the record"
+
+		} else {
+
+			var restyPOSTRes restyPOSTStruct
+			errJson := json.Unmarshal(res.Body(), &restyPOSTRes)
+			callResponse := map[string]interface{}{}
+			if errJson != nil {
+				resStruct.Errore = -1
+				resStruct.Log = errJson.Error()
+
+			} else {
+				callResponse["code"] = restyPOSTRes.Code
+				resStruct.Kind = "Json"
+				resStruct.BodyJson = callResponse
+			}
+		}
+	}
+
+	return resStruct
 }

@@ -2,6 +2,7 @@ package lib
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -12,6 +13,19 @@ import (
 
 	"github.com/go-resty/resty/v2"
 )
+
+func Base64decode(str string) string {
+
+	if str != "" {
+		decoded, err := base64.StdEncoding.DecodeString(str)
+		if err != nil {
+			fmt.Println("decode error:", err)
+		}
+		return string(decoded)
+	} else {
+		return ""
+	}
+}
 
 /*
  per i comandi che inviano in streamig al cf-tool del testo
@@ -24,7 +38,6 @@ func PrintaErroreStream(errorLabel, log string, flagDie bool) {
 		os.Exit(1)
 	}
 }
-
 func PrintaErroreStreamText(errorLabel, log string) string {
 	text := "_##START##_\n"
 	text += "\n"
@@ -54,7 +67,6 @@ func SwitchCluster(clusterName string) {
 
 	comando := "gcloud container clusters get-credentials " + clusterName
 	ExecCommand(comando, true)
-
 }
 
 // SwitchProject ...
@@ -62,7 +74,6 @@ func SwitchProject(clusterProject string) {
 
 	comando := "gcloud config set project  " + clusterProject
 	ExecCommand(comando, true)
-
 }
 func ExecCommand(command string, printOutput bool) bool {
 
@@ -113,7 +124,6 @@ func ExecCommand(command string, printOutput bool) bool {
 	}
 	return FataleErrore
 }
-
 func PrintaErrore(errorLabel, log, errorSuggest string) {
 	fmt.Println()
 	fmt.Println("*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*")
@@ -208,27 +218,27 @@ func Logga(i interface{}) {
 		fmt.Println(text)
 	}
 
-	//fmt.Println(i)
+	/*
+		fmt.Println(strings.Trim(text, "\""))
 
-	/*fmt.Println(strings.Trim(text, "\""))
+		pid := strconv.Itoa(os.Getpid())
+		hostname, _ := os.Hostname()
 
-	pid := strconv.Itoa(os.Getpid())
-	hostname, _ := os.Hostname()
+		log.SetFormatter(&log.JSONFormatter{})
+		log.SetOutput(os.Stdout)
 
-	log.SetFormatter(&log.JSONFormatter{})
-	log.SetOutput(os.Stdout)
+		logLevel, err := log.ParseLevel(os.Getenv("LOG_LEVEL"))
+		if err != nil {
+			logLevel = log.InfoLevel
+		}
 
-	logLevel, err := log.ParseLevel(os.Getenv("LOG_LEVEL"))
-	if err != nil {
-		logLevel = log.InfoLevel
-	}
+		log.SetLevel(logLevel)
 
-	log.SetLevel(logLevel)
-
-	log.WithFields(log.Fields{
-		"hostname": hostname,
-		"pid":      pid,
-	}).Info(text)
+		log.WithFields(log.Fields{
+			"hostname": hostname,
+			"pid":      pid,
+		}).Info(text)
+	*/
 
 	/*
 		// open a file

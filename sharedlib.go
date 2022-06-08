@@ -68,7 +68,7 @@ func GetIstanceDetail(iresReq IresRequest, canaryProduction string) (IstanzaMicr
 
 	// cerco il token di Corefactory
 	Logga("Getting token")
-	devopsToken, erro := getCoreFactoryToken()
+	devopsToken, erro := GetCoreFactoryToken()
 	if erro.Errore < 0 {
 		Logga(erro.Log)
 	} else {
@@ -84,7 +84,7 @@ func GetIstanceDetail(iresReq IresRequest, canaryProduction string) (IstanzaMicr
 	argsImicro["center_dett"] = "dettaglio"
 	argsImicro["$filter"] = "equals(XKUBEIMICROSERV03,'" + istanza + "') "
 
-	restyKubeImicroservRes := apiCallGET(false, argsImicro, "msdevops", "/devops/KUBEIMICROSERV", devopsToken, "")
+	restyKubeImicroservRes := ApiCallGET(false, argsImicro, "msdevops", "/devops/KUBEIMICROSERV", devopsToken, "")
 	if restyKubeImicroservRes.Errore < 0 {
 		Logga(restyKubeImicroservRes.Log)
 		LoggaErrore.Errore = restyKubeImicroservRes.Errore
@@ -118,7 +118,7 @@ func GetIstanceDetail(iresReq IresRequest, canaryProduction string) (IstanzaMicr
 	argsClu["center_dett"] = "allviews"
 	//["$filter"] = "equals(XKUBECLUSTER03,'" + ims.cluster + "') "
 
-	restyKubeCluRes := apiCallGET(false, argsClu, "msdevops", "/devops/KUBECLUSTER", devopsToken, "")
+	restyKubeCluRes := ApiCallGET(false, argsClu, "msdevops", "/devops/KUBECLUSTER", devopsToken, "")
 	if restyKubeCluRes.Errore < 0 {
 		Logga(restyKubeCluRes.Log)
 		LoggaErrore.Errore = restyKubeCluRes.Errore
@@ -227,7 +227,7 @@ func GetIstanceDetail(iresReq IresRequest, canaryProduction string) (IstanzaMicr
 		argsAmbdomain["$filter"] = "equals(XAMBDOMAIN05,'" + refAppCustomerID + "') and "
 	}
 	argsAmbdomain["$filter"] += "  equals(XAMBDOMAIN04,'" + customerDomain + "') "
-	restyAmbdomainRes := apiCallGET(false, argsAmbdomain, "msauth", "/core/AMBDOMAIN", devopsToken, "")
+	restyAmbdomainRes := ApiCallGET(false, argsAmbdomain, "msauth", "/core/AMBDOMAIN", devopsToken, "")
 	if restyAmbdomainRes.Errore < 0 {
 		Logga(restyAmbdomainRes.Log)
 		LoggaErrore.Errore = restyAmbdomainRes.Errore
@@ -254,7 +254,7 @@ func GetIstanceDetail(iresReq IresRequest, canaryProduction string) (IstanzaMicr
 	argsMS["$select"] = "XKUBEMICROSERV09,XKUBEMICROSERV15"
 	argsMS["center_dett"] = "dettaglio"
 	argsMS["$filter"] = "equals(XKUBEMICROSERV05,'" + microservice + "') "
-	restyKubeMSRes := apiCallGET(false, argsMS, "msdevops", "/devops/KUBEMICROSERV", devopsToken, "")
+	restyKubeMSRes := ApiCallGET(false, argsMS, "msdevops", "/devops/KUBEMICROSERV", devopsToken, "")
 	if restyKubeMSRes.Errore < 0 {
 		Logga(restyKubeMSRes.Log)
 		LoggaErrore.Errore = restyKubeMSRes.Errore
@@ -304,7 +304,7 @@ func GetIstanceDetail(iresReq IresRequest, canaryProduction string) (IstanzaMicr
 	argsAmb["env"] = strconv.Itoa(int(ims.ProfileInt))
 	argsAmb["swMultiEnvironment"] = ims.SwMultiEnvironment
 
-	restyKubeAmbRes := apiCallGET(true, argsAmb, "msauth", "/auth/getAmbDomainMs", devopsToken, "")
+	restyKubeAmbRes := ApiCallGET(true, argsAmb, "msauth", "/auth/getAmbDomainMs", devopsToken, "")
 	if restyKubeAmbRes.Errore < 0 {
 		Logga(restyKubeAmbRes.Log)
 		LoggaErrore.Errore = restyKubeAmbRes.Errore
@@ -389,7 +389,7 @@ func GetIstanceDetail(iresReq IresRequest, canaryProduction string) (IstanzaMicr
 		argsDeploy["$filter"] += " and equals(XDEPLOYLOG09,'" + enviro + "') "
 	}
 
-	restyDeployRes := apiCallGET(false, argsDeploy, "msdevops", "/devops/DEPLOYLOG", devopsToken, "")
+	restyDeployRes := ApiCallGET(false, argsDeploy, "msdevops", "/devops/DEPLOYLOG", devopsToken, "")
 	if restyDeployRes.Errore < 0 {
 		Logga(restyDeployRes.Log)
 		LoggaErrore.Errore = restyDeployRes.Errore
@@ -435,7 +435,7 @@ func UpdateIstanzaMicroservice(canaryProduction, versioneMicroservizio string, i
 	var clusterContext = "gke_" + istanza.ProjectID + "_europe-west1-d_" + istanza.Cluster
 
 	// cerco il token di Corefactory
-	devopsToken, erro := getCoreFactoryToken()
+	devopsToken, erro := GetCoreFactoryToken()
 	if erro.Errore < 0 {
 		Logga(erro.Log)
 	}
@@ -478,7 +478,7 @@ func UpdateIstanzaMicroservice(canaryProduction, versioneMicroservizio string, i
 
 				filter := "equals(XDEPLOYLOG04,'" + istanza.Istanza + "') and equals(XDEPLOYLOG03,'canary') and XDEPLOYLOG06 eq 1"
 
-				apiCallPUT(false, keyvalueslice, "msdevops", "/devops/DEPLOYLOG/"+filter, devopsToken, "")
+				ApiCallPUT(false, keyvalueslice, "msdevops", "/devops/DEPLOYLOG/"+filter, devopsToken, "")
 
 			}
 
@@ -515,7 +515,7 @@ func UpdateIstanzaMicroservice(canaryProduction, versioneMicroservizio string, i
 
 				filter := "equals(XDEPLOYLOG04,'" + istanza.Istanza + "') and equals(XDEPLOYLOG03,'production') and XDEPLOYLOG06 eq 1"
 
-				apiCallPUT(false, keyvalueslice, "msdevops", "/devops/DEPLOYLOG/"+filter, devopsToken, "")
+				ApiCallPUT(false, keyvalueslice, "msdevops", "/devops/DEPLOYLOG/"+filter, devopsToken, "")
 
 			case "canary", "Canary":
 
@@ -527,7 +527,7 @@ func UpdateIstanzaMicroservice(canaryProduction, versioneMicroservizio string, i
 
 				filter := "equals(XDEPLOYLOG04,'" + istanza.Istanza + "') and equals(XDEPLOYLOG03,'canary')"
 
-				apiCallPUT(false, keyvalueslice, "msdevops", "/devops/DEPLOYLOG/"+filter, devopsToken, "")
+				ApiCallPUT(false, keyvalueslice, "msdevops", "/devops/DEPLOYLOG/"+filter, devopsToken, "")
 
 				break
 			}
@@ -590,7 +590,7 @@ func UpdateIstanzaMicroservice(canaryProduction, versioneMicroservizio string, i
 	keyvalueslice["XDEPLOYLOG09"] = enviro
 	keyvalueslices = append(keyvalueslices, keyvalueslice)
 
-	apiCallPOST(false, keyvalueslices, "msdevops", "/deploy/DEPLOYLOG", devopsToken, "")
+	ApiCallPOST(false, keyvalueslices, "msdevops", "/deploy/DEPLOYLOG", devopsToken, "")
 
 	Logga("updateIstanzaMicroservice end")
 	Logga(" - - - - - - - - - - - - - - - - - - - ")
@@ -736,7 +736,7 @@ func CloudBuils(docker, verPad, dirRepo string, swMonolith bool) string {
 func UpdateDockerVersion(docker, ver, user, devMaster, sha, team, newTagName, releaseNote, parentBranch, cs, merged string) {
 
 	Logga("Getting token")
-	devopsToken, erro := getCoreFactoryToken()
+	devopsToken, erro := GetCoreFactoryToken()
 	if erro.Errore < 0 {
 		Logga(erro.Log)
 	} else {
@@ -764,7 +764,7 @@ func UpdateDockerVersion(docker, ver, user, devMaster, sha, team, newTagName, re
 
 	keyvalueslices = append(keyvalueslices, keyvalueslice)
 
-	res := apiCallPOST(false, keyvalueslices, "msdevops", "/devops/KUBEDKRBUILD", devopsToken, "")
+	res := ApiCallPOST(false, keyvalueslices, "msdevops", "/devops/KUBEDKRBUILD", devopsToken, "")
 	if res.Errore != 0 {
 		Logga(res.Log)
 	}
