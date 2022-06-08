@@ -959,7 +959,7 @@ func GetPrifileInfo(token string) (map[string]interface{}, string) {
 
 	return info, erro
 }
-func getBuildLastTag(team, docker, tipo string) (string, LoggaErrore) {
+func GetBuildLastTag(team, docker, tipo string) (string, LoggaErrore) {
 
 	sprint, erro := GetCurrentBranchSprint(team, tipo)
 	if erro.Errore < 1 {
@@ -1056,7 +1056,7 @@ func GetCurrentBranchSprint(team, tipo string) (string, LoggaErrore) {
 
 	return sprintBranch, loggaErrore
 }
-func createTag(branch, tag, repo string) {
+func CreateTag(branch, tag, repo string) {
 
 	// OTTENGO L' HASH del branch vivo
 	clientBranch := resty.New()
@@ -1100,5 +1100,305 @@ func createTag(branch, tag, repo string) {
 	if tagCreateRes.Type == "error" {
 		fmt.Println(repo, tagCreateRes.Error.Message)
 	}
+}
+func GetFutureToggle(cluster string) (bool, LoggaErrore) {
 
+	var loggaErrore LoggaErrore
+	loggaErrore.Errore = 0
+
+	// cerco il token di Corefactory
+	Logga("Getting token")
+	devopsToken, erro := GetCoreFactoryToken()
+	if erro.Errore < 0 {
+		Logga(erro.Log)
+	} else {
+		Logga("Token OK")
+	}
+
+	/* ************************************************************************************************ */
+	// CLUSTER
+
+	Logga("Getting CLUSTER")
+
+	argsCLUSTER := make(map[string]string)
+	argsCLUSTER["source"] = "devops-8"
+	argsCLUSTER["$select"] = "XKUBECLUSTER17"
+	argsCLUSTER["center_dett"] = "dettaglio"
+	argsCLUSTER["$filter"] = "equals(XKUBECLUSTER03,'" + cluster + "') "
+	restyCLUSTERRes := ApiCallGET(false, argsCLUSTER, "msdevops", "/core/KUBECLUSTER", devopsToken, "")
+	if restyCLUSTERRes.Errore < 0 {
+		Logga(restyCLUSTERRes.Log)
+		loggaErrore.Errore = restyCLUSTERRes.Errore
+		loggaErrore.Log = restyCLUSTERRes.Log
+		return false, loggaErrore
+	}
+
+	var sw bool
+	if len(restyCLUSTERRes.BodyJson) > 0 {
+		swStr := restyCLUSTERRes.BodyJson["XKUBECLUSTER17"].(string)
+		sw, _ = strconv.ParseBool(swStr)
+
+		Logga("CLUSTER OK")
+	} else {
+		Logga("CLUSTER MISSING")
+	}
+	Logga("")
+	/* ************************************************************************************************ */
+
+	// PORCATA PER FATICARE AL VOLO SU KEEPUP-STAGE
+	// sw = true
+
+	return sw, loggaErrore
+}
+func GetEnvironmentStatus(cluster, enviro, microserice, customer string) LoggaErrore {
+
+	var loggaErrore LoggaErrore
+	loggaErrore.Errore = 0
+
+	status := ""
+
+	// cerco il token di Corefactory
+	devopsToken, erro := GetCoreFactoryToken()
+	if erro.Errore < 0 {
+		Logga(erro.Log)
+	}
+
+	/* ************************************************************************************************ */
+	// KUBEENVSTATUS
+	Logga("Getting KUBEENVSTATUS")
+	args := make(map[string]string)
+	args["source"] = "devops-8"
+
+	/* ************************************************************************************************ */
+
+	Logga("Getting KUBEENVSTATUS")
+
+	argsEs := make(map[string]string)
+	argsEs["source"] = "devops-8"
+	argsEs["$select"] = "XKUBEENVSTATUS07"
+	argsEs["center_dett"] = "dettaglio"
+	argsEs["$filter"] = "equals(XKUBEENVSTATUS03,'" + cluster + "') "
+	argsEs["$filter"] += " and equals(XKUBEENVSTATUS04,'" + enviro + "') "
+	argsEs["$filter"] += " and equals(XKUBEENVSTATUS05,'" + microserice + "') "
+	if customer != "" {
+		args["$filter"] += " and equals(XKUBEENVSTATUS06,'" + customer + "') "
+	}
+
+	restyEsRes := ApiCallGET(false, argsEs, "msdevops", "/core/KUBEENVSTATUS", devopsToken, "")
+	if restyEsRes.Errore < 0 {
+		Logga(restyEsRes.Log)
+		loggaErrore.Errore = restyEsRes.Errore
+		loggaErrore.Log = restyEsRes.Log
+	}
+
+	if len(restyEsRes.BodyJson) > 0 {
+		status = strconv.Itoa(int(restyEsRes.BodyJson["XKUBEENVSTATUS07"].(float64)))
+		loggaErrore.Log = status
+		Logga("KUBEENVSTATUS OK")
+	} else {
+		loggaErrore.Log = ""
+		Logga("KUBEENVSTATUS MISSING")
+	}
+	Logga("")
+	/* ************************************************************************************************ */
+
+	return loggaErrore
+}
+func SetEnvironmentStatus(cluster, enviro, microserice, customer, user, toggle string) LoggaErrore {
+
+	var loggaErrore LoggaErrore
+	loggaErrore.Errore = 0
+
+	// cerco il token di Corefactory
+	devopsToken, erro := GetCoreFactoryToken()
+	if erro.Errore < 0 {
+		Logga(erro.Log)
+		loggaErrore.Errore = erro.Errore
+		loggaErrore.Log = erro.Log
+	}
+
+	/* ************************************************************************************************ */
+	// KUBEENVSTATUS
+	Logga("Setting KUBEENVSTATUS")
+	args := make(map[string]string)
+	args["source"] = "devops-8"
+
+	/* ************************************************************************************************ */
+	// KUBEENVSTATUS
+
+	keyvalueslices := make([]map[string]interface{}, 0)
+	keyvalueslice := make(map[string]interface{})
+	keyvalueslice["debug"] = true
+	keyvalueslice["source"] = "devops-8"
+	keyvalueslice["XKUBEENVSTATUS03"] = cluster
+	keyvalueslice["XKUBEENVSTATUS04"] = enviro
+	keyvalueslice["XKUBEENVSTATUS05"] = microserice
+	keyvalueslice["XKUBEENVSTATUS06"] = customer
+	if toggle == "ON" {
+		keyvalueslice["XKUBEENVSTATUS07"] = "1"
+	} else {
+		keyvalueslice["XKUBEENVSTATUS07"] = "0"
+	}
+	keyvalueslice["XKUBEENVSTATUS08"] = user
+
+	keyvalueslices = append(keyvalueslices, keyvalueslice)
+
+	res := ApiCallPOST(false, keyvalueslices, "msdevops", "/devops/KUBEENVSTATUS", devopsToken, "")
+
+	if res.Errore < 0 {
+		Logga(res.Log)
+		loggaErrore.Errore = res.Errore
+		loggaErrore.Log = res.Log
+	} else {
+		if toggle == "ON" {
+			loggaErrore.Log = "Environment set to LOCK"
+		} else {
+			loggaErrore.Log = "Environment set to UNLOCK"
+		}
+	}
+
+	/* ************************************************************************************************ */
+
+	return loggaErrore
+}
+func GetVersionPreviousStage(cluster, enviro, istanza, devopsToken, clusterDev string) (string, string) {
+
+	nomeStage := ""
+	versione := ""
+	istanzaOld := ""
+
+	// cerco per il cluster lo stage number di dove vuoi andare
+	/* ************************************************************************************************ */
+	// KUBESTAGE
+	Logga("Getting KUBESTAGE grpcserver")
+
+	argsStage := make(map[string]string)
+	argsStage["source"] = "devops-8"
+	argsStage["$select"] = "XKUBESTAGE05"
+	argsStage["center_dett"] = "dettaglio"
+	argsStage["$filter"] = "equals(XKUBESTAGE03,'" + cluster + "') "
+	argsStage["$filter"] += " and equals(XKUBESTAGE04,'" + enviro + "') "
+
+	//$filter=contains(XART20,'(kg)') or contains(XART20,'pizza')
+	restyStageRes := ApiCallGET(false, argsStage, "msdevops", "/devops/KUBESTAGE", devopsToken, "")
+	if restyStageRes.Errore < 0 {
+		Logga(restyStageRes.Log)
+	}
+
+	stageNum := 0.00
+	if len(restyStageRes.BodyJson) > 0 {
+		stageNum = restyStageRes.BodyJson["XKUBESTAGE05"].(float64)
+		Logga("KUBESTAGE: OK")
+	} else {
+		Logga("KUBESTAGE: MISSING")
+	}
+	/* ************************************************************************************************ */
+
+	Logga("")
+	Logga("FOUND stage num: " + strconv.Itoa(int(stageNum)))
+
+	stageNum = stageNum - 1
+	stageNumStr := strconv.Itoa(int(stageNum))
+
+	Logga("Stage Name to find: " + stageNumStr)
+	Logga("")
+
+	changeCluster := false
+	// cerco lo stage number - 1
+	/* ************************************************************************************************ */
+	// KUBESTAGE
+	Logga("Getting KUBESTAGE grpcserver")
+
+	argsStage2 := make(map[string]string)
+	argsStage2["source"] = "devops-8"
+	argsStage2["$select"] = "XKUBESTAGE04"
+	argsStage2["center_dett"] = "dettaglio"
+	argsStage2["$filter"] = "equals(XKUBESTAGE03,'" + cluster + "') "
+	argsStage2["$filter"] += " and XKUBESTAGE05 eq " + stageNumStr + " "
+
+	restyStage2Res := ApiCallGET(false, argsStage2, "msdevops", "/devops/KUBESTAGE", devopsToken, "")
+	if restyStage2Res.Errore < 0 {
+		Logga(restyStage2Res.Log)
+	}
+
+	if len(restyStage2Res.BodyJson) > 0 {
+		nomeStage = restyStage2Res.BodyJson["XKUBESTAGE04_COD"].(string)
+		Logga("Stage Name: " + nomeStage)
+		Logga("KUBESTAGE: OK")
+	} else {
+
+		Logga("")
+		Logga("Non trovo lo stage nel cluster di prod e lo cerco nel relativo cluster di DEV")
+		Logga("Getting KUBESTAGE grpcserver secondo round")
+		Logga("")
+		Logga("")
+		argsStage3 := make(map[string]string)
+		argsStage3["source"] = "devops-8"
+		argsStage3["$select"] = "XKUBESTAGE04"
+		argsStage3["center_dett"] = "dettaglio"
+		argsStage3["$filter"] = "equals(XKUBESTAGE03,'" + clusterDev + "') "
+		argsStage3["$filter"] += " and XKUBESTAGE05 eq " + stageNumStr + " "
+
+		restyStage3Res := ApiCallGET(false, argsStage3, "msdevops", "/devops/KUBESTAGE", devopsToken, "")
+		if restyStage3Res.Errore < 0 {
+			Logga(restyStage3Res.Log)
+		}
+
+		if len(restyStage3Res.BodyJson) > 0 {
+			changeCluster = true
+			nomeStage = restyStage3Res.BodyJson["XKUBESTAGE04_COD"].(string)
+			Logga("Stage Name: " + nomeStage)
+			Logga("KUBESTAGE: OK")
+		}
+
+		Logga("KUBESTAGE: MISSING")
+	}
+	/* ************************************************************************************************ */
+
+	Logga("")
+	Logga("THE STAGE IS: " + nomeStage)
+	Logga("")
+
+	// cerco la versione con lo stage number n-1
+	/* ************************************************************************************************ */
+	// KUBESTAGE
+	Logga("Getting DEPLOYLOG grpcserver 1")
+
+	// NORMALIZZO IL NOME PER LA VECCHIA GESTIONE
+	istanzaSplit := strings.Split(istanza, "-")
+
+	if changeCluster {
+		istanzaOld = clusterDev + "-" + istanzaSplit[len(istanzaSplit)-1]
+	} else {
+		istanzaOld = cluster + "-" + istanzaSplit[len(istanzaSplit)-1]
+	}
+
+	Logga("")
+	Logga("THE ISTANZA IS: " + istanza + "|" + istanzaOld)
+	Logga("")
+
+	argsDeploy := make(map[string]string)
+	argsDeploy["source"] = "devops-8"
+	argsDeploy["$select"] = "XDEPLOYLOG05"
+	argsDeploy["center_dett"] = "dettaglio"
+	argsDeploy["$filter"] = " ( equals(XDEPLOYLOG04,'" + istanza + "') OR equals(XDEPLOYLOG04,'" + istanzaOld + "') ) "
+	argsDeploy["$filter"] += " and equals(XDEPLOYLOG09,'" + nomeStage + "') "
+	argsDeploy["$filter"] += " and equals(XDEPLOYLOG06,'1') "
+
+	//$filter=contains(XART20,'(kg)') or contains(XART20,'pizza')
+	restyDeployRes := ApiCallGET(true, argsDeploy, "msdevops", "/devops/DEPLOYLOG", devopsToken, "")
+	if restyDeployRes.Errore < 0 {
+		Logga(restyDeployRes.Log)
+	}
+
+	if len(restyDeployRes.BodyJson) > 0 {
+		versione = restyDeployRes.BodyJson["XDEPLOYLOG05"].(string)
+		Logga("Versione: " + versione)
+		Logga("DEPLOYLOG 1: OK")
+	} else {
+		Logga("DEPLOYLOG 1: MISSING")
+	}
+	/* ************************************************************************************************ */
+
+	return versione, istanzaOld
 }
