@@ -1,5 +1,73 @@
 package lib
 
+type MergeResponse struct {
+	Log   string
+	Error string
+}
+type CreateBranchResponse struct {
+	Type  string `json:"type"`
+	Error struct {
+		Message string `json:"message"`
+		Data    struct {
+			Key string `json:"key"`
+		} `json:"data"`
+	} `json:"error"`
+}
+type RestyResStruct struct {
+	Type  string `json:"type"`
+	ID    int    `json:"id"`
+	Links struct {
+		Diffstat struct {
+			Href string `json:"href"`
+		} `json:"diffstat"`
+		Commits struct {
+			Href string `json:"href"`
+		} `json:"commits"`
+		Comments struct {
+			Href string `json:"href"`
+		} `json:"comments"`
+		Merge struct {
+			Href string `json:"href"`
+		} `json:"merge"`
+		Diff struct {
+			Href string `json:"href"`
+		} `json:"diff"`
+	} `json:"links"`
+	Error struct {
+		Message string `json:"message"`
+	} `json:"error"`
+}
+type RestyResConflict struct {
+	Pagelen int `json:"pagelen"`
+	Values  []struct {
+		Status string `json:"status"`
+		Old    struct {
+			Path        string `json:"path"`
+			EscapedPath string `json:"escaped_path"`
+			Type        string `json:"type"`
+			Links       struct {
+				Self struct {
+					Href string `json:"href"`
+				} `json:"self"`
+			} `json:"links"`
+		} `json:"old"`
+		LinesRemoved int `json:"lines_removed"`
+		LinesAdded   int `json:"lines_added"`
+		New          struct {
+			Path        string `json:"path"`
+			EscapedPath string `json:"escaped_path"`
+			Type        string `json:"type"`
+			Links       struct {
+				Self struct {
+					Href string `json:"href"`
+				} `json:"self"`
+			} `json:"links"`
+		} `json:"new"`
+		Type string `json:"type"`
+	} `json:"values"`
+	Page int `json:"page"`
+	Size int `json:"size"`
+}
 type Microservice struct {
 	Nome             string `json:"nome"`
 	Descrizione      string `json:"descrizione"`

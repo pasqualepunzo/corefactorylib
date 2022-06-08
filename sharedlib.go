@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/go-resty/resty/v2"
 )
 
 func GetIstanceDetail(iresReq IresRequest, canaryProduction string) (IstanzaMicro, LoggaErrore) {
@@ -768,4 +770,186 @@ func UpdateDockerVersion(docker, ver, user, devMaster, sha, team, newTagName, re
 	if res.Errore != 0 {
 		Logga(res.Log)
 	}
+}
+
+/*
+	Fa il merge di un branch sull'altro
+	se ci sono conflitti li segnala
+
+	accetta branch source, branch dest, tipo (tag o branch)
+	ritorna un LOG
+*/
+func GitMergeApi(src, dst, repo, tipo string) (string, string) {
+
+	Logga("gitMergeApi")
+
+	var mergeRes MergeResponse
+	var erroMerge, noChanges bool
+	erroMerge = false
+	noChanges = false
+
+	mergeRes.Log += "\n**********************************************************************\n"
+	mergeRes.Log += "Work on repo " + repo + " -> " + src + " on " + dst + "\n\n"
+
+	// se il tipo di merge è fra un tag e un branch
+	// va prima fatto un branch partendo dal tag
+	var tmpBranch string
+	if tipo == "tag" {
+
+		tmpBranch = src + "-tmp-branch"
+
+		Logga(repo + ": creo branch dal tag " + src)
+		// creo un branch vivo dal tag
+
+		body := `{"name": "` + tmpBranch + `","target": {  "hash": "` + src + `"}}`
+
+		clientTag := resty.New()
+		clientTag.Debug = false
+		restyTagResponse, err := clientTag.R().
+			SetHeader("Content-Type", "application/json").
+			SetBasicAuth(os.Getenv("bitbucketUser"), os.Getenv("bitbucketToken")).
+			SetBody(body).
+			Post(os.Getenv("bitbucketHost") + "/repositories/sf-kir/" + repo + "/refs/branches")
+
+		if err != nil {
+			fmt.Println("_##START##_   !!! New branch on " + repo + " ERROR " + err.Error() + "_##STOP##_")
+
+			mergeRes.Error += "Error: "
+			erroMerge = true
+			mergeRes.Error += err.Error()
+			mergeRes.Error += "\n"
+		}
+
+		var restyRes CreateBranchResponse
+		_ = json.Unmarshal(restyTagResponse.Body(), &restyRes)
+		//fmt.Println(restyTagResponse, err)
+
+		if restyRes.Type == "error" {
+			fmt.Println("_##START##_   !!! New branch on " + repo + " ERROR " + restyRes.Error.Message + "_##STOP##_")
+			if restyRes.Error.Data.Key != "BRANCH_ALREADY_EXISTS" {
+				mergeRes.Error += "Error: "
+				erroMerge = true
+				mergeRes.Error += restyRes.Error.Message
+				mergeRes.Error += "\n"
+			}
+		} else {
+			fmt.Println("_##START##_New branch on " + repo + " created_##STOP##_")
+		}
+		// --------------------------------
+	}
+
+	// FACCIO LA PULL REQUEST PER IL MERGE
+	Logga(repo + ": faccio pull req di merge di " + src + " su " + dst)
+	titolo := "Merge " + src + " on " + dst
+	var body string
+	if tipo == "tag" {
+		body = `{"title": "` + titolo + `","source": {"branch": {"name": "` + tmpBranch + `"}},"destination": {"branch": {"name": "` + dst + `"}},"close_source_branch": true }`
+	} else {
+		body = `{"title": "` + titolo + `","source": {"branch": {"name": "` + src + `"}},"destination": {"branch": {"name": "` + dst + `"}} }`
+	}
+
+	clientPullR := resty.New()
+	clientPullR.Debug = false
+	restyPullReqResponse, err := clientPullR.R().
+		SetHeader("Content-Type", "application/json").
+		SetBasicAuth(os.Getenv("bitbucketUser"), os.Getenv("bitbucketToken")).
+		SetBody(body).
+		Post(os.Getenv("bitbucketHost") + "/repositories/sf-kir/" + repo + "/pullrequests")
+
+	if err != nil {
+		fmt.Println("_##START##_   !!! Merge di " + src + " su " + dst + " ERROR " + err.Error() + "_##STOP##_")
+
+		mergeRes.Error += err.Error()
+		mergeRes.Error += "\n"
+		fmt.Println(err)
+	}
+
+	var restyRes RestyResStruct
+	_ = json.Unmarshal(restyPullReqResponse.Body(), &restyRes)
+	//fmt.Println(restyRes, err)
+	// os.Exit(0)
+
+	if restyRes.Error.Message != "" {
+		if restyRes.Error.Message == "There are no changes to be pulled" {
+			noChanges = true
+		} else {
+			mergeRes.Error += "Error: "
+			erroMerge = true
+			mergeRes.Error += restyRes.Error.Message
+			mergeRes.Error += "\n"
+		}
+	}
+	// ----------------------------
+
+	//fmt.Println("@@@", noChanges, erroMerge)
+	//os.Exit(0)
+
+	if !noChanges {
+		if !erroMerge {
+
+			// NON HO ERRORI E QUINDI FACCIO IL MERGE
+			Logga(repo + ": faccio Merge di " + src + " su " + dst)
+			mergeRes.Log += "Do MERGE of " + src + " on " + dst + "\n"
+
+			clientMerge := resty.New()
+			clientMerge.Debug = false
+			respMerge, errMerge := clientMerge.R().
+				SetBasicAuth(os.Getenv("bitbucketUser"), os.Getenv("bitbucketToken")).
+				Post(os.Getenv("bitbucketHost") + "/repositories/sf-kir/" + repo + "/pullrequests/" + strconv.Itoa(restyRes.ID) + "/merge")
+			// fmt.Println(string(respMerge.Body()), errMerge)
+
+			if errMerge != nil {
+				mergeRes.Error += "Error: "
+				mergeRes.Error += errMerge.Error()
+				mergeRes.Error += "\n"
+			}
+
+			var restyResMerge RestyResStruct
+			_ = json.Unmarshal(respMerge.Body(), &restyResMerge)
+			//fmt.Println(restyResMerge, err)
+
+			// HO DEGLI ERRORI NEL MERGE
+			if restyResMerge.Error.Message != "" {
+
+				// MI CERCO IL DIFF DEI CONFLITTI
+				clientConflict := resty.New()
+				clientConflict.Debug = false
+				respConflict, errConflict := clientConflict.R().
+					EnableTrace().
+					SetBasicAuth(os.Getenv("bitbucketUser"), os.Getenv("bitbucketToken")).
+					Get(restyRes.Links.Diff.Href)
+
+				if errConflict != nil {
+				}
+
+				mergeRes.Error += "\nError: "
+				mergeRes.Error += repo + "\n"
+				mergeRes.Error += "Pull Request ID #" + strconv.Itoa(restyRes.ID) + " \n"
+				mergeRes.Error += "------------------------------\n"
+				mergeRes.Error += string(respConflict.Body())
+				mergeRes.Error += "------------------------------\n"
+				mergeRes.Error += "\n"
+				mergeRes.Error += restyResMerge.Error.Message
+				mergeRes.Error += "\n"
+
+			} else {
+
+				// MERGE OK
+				mergeRes.Log += repo + ": Merge of " + src + " on " + dst + " OK\n"
+			}
+
+		}
+	} else {
+		mergeRes.Log += repo + ": There are no changes to be merged\n"
+	}
+
+	//fmt.Println("------------------------------------------------|" + mergeRes.Error + "|")
+	if mergeRes.Error != "" {
+		mergeRes.Log += mergeRes.Error
+		mergeRes.Log += "\n"
+	}
+
+	mergeRes.Log += "\n**********************************************************************\n"
+
+	return mergeRes.Log, mergeRes.Error
 }
