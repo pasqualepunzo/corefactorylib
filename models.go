@@ -1,5 +1,8 @@
 package lib
 
+type loginAuth struct {
+	username, password string
+}
 type BranchResStruct struct {
 	Name   string `json:"name"`
 	Target struct {

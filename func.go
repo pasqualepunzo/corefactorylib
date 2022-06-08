@@ -2,6 +2,7 @@ package lib
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -1401,4 +1402,61 @@ func GetVersionPreviousStage(cluster, enviro, istanza, devopsToken, clusterDev s
 	/* ************************************************************************************************ */
 
 	return versione, istanzaOld
+}
+func GetJsonDatabases(stage, developer string, market int32, arrConn MasterConn) (map[string]interface{}, LoggaErrore) {
+	Logga("Getting Json Db")
+
+	var erro LoggaErrore
+	erro.Errore = 0
+
+	devopsToken, erro := GetCoreFactoryToken()
+	if erro.Errore < 0 {
+		Logga(erro.Log)
+	} else {
+		Logga("Token OK")
+	}
+
+	dominio := GetApiHost()
+
+	keyvalueslice := make(map[string]interface{})
+	keyvalueslice["debug"] = true
+	keyvalueslice["clusterId"] = stage
+	keyvalueslice["customerId"] = developer
+	keyvalueslice["enableMonolith"] = true
+	keyvalueslice["host"] = arrConn.Host
+	keyvalueslice["apiUrl"] = arrConn.Domain
+	keyvalueslice["market"] = market
+	keyvalueslice["appID"] = "1"
+	keyvalueslice["refappCustomerID"] = developer
+	keyvalueslice["platformUrl"] = "developer." + arrConn.Domain
+
+	client := resty.New()
+	client.Debug = false
+	client.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
+	res, err := client.R().
+		SetHeader("Content-Type", "application/json").
+		SetHeader("Accept", "application/json").
+		SetHeader("microservice", "msappman").
+		SetAuthToken(devopsToken).
+		SetBody(keyvalueslice).
+		Post(dominio + "/api/" + os.Getenv("coreapiVersion") + "/appman/getDeveloperMsList")
+
+	callResponse := map[string]interface{}{}
+	if err != nil { // HTTP ERRORE
+		erro.Errore = -1
+		erro.Log = err.Error()
+	} else {
+		if res.StatusCode() != 200 {
+			erro.Errore = -1
+			erro.Log = err.Error()
+		} else {
+
+			err1 := json.Unmarshal(res.Body(), &callResponse)
+			if err1 != nil {
+				erro.Errore = -1
+				erro.Log = err1.Error()
+			}
+		}
+	}
+	return callResponse, erro
 }
