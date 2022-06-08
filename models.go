@@ -36,19 +36,19 @@ type PodBuild struct {
 	SprintBranch string
 }
 type Resource struct {
-	cpuReq string
-	cpuLim string
-	memReq string
-	memLim string
+	CpuReq string
+	CpuLim string
+	MemReq string
+	MemLim string
 }
 
 type Hpa struct {
-	minReplicas   string
-	maxReplicas   string
-	cpuTipoTarget string
-	cpuTarget     string
-	memTipoTarget string
-	memTarget     string
+	MinReplicas   string
+	MaxReplicas   string
+	CpuTipoTarget string
+	CpuTarget     string
+	MemTipoTarget string
+	MemTarget     string
 }
 
 type Branch struct {
