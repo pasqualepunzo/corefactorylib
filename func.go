@@ -2,8 +2,10 @@ package lib
 
 import (
 	"bytes"
+	"crypto/sha1"
 	"crypto/tls"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -1459,4 +1461,42 @@ func GetJsonDatabases(stage, developer string, market int32, arrConn MasterConn)
 		}
 	}
 	return callResponse, erro
+}
+func GetCustomerToken(accessToken, refappCustomer, resource, dominio string) (string, LoggaErrore) {
+
+	Logga("getCustomerToken")
+	Logga("Customer Token " + dominio)
+	Logga("refappCustomer " + refappCustomer)
+	Logga("resource " + resource)
+	Logga("accessToken " + accessToken)
+
+	var erro LoggaErrore
+	erro.Errore = 0
+
+	ct := time.Now()
+	now := ct.Format("20060102150405")
+	h := sha1.New()
+	h.Write([]byte(now))
+	sha := hex.EncodeToString(h.Sum(nil))
+
+	argsAuth := make(map[string]interface{})
+	argsAuth["access_token"] = accessToken
+	argsAuth["refappCustomer"] = refappCustomer
+	argsAuth["resource"] = resource
+	argsAuth["uuid"] = "devops-" + sha
+
+	restyAuthResponse, restyAuthErr := ApiCallLOGIN(false, argsAuth, "msauth", "/auth/login", dominio)
+	if restyAuthErr.Errore < 0 {
+		// QUI ERRORE
+		erro.Errore = -1
+		erro.Log = restyAuthErr.Log
+		return "", erro
+	}
+	if len(restyAuthResponse) > 0 {
+		return restyAuthResponse["idToken"].(string), erro
+	} else {
+		erro.Errore = -1
+		erro.Log = "token MISSING"
+		return "", erro
+	}
 }
