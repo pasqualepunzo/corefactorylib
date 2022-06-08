@@ -1,5 +1,32 @@
 package lib
 
+type MasterConn struct {
+	Host        string `json:"host"`
+	MetaName    string `json:"metaName"`
+	User        string `json:"user"`
+	Pass        string `json:"pass"`
+	Domain      string `json:"domain"`
+	AccessToken string `json:"accssToken"`
+}
+type CompareDbRes struct {
+	Tbl         string
+	Column_name string
+	Columns     string
+	Tipo        string
+}
+
+type DeployDbLog struct {
+	Log    string
+	Errore int32
+}
+
+type CompareIndex struct {
+	Tbl         string
+	NomeIdx     string
+	Index       string
+	NomeColonna string
+	Unique      string
+}
 type MergeResponse struct {
 	Log   string
 	Error string

@@ -7,8 +7,10 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math"
 	"os"
 	"os/exec"
+	"strings"
 	"sync"
 )
 
@@ -211,4 +213,59 @@ func Logga(i interface{}) {
 		log.SetFormatter(&log.JSONFormatter{})
 		log.WithFields(log.Fields{"pid": pid, "hostname": hostname}).Println(text)
 	*/
+}
+func StrPad(input string, padLength int, padString string, padType string) string {
+	var output string
+
+	inputLength := len(input)
+	padStringLength := len(padString)
+
+	if inputLength >= padLength {
+		return input
+	}
+
+	repeat := math.Ceil(float64(1) + (float64(padLength-padStringLength))/float64(padStringLength))
+
+	switch padType {
+	case "RIGHT":
+		output = input + strings.Repeat(padString, int(repeat))
+		output = output[:padLength]
+	case "LEFT":
+		output = strings.Repeat(padString, int(repeat)) + input
+		output = output[len(output)-padLength:]
+	case "BOTH":
+		length := (float64(padLength - inputLength)) / float64(2)
+		repeat = math.Ceil(length / float64(padStringLength))
+		output = strings.Repeat(padString, int(repeat))[:int(math.Floor(float64(length)))] + input + strings.Repeat(padString, int(repeat))[:int(math.Ceil(float64(length)))]
+	}
+
+	return output
+}
+func GetUserGroup(token, gruppo string) (map[string]string, LoggaErrore) {
+
+	Logga("Getting GRU")
+
+	var loggaErrore LoggaErrore
+	loggaErrore.Errore = 0
+
+	args := make(map[string]string)
+	args["center_dett"] = "dettaglio"
+	args["source"] = "users-3"
+	args["$select"] = "XGRU05,XGRU06"
+
+	gruRes := ApiCallGET(false, args, "msusers", "/users/GRU/equals(XGRU03,'"+gruppo+"')", token, "")
+
+	gru := make(map[string]string)
+
+	if len(gruRes.BodyJson) > 0 {
+		gru["gruppo"] = gruRes.BodyJson["XGRU05"].(string)
+		gru["stage"] = gruRes.BodyJson["XGRU06"].(string)
+		Logga("GRU OK")
+	} else {
+		Logga("GRU MISSING")
+		loggaErrore.Errore = -1
+		loggaErrore.Log = "GRU MISSING"
+	}
+
+	return gru, loggaErrore
 }
