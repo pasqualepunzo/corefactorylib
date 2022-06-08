@@ -10,8 +10,6 @@ import (
 	"os"
 	"os/exec"
 	"sync"
-
-	"github.com/go-resty/resty/v2"
 )
 
 func Base64decode(str string) string {
@@ -142,57 +140,6 @@ func PrintaErrore(errorLabel, log, errorSuggest string) {
 	fmt.Println("*                                                                                *")
 	fmt.Println("*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*")
 	fmt.Println()
-}
-func TelegramSendMessage(text string) LoggaErrore {
-	type telegramResStruct struct {
-		Ok     bool `json:"ok"`
-		Result struct {
-			MessageID  int `json:"message_id"`
-			SenderChat struct {
-				ID       int64  `json:"id"`
-				Title    string `json:"title"`
-				Username string `json:"username"`
-				Type     string `json:"type"`
-			} `json:"sender_chat"`
-			Chat struct {
-				ID       int64  `json:"id"`
-				Title    string `json:"title"`
-				Username string `json:"username"`
-				Type     string `json:"type"`
-			} `json:"chat"`
-			Date int    `json:"date"`
-			Text string `json:"text"`
-		} `json:"result"`
-	}
-
-	var erro LoggaErrore
-	erro.Errore = 0
-
-	clientTelegram := resty.New()
-	clientTelegram.Debug = false
-	resTelegram, errTelegram := clientTelegram.R().
-		SetHeader("Content-Type", "application/json").
-		Post("https://api.telegram.org/bot" + os.Getenv("telegramBotToken") + "/sendMessage?chat_id=" + os.Getenv("telegramCftoolDevopsChatID") + "&text=" + text)
-
-	var telegramRes telegramResStruct
-	if errTelegram != nil {
-		erro.Errore = -1
-		erro.Log = errTelegram.Error()
-	} else {
-		err1 := json.Unmarshal(resTelegram.Body(), &telegramRes)
-		if err1 != nil {
-			fmt.Println(err1.Error())
-		}
-	}
-
-	// LogJson(telegramRes)
-
-	if !telegramRes.Ok {
-		erro.Errore = -1
-		erro.Log = telegramRes.Result.Text
-	}
-
-	return erro
 }
 func LogJson(msg interface{}) {
 
