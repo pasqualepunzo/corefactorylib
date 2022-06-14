@@ -10,41 +10,20 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func DropMetadato(ires IstanzaMicro, dbMetaName DbMetaConnMs) LoggaErrore {
+func DropMetadato(dbMetaName string, db *sql.DB) LoggaErrore {
 
 	var loggaErrore LoggaErrore
 	loggaErrore.Errore = 0
 
-	masterDb, erro := GetMasterConn("", dbMetaName.Cluster)
-	if erro.Errore < 0 {
-		Logga("getMasterConn")
-		Logga(erro.Log)
-	}
+	Logga("Drop metadata :" + dbMetaName)
 
-	Logga("Drop metadata :" + dbMetaName.MetaName)
-
-	Logga("Host: " + dbMetaName.MetaHost)
-	Logga("User: " + masterDb.User)
-	Logga("Pass: " + masterDb.Pass)
-
-	//os.Exit(0)
-
-	db, err := sql.Open("mysql", masterDb.User+":"+masterDb.Pass+"@tcp("+dbMetaName.MetaHost+":3306)/")
-
-	if err != nil {
-		loggaErrore.Log = err.Error()
-		loggaErrore.Errore = -1
-		return loggaErrore
-	}
-	defer db.Close()
-
-	_, err = db.Exec("drop database if exists " + dbMetaName.MetaName)
+	_, err := db.Exec("drop database if exists " + dbMetaName)
 	if err != nil {
 		loggaErrore.Log = err.Error()
 		loggaErrore.Errore = -1
 		return loggaErrore
 	} else {
-		Logga("Database " + dbMetaName.MetaName + " dropped")
+		Logga("Database " + dbMetaName + " dropped")
 	}
 
 	loggaErrore.Log = ""
