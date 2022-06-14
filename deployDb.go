@@ -147,7 +147,7 @@ func CreateUser(dbMetaName DbMetaConnMs, db *sql.DB) LoggaErrore {
 	loggaErrore.Errore = 0
 	return loggaErrore
 }
-func DropDbData(dbDataName DbDataConnMs, db sql.DB) LoggaErrore {
+func DropDbData(dbDataName DbDataConnMs, db *sql.DB) LoggaErrore {
 
 	var loggaErrore LoggaErrore
 
@@ -163,7 +163,7 @@ func DropDbData(dbDataName DbDataConnMs, db sql.DB) LoggaErrore {
 	loggaErrore.Errore = 1
 	return loggaErrore
 }
-func Comparedb(ires IstanzaMicro, dbDataName DbDataConnMs, db sql.DB, db2 sql.DB) (LoggaErrore, []string) {
+func Comparedb(ires IstanzaMicro, dbDataName DbDataConnMs, db *sql.DB, db2 *sql.DB) (LoggaErrore, []string) {
 
 	var loggaErrore LoggaErrore
 
@@ -446,7 +446,7 @@ func Comparedb(ires IstanzaMicro, dbDataName DbDataConnMs, db sql.DB, db2 sql.DB
 
 	return loggaErrore, allCompareSql
 }
-func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db sql.DB, db2 sql.DB, db3 sql.DB) (LoggaErrore, []string) {
+func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db2 *sql.DB, db3 *sql.DB) (LoggaErrore, []string) {
 	fmt.Println()
 	fmt.Println("Compare Index")
 
