@@ -898,4 +898,3 @@ func GetMasterConn(gruppoDeveloper, cluster string) (MasterConn, LoggaErrore) {
 
 	return master, erro
 }
-func Bidone() {}
