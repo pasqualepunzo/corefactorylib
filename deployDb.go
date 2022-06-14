@@ -10,24 +10,141 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func DropMetadato(dbMetaName string, db *sql.DB) LoggaErrore {
+func DropMetadato(dbMetaName DbMetaConnMs, db *sql.DB) LoggaErrore {
 
 	var loggaErrore LoggaErrore
 	loggaErrore.Errore = 0
 
-	Logga("Drop metadata :" + dbMetaName)
+	Logga("Drop metadata :" + dbMetaName.MetaName)
 
-	_, err := db.Exec("drop database if exists " + dbMetaName)
+	_, err := db.Exec("drop database if exists " + dbMetaName.MetaName)
 	if err != nil {
 		loggaErrore.Log = err.Error()
 		loggaErrore.Errore = -1
 		return loggaErrore
 	} else {
-		Logga("Database " + dbMetaName + " dropped")
+		Logga("Database " + dbMetaName.MetaName + " dropped")
 	}
 
 	loggaErrore.Log = ""
 	loggaErrore.Errore = 1
+	return loggaErrore
+}
+func CreateDbMeta(dbMetaName DbMetaConnMs, db *sql.DB) LoggaErrore {
+
+	var loggaErrore LoggaErrore
+	loggaErrore.Errore = 0
+
+	query := "CREATE DATABASE " + dbMetaName.MetaName
+	Logga(query)
+	_, err := db.Exec(query)
+	if err != nil {
+		loggaErrore.Log = err.Error()
+		loggaErrore.Errore = -1
+		return loggaErrore
+	} else {
+		Logga("Database " + dbMetaName.MetaName + " instance done")
+	}
+
+	// creo gli user
+	CreateUser(dbMetaName, db)
+
+	return loggaErrore
+}
+func CreateDbData(dbDataName DbDataConnMs, db *sql.DB) LoggaErrore {
+
+	// creazione dei DATABASE
+	var loggaErrore LoggaErrore
+
+	_, err := db.Exec("CREATE DATABASE IF NOT EXISTS " + dbDataName.DataName)
+	if err != nil {
+		loggaErrore.Log = err.Error()
+		loggaErrore.Errore = -1
+		return loggaErrore
+	} else {
+		Logga("Create Database " + dbDataName.DataName + " instance done")
+	}
+
+	// creo gli user
+	var cons DbMetaConnMs
+	cons.MetaHost = dbDataName.DataHost
+	cons.MetaName = dbDataName.DataName
+	cons.MetaPass = dbDataName.DataPass
+	cons.MetaUser = dbDataName.DataUser
+	CreateUser(cons, db)
+
+	//os.Exit(0)
+
+	loggaErrore.Log = ""
+	loggaErrore.Errore = 1
+	return loggaErrore
+}
+func CreateUser(dbMetaName DbMetaConnMs, db *sql.DB) LoggaErrore {
+
+	var loggaErrore LoggaErrore
+	loggaErrore.Errore = 0
+	var err error
+
+	// FAC-753
+	var _user string
+	query := "SELECT user as _user FROM mysql.user where user = '" + dbMetaName.MetaUser + "'"
+	fmt.Println(query)
+	row := db.QueryRow(query)
+	errUser := row.Scan(&_user)
+
+	if errUser != nil {
+
+		if errUser.Error() == "sql: no rows in result set" {
+
+			// create user
+			query := "CREATE USER   '" + dbMetaName.MetaUser + "'@'%' IDENTIFIED BY '" + dbMetaName.MetaPass + "'"
+			Logga(query)
+			_, err := db.Exec(query)
+			if err != nil {
+				loggaErrore.Log = err.Error()
+				loggaErrore.Errore = -1
+				return loggaErrore
+			} else {
+				Logga("CREATE USER    " + dbMetaName.MetaUser + " done")
+			}
+
+			// grant su metadati
+			query = "GRANT ALL PRIVILEGES ON " + dbMetaName.MetaName + ".* TO '" + dbMetaName.MetaUser + "'@'%' WITH GRANT OPTION "
+			Logga(query)
+			_, err = db.Exec(query)
+			//Logga("GRANT ALL PRIVILEGES ON " + ires.MetaName + ".* TO '" + ires.MetaUser + "'@'%'")
+			if err != nil {
+				loggaErrore.Log = err.Error()
+				loggaErrore.Errore = -1
+				return loggaErrore
+			} else {
+				Logga("GRANT ON " + dbMetaName.MetaName + " created")
+			}
+
+			// grant su data
+			query = "FLUSH PRIVILEGES"
+			Logga(query)
+			_, err = db.Exec(query)
+			if err != nil {
+				loggaErrore.Log = err.Error()
+				loggaErrore.Errore = -1
+				return loggaErrore
+			} else {
+				Logga("FLUSH PRIVILEGES " + dbMetaName.MetaName + " done")
+			}
+		} else {
+			loggaErrore.Log = err.Error()
+			loggaErrore.Errore = -1
+			return loggaErrore
+		}
+
+	} else {
+
+		Logga("User: " + dbMetaName.MetaUser + " already exists")
+	}
+
+	loggaErrore.Log = ""
+	loggaErrore.Errore = 0
 	return loggaErrore
 }
 func DropDbData(ires IstanzaMicro, dbDataName DbDataConnMs) LoggaErrore {
@@ -377,131 +494,6 @@ func Comparedb(ires IstanzaMicro, dbDataName DbDataConnMs) (LoggaErrore, []strin
 
 	return loggaErrore, allCompareSql
 }
-func CreateDbMeta(ires IstanzaMicro, dbMetaName DbMetaConnMs) LoggaErrore {
-
-	var loggaErrore LoggaErrore
-	loggaErrore.Errore = 0
-
-	masterDb, erro := GetMasterConn("", dbMetaName.Cluster)
-	if erro.Errore < 0 {
-		Logga("getMasterConn")
-		Logga(erro.Log)
-	}
-
-	Logga("Create metadata :" + dbMetaName.MetaName)
-
-	Logga("Host: " + dbMetaName.MetaHost)
-	Logga("User: " + masterDb.User)
-	Logga("Pass: " + masterDb.Pass)
-	//os.Exit(0)
-
-	db, err := sql.Open("mysql", masterDb.User+":"+masterDb.Pass+"@tcp("+dbMetaName.MetaHost+":3306)/")
-
-	if err != nil {
-		loggaErrore.Log = err.Error()
-		loggaErrore.Errore = -1
-		return loggaErrore
-	}
-	defer db.Close()
-
-	query := "CREATE DATABASE " + dbMetaName.MetaName
-	Logga(query)
-	_, err = db.Exec(query)
-	if err != nil {
-		loggaErrore.Log = err.Error()
-		loggaErrore.Errore = -1
-		return loggaErrore
-	} else {
-		Logga("Database " + dbMetaName.MetaName + " instance done")
-	}
-
-	// creo gli user
-	CreateUser(dbMetaName, masterDb)
-
-	return loggaErrore
-}
-func CreateUser(dbMetaName DbMetaConnMs, masterDb MasterConn) LoggaErrore {
-
-	var loggaErrore LoggaErrore
-	loggaErrore.Errore = 0
-
-	Logga("Create metadata :" + dbMetaName.MetaName)
-
-	Logga("Host: " + dbMetaName.MetaHost)
-	Logga("User: " + masterDb.User)
-	Logga("Pass: " + masterDb.Pass)
-
-	db, err := sql.Open("mysql", masterDb.User+":"+masterDb.Pass+"@tcp("+dbMetaName.MetaHost+":3306)/")
-
-	if err != nil {
-		loggaErrore.Log = err.Error()
-		loggaErrore.Errore = -1
-		return loggaErrore
-	}
-	defer db.Close()
-
-	// FAC-753
-	var _user string
-	query := "SELECT user as _user FROM mysql.user where user = '" + dbMetaName.MetaUser + "'"
-	fmt.Println(query)
-	row := db.QueryRow(query)
-	errUser := row.Scan(&_user)
-
-	if errUser != nil {
-
-		if errUser.Error() == "sql: no rows in result set" {
-
-			// create user
-			query := "CREATE USER   '" + dbMetaName.MetaUser + "'@'%' IDENTIFIED BY '" + dbMetaName.MetaPass + "'"
-			Logga(query)
-			_, err = db.Exec(query)
-			if err != nil {
-				loggaErrore.Log = err.Error()
-				loggaErrore.Errore = -1
-				return loggaErrore
-			} else {
-				Logga("CREATE USER    " + dbMetaName.MetaUser + " done")
-			}
-
-			// grant su metadati
-			query = "GRANT ALL PRIVILEGES ON " + dbMetaName.MetaName + ".* TO '" + dbMetaName.MetaUser + "'@'%' WITH GRANT OPTION "
-			Logga(query)
-			_, err = db.Exec(query)
-			//Logga("GRANT ALL PRIVILEGES ON " + ires.MetaName + ".* TO '" + ires.MetaUser + "'@'%'")
-			if err != nil {
-				loggaErrore.Log = err.Error()
-				loggaErrore.Errore = -1
-				return loggaErrore
-			} else {
-				Logga("GRANT ON " + dbMetaName.MetaName + " created")
-			}
-
-			// grant su data
-			query = "FLUSH PRIVILEGES"
-			Logga(query)
-			_, err = db.Exec(query)
-			if err != nil {
-				loggaErrore.Log = err.Error()
-				loggaErrore.Errore = -1
-				return loggaErrore
-			} else {
-				Logga("FLUSH PRIVILEGES " + dbMetaName.MetaName + " done")
-			}
-		} else {
-			loggaErrore.Log = err.Error()
-			loggaErrore.Errore = -1
-			return loggaErrore
-		}
-
-	} else {
-
-		Logga("User: " + dbMetaName.MetaUser + " already exists")
-	}
-
-	loggaErrore.Log = ""
-	loggaErrore.Errore = 0
-	return loggaErrore
-}
 func Compareidx(ires IstanzaMicro, dbDataName DbDataConnMs, dbMetaName DbMetaConnMs) (LoggaErrore, []string) {
 	fmt.Println()
 	fmt.Println("Compare Index")
@@ -770,79 +762,10 @@ func Compareidx(ires IstanzaMicro, dbDataName DbDataConnMs, dbMetaName DbMetaCon
 
 	return loggaErrore, allCompareIdx
 }
-func CreateDbData(ires IstanzaMicro, dbDataName DbDataConnMs) LoggaErrore {
-
-	// creazione dei DATABASE
-	var loggaErrore LoggaErrore
-
-	masterDb, erro := GetMasterConn("", dbDataName.Cluster)
-	if erro.Errore < 0 {
-		Logga("getMasterConn")
-		Logga(erro.Log)
-	}
-
-	Logga("")
-	Logga("--------------------------------------------------------------------------------")
-	Logga("Work on Database " + dbDataName.DataName)
-
-	Logga("Host: " + dbDataName.DataHost)
-	Logga("User: " + masterDb.User)
-	Logga("Pass: " + masterDb.Pass)
-
-	db, err := sql.Open("mysql", masterDb.User+":"+masterDb.Pass+"@tcp("+dbDataName.DataHost+":3306)/")
-
-	if err != nil {
-		loggaErrore.Log = err.Error()
-		loggaErrore.Errore = -1
-		return loggaErrore
-	}
-	defer db.Close()
-
-	_, err = db.Exec("CREATE DATABASE IF NOT EXISTS " + dbDataName.DataName)
-	if err != nil {
-		loggaErrore.Log = err.Error()
-		loggaErrore.Errore = -1
-		return loggaErrore
-	} else {
-		Logga("Create Database " + dbDataName.DataName + " instance done")
-	}
-
-	// creo gli user
-	var cons DbMetaConnMs
-	cons.MetaHost = dbDataName.DataHost
-	cons.MetaName = dbDataName.DataName
-	cons.MetaPass = dbDataName.DataPass
-	cons.MetaUser = dbDataName.DataUser
-	CreateUser(cons, masterDb)
-
-	//os.Exit(0)
-
-	loggaErrore.Log = ""
-	loggaErrore.Errore = 1
-	return loggaErrore
-}
-func RenameDatabases(ires IstanzaMicro, dbMetaName DbMetaConnMs) {
-
-	masterDb, erro := GetMasterConn("", dbMetaName.Cluster)
-	if erro.Errore < 0 {
-		Logga("getMasterConn")
-		Logga(erro.Log)
-	}
-
-	Logga("Host: " + dbMetaName.MetaHost)
-	Logga("User: " + masterDb.User)
-	Logga("Pass: " + masterDb.Pass)
-
-	db, err := sql.Open("mysql", masterDb.User+":"+masterDb.Pass+"@tcp("+dbMetaName.MetaHost+":3306)/")
-
-	//db, err := sql.Open("mysql", ires.MasterUser+":"+ires.MasterPass+"@tcp("+ires.MasterHostMeta+":3306)/")
-	if err != nil {
-		panic(err.Error())
-	}
-	defer db.Close()
+func RenameDatabases(dbMetaName DbMetaConnMs, masterDb MasterConn, db *sql.DB) {
 
 	query := "DROP DATABASE IF EXISTS " + dbMetaName.MetaName + "_METAOLD"
-	_, err = db.Exec(query)
+	_, err := db.Exec(query)
 	if err != nil {
 		fmt.Println(err)
 	} else {
@@ -890,7 +813,7 @@ func RenameDatabases(ires IstanzaMicro, dbMetaName DbMetaConnMs) {
 	}
 
 	// creo gli user
-	CreateUser(dbMetaName, masterDb)
+	CreateUser(dbMetaName, db)
 
 	//dump IN metadato
 	queryCommand = "mysql -u" + masterDb.User + " -p" + masterDb.Pass + " -h" + dbMetaName.MetaHost + " " + dbMetaName.MetaName + " < /tmp/" + dbMetaName.MetaName + "_canary.sql"
