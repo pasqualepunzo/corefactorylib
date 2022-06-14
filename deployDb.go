@@ -745,7 +745,7 @@ func RenameDatabases(dbMetaName DbMetaConnMs, masterDb MasterConn, db *sql.DB) {
 		fmt.Println(err)
 	}
 }
-func GetMasterConn(gruppoDeveloper, cluster string) (MasterConn, LoggaErrore) {
+func GetMasterConn(gruppoDeveloper, cluster, devopsToken string) (MasterConn, LoggaErrore) {
 
 	Logga("getMasterConn")
 	Logga("Cluster: " + cluster)
@@ -754,13 +754,6 @@ func GetMasterConn(gruppoDeveloper, cluster string) (MasterConn, LoggaErrore) {
 	erro.Errore = 0
 
 	var master MasterConn
-
-	devopsToken, erro := GetCoreFactoryToken()
-	if erro.Errore < 0 {
-		Logga(erro.Log)
-	} else {
-		Logga("Token OK")
-	}
 
 	/*
 		se al metodo NON passo il cluster

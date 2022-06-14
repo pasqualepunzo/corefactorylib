@@ -12,7 +12,7 @@ import (
 	"github.com/go-resty/resty/v2"
 )
 
-func GetIstanceDetail(iresReq IresRequest, canaryProduction string) (IstanzaMicro, LoggaErrore) {
+func GetIstanceDetail(iresReq IresRequest, canaryProduction, devopsToken string) (IstanzaMicro, LoggaErrore) {
 
 	Logga("")
 	Logga(" + + + + + + + + + + + + + + + + + + + +")
@@ -67,15 +67,6 @@ func GetIstanceDetail(iresReq IresRequest, canaryProduction string) (IstanzaMicr
 	ims.MasterName = os.Getenv("nameData")
 	ims.MasterUser = os.Getenv("userData")
 	ims.MasterPass = os.Getenv("passData")
-
-	// cerco il token di Corefactory
-	Logga("Getting token")
-	devopsToken, erro := GetCoreFactoryToken()
-	if erro.Errore < 0 {
-		Logga(erro.Log)
-	} else {
-		Logga("Token OK")
-	}
 
 	/* ************************************************************************************************ */
 	// KUBEIMICROSERV
