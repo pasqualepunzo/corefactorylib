@@ -415,7 +415,7 @@ func GetIstanceDetail(iresReq IresRequest, canaryProduction, devopsToken string)
 	//os.Exit(0)
 	return ims, LoggaErrore
 }
-func UpdateIstanzaMicroservice(canaryProduction, versioneMicroservizio string, istanza IstanzaMicro, micros Microservice, utente, enviro string) []KillemallStruct {
+func UpdateIstanzaMicroservice(canaryProduction, versioneMicroservizio string, istanza IstanzaMicro, micros Microservice, utente, enviro, devopsToken string) []KillemallStruct {
 
 	Logga("")
 	Logga(" + + + + + + + + + + + + + + + + + + + + ")
@@ -426,12 +426,6 @@ func UpdateIstanzaMicroservice(canaryProduction, versioneMicroservizio string, i
 	}
 
 	var clusterContext = "gke_" + istanza.ProjectID + "_europe-west1-d_" + istanza.Cluster
-
-	// cerco il token di Corefactory
-	devopsToken, erro := GetCoreFactoryToken()
-	if erro.Errore < 0 {
-		Logga(erro.Log)
-	}
 
 	// logica:
 	// se canary devo rendere obsoleto il vecchio canarino  se esiste e inserire il nuovo canarino
