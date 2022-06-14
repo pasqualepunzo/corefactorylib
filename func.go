@@ -347,7 +347,7 @@ func Times(str string, n int) string {
 	}
 	return strings.Repeat(str, n)
 }
-func GetMicroserviceDetail(team, ims, gitDevMaster, buildVersion string) (Microservice, LoggaErrore) {
+func GetMicroserviceDetail(team, ims, gitDevMaster, buildVersion, devopsToken string) (Microservice, LoggaErrore) {
 
 	Logga("")
 	Logga(" + + + + + + + + + + + + + + + + + + + + ")
@@ -371,12 +371,6 @@ func GetMicroserviceDetail(team, ims, gitDevMaster, buildVersion string) (Micros
 	var loggaErrore LoggaErrore
 	loggaErrore.Errore = 0
 	loggaErrore.Log = ""
-
-	// cerco il token di Corefactory
-	devopsToken, erro := GetCoreFactoryToken()
-	if erro.Errore < 0 {
-		Logga(erro.Log)
-	}
 
 	/* ************************************************************************************************ */
 	// KUBEIMICROSERV
