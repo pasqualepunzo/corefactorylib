@@ -147,29 +147,11 @@ func CreateUser(dbMetaName DbMetaConnMs, db *sql.DB) LoggaErrore {
 	loggaErrore.Errore = 0
 	return loggaErrore
 }
-func DropDbData(ires IstanzaMicro, dbDataName DbDataConnMs) LoggaErrore {
+func DropDbData(dbDataName DbDataConnMs, db sql.DB) LoggaErrore {
 
 	var loggaErrore LoggaErrore
-	masterDb, erro := GetMasterConn("", dbDataName.Cluster)
-	if erro.Errore < 0 {
-		Logga("getMasterConn")
-		Logga(erro.Log)
-	}
 
-	Logga("Drop dbdata: " + dbDataName.DataName)
-	Logga("Host: " + dbDataName.DataHost)
-	Logga("User: " + masterDb.User)
-	Logga("Pass: " + masterDb.Pass)
-
-	db, err := sql.Open("mysql", masterDb.User+":"+masterDb.Pass+"@tcp("+dbDataName.DataHost+":3306)/")
-	if err != nil {
-		loggaErrore.Log = err.Error()
-		loggaErrore.Errore = -1
-		return loggaErrore
-	}
-	defer db.Close()
-
-	_, err = db.Exec("drop database if exists " + dbDataName.DataName)
+	_, err := db.Exec("drop database if exists " + dbDataName.DataName)
 	if err != nil {
 		loggaErrore.Log = err.Error()
 		loggaErrore.Errore = -1
@@ -181,34 +163,11 @@ func DropDbData(ires IstanzaMicro, dbDataName DbDataConnMs) LoggaErrore {
 	loggaErrore.Errore = 1
 	return loggaErrore
 }
-func Comparedb(ires IstanzaMicro, dbDataName DbDataConnMs) (LoggaErrore, []string) {
+func Comparedb(ires IstanzaMicro, dbDataName DbDataConnMs, db sql.DB, db2 sql.DB) (LoggaErrore, []string) {
 
 	var loggaErrore LoggaErrore
 
 	var allCompareSql []string
-
-	masterDb, erro := GetMasterConn("", dbDataName.Cluster)
-	if erro.Errore < 0 {
-		Logga("getMasterConn")
-		Logga(erro.Log)
-	}
-
-	Logga("")
-	Logga("Compare Database")
-
-	Logga("Host: " + dbDataName.DataHost)
-	Logga("User: " + masterDb.User)
-	Logga("Pass: " + masterDb.Pass)
-
-	db, err := sql.Open("mysql", masterDb.User+":"+masterDb.Pass+"@tcp("+dbDataName.DataHost+":3306)/")
-
-	// db, err := sql.Open("mysql", ires.MasterUser+":"+ires.MasterPass+"@tcp("+ires.MasterHostData+":3306)/")
-	if err != nil {
-		loggaErrore.Log = err.Error()
-		loggaErrore.Errore = -1
-		return loggaErrore, allCompareSql
-	}
-	defer db.Close()
 
 	var dbDataSrc string
 	if strings.Contains(dbDataName.DataName, "_compare") {
@@ -397,20 +356,13 @@ func Comparedb(ires IstanzaMicro, dbDataName DbDataConnMs) (LoggaErrore, []strin
 	// **************************************************************************
 	// da qui in poi si applica cio che e stato calcolato
 
-	dbMsData, err := sql.Open("mysql", dbDataName.DataUser+":"+dbDataName.DataPass+"@tcp("+dbDataName.DataHost+":3306)/"+dbDataName.DataName)
-	if err != nil {
-		loggaErrore.Log = err.Error()
-		loggaErrore.Errore = -1
-		return loggaErrore, allCompareSql
-	}
-
 	for k, _ := range missingTbls {
 		sqlCompare := "CREATE TABLE " + k + " like " + dbDataSrc + "." + k
 
 		// popolo un array con tutte le query da fare
 		allCompareSql = append(allCompareSql, sqlCompare)
 
-		_, err = dbMsData.Exec(sqlCompare)
+		_, err = db2.Exec(sqlCompare)
 		if err != nil {
 
 			loggaErrore.Log += err.Error() + "\n"
@@ -447,7 +399,7 @@ func Comparedb(ires IstanzaMicro, dbDataName DbDataConnMs) (LoggaErrore, []strin
 		// popolo un array con tutte le query da fare
 		allCompareSql = append(allCompareSql, sqlCompare)
 
-		_, err = dbMsData.Exec(sqlCompare)
+		_, err = db2.Exec(sqlCompare)
 		if err != nil {
 			loggaErrore.Log += err.Error() + "\n"
 			loggaErrore.Errore = -1
@@ -494,46 +446,14 @@ func Comparedb(ires IstanzaMicro, dbDataName DbDataConnMs) (LoggaErrore, []strin
 
 	return loggaErrore, allCompareSql
 }
-func Compareidx(ires IstanzaMicro, dbDataName DbDataConnMs, dbMetaName DbMetaConnMs) (LoggaErrore, []string) {
+func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db sql.DB, db2 sql.DB, db3 sql.DB) (LoggaErrore, []string) {
 	fmt.Println()
 	fmt.Println("Compare Index")
 
-	masterDb, erro := GetMasterConn("", dbMetaName.Cluster)
-	if erro.Errore < 0 {
-		Logga("getMasterConn")
-		Logga(erro.Log)
-	}
 	var loggaErrore LoggaErrore
 	loggaErrore.Errore = 0
 
 	var allCompareIdx []string
-
-	Logga("Host: " + dbDataName.DataHost)
-	Logga("User: " + masterDb.User)
-	Logga("Pass: " + masterDb.Pass)
-
-	db, err := sql.Open("mysql", masterDb.User+":"+masterDb.Pass+"@tcp("+dbDataName.DataHost+":3306)/")
-
-	// db, err := sql.Open("mysql", ires.MasterUser+":"+ires.MasterPass+"@tcp("+ires.MasterHostData+":3306)/")
-	//fmt.Println("EPLA")
-	if err != nil {
-		loggaErrore.Log = err.Error()
-		loggaErrore.Errore = -1
-		return loggaErrore, allCompareIdx
-	}
-	defer db.Close()
-
-	Logga("Host: " + dbMetaName.MetaHost)
-	Logga("User: " + masterDb.User)
-	Logga("Pass: " + masterDb.Pass)
-
-	db2, err := sql.Open("mysql", masterDb.User+":"+masterDb.Pass+"@tcp("+dbMetaName.MetaHost+":3306)/"+dbMetaName.MetaName+"_canary")
-	if err != nil {
-		loggaErrore.Log = err.Error()
-		loggaErrore.Errore = -1
-		return loggaErrore, allCompareIdx
-	}
-	defer db2.Close()
 
 	dbData := dbDataName.DataName
 
@@ -577,7 +497,7 @@ func Compareidx(ires IstanzaMicro, dbDataName DbDataConnMs, dbMetaName DbMetaCon
 				sqlIdx += " from TB_INDEX where COD_DIM = '" + codDim + "' "
 				sqlIdx += " order by SEQUENCE_IDX"
 				//fmt.Println(sqlIdx)
-				selDB2, err := db2.Query(sqlIdx)
+				selDB2, err := db3.Query(sqlIdx)
 				if err != nil {
 					loggaErrore.Log = err.Error()
 					loggaErrore.Errore = -1
@@ -610,7 +530,7 @@ func Compareidx(ires IstanzaMicro, dbDataName DbDataConnMs, dbMetaName DbMetaCon
 				sqlIdx += " order by SEQ_IN_INDEX"
 				// fmt.Println("+++++++++++++++++++++++++++++++++++++++++++++++")
 				// fmt.Println(sqlIdx)
-				selDB2, err = db2.Query(sqlIdx)
+				selDB2, err = db3.Query(sqlIdx)
 				if err != nil {
 					loggaErrore.Log = err.Error()
 					loggaErrore.Errore = -1
@@ -679,14 +599,6 @@ func Compareidx(ires IstanzaMicro, dbDataName DbDataConnMs, dbMetaName DbMetaCon
 			iddi[v.Tbl+"."+v.NomeIdx] = v.Tbl + "." + v.NomeIdx
 		}
 
-		connData, err := sql.Open("mysql", dbDataName.DataUser+":"+dbDataName.DataPass+"@tcp("+dbDataName.DataHost+":3306)/"+dbDataName.DataName)
-		if err != nil {
-			loggaErrore.Log = err.Error()
-			loggaErrore.Errore = -1
-			return loggaErrore, allCompareIdx
-		}
-		defer db.Close()
-
 		for _, v := range iddi {
 			//fmt.Println(iddi[v])
 
@@ -734,7 +646,7 @@ func Compareidx(ires IstanzaMicro, dbDataName DbDataConnMs, dbMetaName DbMetaCon
 			//fmt.Println(createIdx)
 
 			allCompareIdx = append(allCompareIdx, dropIdx)
-			_, err = connData.Exec(dropIdx)
+			_, err = db2.Exec(dropIdx)
 			if err != nil {
 				loggaErrore.Log = err.Error()
 				loggaErrore.Errore = -1
@@ -744,7 +656,7 @@ func Compareidx(ires IstanzaMicro, dbDataName DbDataConnMs, dbMetaName DbMetaCon
 			}
 
 			allCompareIdx = append(allCompareIdx, createIdx)
-			_, err = connData.Exec(createIdx)
+			_, err = db2.Exec(createIdx)
 			if err != nil {
 
 				loggaErrore.Log = err.Error()
