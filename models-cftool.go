@@ -77,3 +77,10 @@ type ActionBitbucket struct {
 	Value       string
 	Description string
 }
+type VersionModel struct {
+	Tipo    string `mapstructure:"tipo"`
+	Version string `mapstructure:"version"`
+	Attivo  string `mapstructure:"attivo"`
+	Detail  string `mapstructure:"buildDetail"`
+	Enviro  string `mapstructure:"enviro"`
+}
