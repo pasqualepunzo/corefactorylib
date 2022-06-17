@@ -4,12 +4,20 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"os/exec"
 	"regexp"
 	"strings"
 
 	"github.com/go-resty/resty/v2"
 	"github.com/manifoldco/promptui"
 )
+
+// questa e una murzetta per rendere i flag usabili le package lib
+var fflag map[string]interface{}
+
+func SetFlags(flags map[string]interface{}) {
+	fflag = flags
+}
 
 func ChooseTipo() int32 {
 
@@ -287,7 +295,37 @@ func ChooseDevMaster() string {
 func GetNomeIstanza(cluster, enviro, microservice, team string) string {
 	return cluster + "-" + enviro + "-" + strings.ToLower(team) + "-" + microservice
 }
+func CheckExecutable() string {
 
+	var errore string = ""
+
+	fmt.Print("Checking VSCode ")
+	_, err := exec.LookPath("code")
+	if err != nil {
+		errore = "The component \"VSCode\" is missing\n"
+	} else {
+		fmt.Println("OK")
+	}
+
+	fmt.Print("Checking Git ")
+	_, err2 := exec.LookPath("git")
+	if err2 != nil {
+		errore = "The component \"git\" is missing\n"
+	} else {
+		fmt.Println("OK")
+	}
+
+	fmt.Print("Checking Curl ")
+	_, err = exec.LookPath("curl")
+	if err != nil {
+		errore = "The component \"curl\" is missing\n"
+	} else {
+		fmt.Println("OK")
+	}
+	return errore
+}
+
+/* ***************************** */
 // Graphix
 const angleUpSx = "*"
 const angleUpDx = "*"
@@ -411,3 +449,6 @@ func Footer(loginres LoginRes, fflag map[string]interface{}) {
 	line3 += "*" + WriteGraphixEmptySpaces(1) + "Environment " + Yellow + loginres.Environment + Reset + WriteGraphixEmptySpaces(52-(2+12+len(loginres.Environment)))
 	fmt.Println(line3)
 }
+
+// Graphix
+/* ***************************** */
