@@ -380,7 +380,7 @@ func WriteGraphixBottom() {
 	fmt.Print(angleDwDx)
 	fmt.Println()
 }
-func Footer(loginres LoginRes) {
+func Footer(loginres LoginRes, fflag map[string]interface{}) {
 	//LogJson(loginres)
 
 	var spMs, spMono string
