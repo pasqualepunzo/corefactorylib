@@ -344,17 +344,22 @@ var Cyan = "\033[36m"
 var Gray = "\033[37m"
 var White = "\033[97m"
 
-func Header(nome, descr, cfToolVers string) {
+func Header(nome, descr, cfToolVers, swMono string) {
+
+	cftool := "cftool"
+	y := 1 + 19 + 7 + 3 + len(nome) + len(cfToolVers) + 3 + 1
+	x := 81 - y
+	if swMono == "mono" {
+		cftool = "cftool-monolith"
+		x = 72 - y
+	}
 
 	// 10 spazi iniziali
 	// 7 cf-tool
 	// 3 -
 	// len nome
 
-	y := 1 + 19 + 7 + 3 + len(nome) + len(cfToolVers) + 3 + 1
-	x := 80 - y
-
-	str1 := "*" + WriteGraphixEmptySpaces(19) + Yellow + "cf-tool" + Reset + " > " + cfToolVers + " - " + Blue + nome + Reset + WriteGraphixEmptySpaces(x) + "*"
+	str1 := "*" + WriteGraphixEmptySpaces(19) + Yellow + cftool + Reset + " > " + cfToolVers + " - " + Blue + nome + Reset + WriteGraphixEmptySpaces(x) + "*"
 
 	y = 1 + 19 + len(descr) + 1
 	x = 80 - y
