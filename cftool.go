@@ -344,6 +344,9 @@ var Cyan = "\033[36m"
 var Gray = "\033[37m"
 var White = "\033[97m"
 
+var taskDone = Green + "OK" + Reset
+var taskError = Red + "KO" + Reset
+
 func Header(nome, descr, cfToolVers, swMono string) {
 
 	cftool := "cftool"

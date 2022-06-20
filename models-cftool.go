@@ -84,3 +84,8 @@ type VersionModel struct {
 	Detail  string `mapstructure:"buildDetail"`
 	Enviro  string `mapstructure:"enviro"`
 }
+type RepoListStruct struct {
+	Nome  string
+	Repo  string
+	SwGit string
+}
