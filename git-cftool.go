@@ -2,6 +2,7 @@ package lib
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"runtime"
@@ -9,6 +10,64 @@ import (
 
 	"github.com/briandowns/spinner"
 )
+
+func CloneRepo(dirRepo, newBranchName, userBitbucket, passBitbucket, actionBitbucket string, repo RepoListStruct) {
+	err := os.RemoveAll(dirRepo)
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+
+	fmt.Println(" + Creating: " + repo.Repo + " in " + repo.Nome)
+	err = os.MkdirAll(dirRepo, 0755)
+
+	fmt.Println(" + Cloning: " + repo.Repo)
+	GitCloneCfTool(dirRepo, repo.Repo, userBitbucket, passBitbucket, actionBitbucket)
+	fmt.Println("\n + Checking out: " + repo.Repo + " to " + newBranchName)
+	GitCheckout(dirRepo, newBranchName)
+
+	writeStIgnore(dirRepo)
+}
+func writeStIgnore(dirRepo string) {
+
+	ignore := ".git\n"
+	ignore += "**/p2rSocket\n"
+	//ignore += "**/node_modules\n"
+	ignore += "**/vendor\n"
+	ignore += "**/svn.simple\n"
+	ignore += "**/.git\n"
+	//ignore += "**/*.gif\n"
+	//ignore += "**/*.png\n"
+	//ignore += "**/*.jpeg\n"
+	//ignore += "**/*.jpg\n"
+	ignore += "**/*.pdf\n"
+	//ignore += "**/*.svg\n"
+	ignore += "**/*.bat\n"
+	ignore += "**/*.exe\n"
+	ignore += "**/*.sh\n"
+	//ignore += "**/*.eot\n"
+	//ignore += "**/*.ttf\n"
+	//ignore += "**/*.woff\n"
+	ignore += "**/*.zip\n"
+	ignore += "**/*.tar.*\n"
+	ignore += "package/InStoreClient/scripts/wkhtmltopdf-i386\n"
+
+	// fmt.Println("-------------------------------------------------------------------------")
+	// fmt.Println()
+	//fmt.Println(dirRepo + string(os.PathSeparator) + ".stignore")
+	file, err := os.Create(dirRepo + string(os.PathSeparator) + ".stignore")
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+	defer file.Close()
+
+	_, err = io.WriteString(file, ignore)
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+}
 
 func GitCloneCfTool(dir, repo, userBitbucket, passBitbucket, actionBitbucket string) {
 
