@@ -111,9 +111,7 @@ func GitCloneCfTool(dir, repo, userBitbucket, passBitbucket, actionBitbucket str
 	}
 	s.Stop()
 	//fmt.Println(" " + taskDone)
-
 }
-
 func GitCheckoutCfTool(dir, branch string) {
 
 	// fmt.Println("la dir per la checkout e:" + dir)
@@ -206,7 +204,6 @@ func GitMerge(dir, branchToMerge string) {
 		fmt.Println(taskError)
 		os.Exit(0)
 	}
-
 }
 func GitFetch(dir string) {
 
