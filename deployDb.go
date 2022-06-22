@@ -2,6 +2,7 @@ package lib
 
 import (
 	"os/exec"
+	"runtime/debug"
 
 	"database/sql"
 	"fmt"
@@ -748,6 +749,13 @@ func GetMasterConn(gruppoDeveloper, cluster, devopsToken string) (MasterConn, Lo
 
 	Logga("getMasterConn")
 	Logga("Cluster: " + cluster)
+	Logga("Gruppo: " + gruppoDeveloper)
+
+	if gruppoDeveloper == "" && cluster == "" {
+		Logga("BOTH GROUP AND CLUSTER MISSING")
+		debug.PrintStack()
+		//os.Exit(0)
+	}
 
 	var erro LoggaErrore
 	erro.Errore = 0
@@ -793,6 +801,7 @@ func GetMasterConn(gruppoDeveloper, cluster, devopsToken string) (MasterConn, Lo
 		master.Pass = restyKubeCluRes.BodyJson["XKUBECLUSTER11"].(string)
 		master.Domain = restyKubeCluRes.BodyJson["XKUBECLUSTER15"].(string)
 		master.AccessToken = restyKubeCluRes.BodyJson["XKUBECLUSTER20"].(string)
+		master.Cluster = cluster
 		Logga("KUBECLUSTER MASTER CONN OK")
 	} else {
 		Logga("KUBECLUSTER MASTER CONN MISSING")
@@ -800,5 +809,10 @@ func GetMasterConn(gruppoDeveloper, cluster, devopsToken string) (MasterConn, Lo
 	Logga("")
 	/* ************************************************************************************************ */
 
+	if cluster == "" {
+		fmt.Println("CLUSTER MISSING")
+		//debug.PrintStack()
+
+	}
 	return master, erro
 }
