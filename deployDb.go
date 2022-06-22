@@ -83,7 +83,6 @@ func CreateUser(dbMetaName DbMetaConnMs, db *sql.DB) LoggaErrore {
 
 	var loggaErrore LoggaErrore
 	loggaErrore.Errore = 0
-	var err error
 
 	// FAC-753
 	var _user string
@@ -133,7 +132,7 @@ func CreateUser(dbMetaName DbMetaConnMs, db *sql.DB) LoggaErrore {
 				Logga("FLUSH PRIVILEGES " + dbMetaName.MetaName + " done")
 			}
 		} else {
-			loggaErrore.Log = err.Error()
+			loggaErrore.Log = errUser.Error()
 			loggaErrore.Errore = -1
 			return loggaErrore
 		}
