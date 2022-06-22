@@ -49,6 +49,7 @@ type MasterConn struct {
 	Pass        string `json:"pass"`
 	Domain      string `json:"domain"`
 	AccessToken string `json:"accssToken"`
+	Cluster     string `json:"cluster"`
 }
 type CompareDbRes struct {
 	Tbl         string
