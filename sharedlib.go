@@ -685,7 +685,7 @@ func CloudBuils(docker, verPad, dirRepo string, swMonolith bool) string {
 			fmt.Println("_##START##_Build ID: " + logRes[0].ID + "_##STOP##_")
 			fmt.Println("_##START##_Build LOG at : " + logRes[0].LogUrl + "_##STOP##_")
 
-			erroTelegram := TelegramSendMessage(dockerName + " - " + logRes[0].LogUrl)
+			erroTelegram := TelegramSendMessage(os.Getenv("telegramBotToken"), os.Getenv("telegramCftoolDevopsChatID"), dockerName+" - "+logRes[0].LogUrl)
 			if erroTelegram.Errore < 0 {
 
 				Logga("")
