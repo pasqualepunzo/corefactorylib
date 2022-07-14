@@ -8,7 +8,6 @@ import (
 	"log"
 	"mime/quotedprintable"
 	"net/smtp"
-	"os"
 
 	"github.com/go-resty/resty/v2"
 )
@@ -74,7 +73,7 @@ func SendMail(subject, testo string, receivers []string) {
 	}
 	log.Print("Email Sent Successfully")
 }
-func TelegramSendMessage(text string) LoggaErrore {
+func TelegramSendMessage(botToken, cftoolDevopsChatID, text string) LoggaErrore {
 	type telegramResStruct struct {
 		Ok     bool `json:"ok"`
 		Result struct {
@@ -103,7 +102,7 @@ func TelegramSendMessage(text string) LoggaErrore {
 	clientTelegram.Debug = false
 	resTelegram, errTelegram := clientTelegram.R().
 		SetHeader("Content-Type", "application/json").
-		Post("https://api.telegram.org/bot" + os.Getenv("telegramBotToken") + "/sendMessage?chat_id=" + os.Getenv("telegramCftoolDevopsChatID") + "&text=" + text)
+		Post("https://api.telegram.org/bot" + botToken + "/sendMessage?chat_id=" + cftoolDevopsChatID + "&text=" + text)
 
 	var telegramRes telegramResStruct
 	if errTelegram != nil {
