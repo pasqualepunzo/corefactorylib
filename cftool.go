@@ -347,13 +347,13 @@ var White = "\033[97m"
 var taskDone = Green + "OK" + Reset
 var taskError = Red + "KO" + Reset
 
-func Header(nome, descr, cfToolVers, swMono, tool string) {
+func Header(nome, descr, cfToolVers, swMono string) {
 
-	cftool := tool
+	cftool := "cftool"
 	y := 1 + 19 + 7 + 3 + len(nome) + len(cfToolVers) + 3 + 1
 	x := 81 - y
 	if swMono == "mono" {
-		cftool = "cftool-monolith"
+		cftool = "cftoolmono"
 		x = 72 - y
 	}
 
