@@ -3,6 +3,7 @@ package lib
 import (
 	"os/exec"
 	"runtime/debug"
+	"strconv"
 
 	"database/sql"
 	"fmt"
@@ -745,7 +746,7 @@ func RenameDatabases(dbMetaName DbMetaConnMs, masterDb MasterConn, db *sql.DB) {
 		fmt.Println(err)
 	}
 }
-func GetMasterConn(gruppoDeveloper, cluster, devopsToken string) (MasterConn, LoggaErrore) {
+func GetMasterConn(gruppoDeveloper, cluster, devopsToken, enviro string) (MasterConn, LoggaErrore) {
 
 	Logga("getMasterConn")
 	Logga("Cluster: " + cluster)
@@ -782,7 +783,7 @@ func GetMasterConn(gruppoDeveloper, cluster, devopsToken string) (MasterConn, Lo
 
 	argsClu := make(map[string]string)
 	argsClu["source"] = "devops-8"
-	argsClu["$select"] = "XKUBECLUSTER08,XKUBECLUSTER09,XKUBECLUSTER10,XKUBECLUSTER11,XKUBECLUSTER15,XKUBECLUSTER20"
+	argsClu["$select"] = "XKUBECLUSTER12,XKUBECLUSTER06,XKUBECLUSTER08,XKUBECLUSTER09,XKUBECLUSTER10,XKUBECLUSTER11,XKUBECLUSTER15,XKUBECLUSTER20"
 	argsClu["center_dett"] = "dettaglio"
 	argsClu["$filter"] = "equals(XKUBECLUSTER03,'" + cluster + "') "
 
@@ -803,6 +804,34 @@ func GetMasterConn(gruppoDeveloper, cluster, devopsToken string) (MasterConn, Lo
 		master.AccessToken = restyKubeCluRes.BodyJson["XKUBECLUSTER20"].(string)
 		master.Cluster = cluster
 		Logga("KUBECLUSTER MASTER CONN OK")
+
+		/**
+		Andiamo a vedere se esiste un record in KUBECLUSTERENV che fa l'overwrite di alcune proprietà di
+		KUBECLUSTER in base all'env
+		**/
+
+		ambienteFloat := restyKubeCluRes.BodyJson["XKUBECLUSTER12"].(float64)
+
+		argsCluEnv := make(map[string]string)
+		argsCluEnv["source"] = "devops-8"
+		argsCluEnv["center_dett"] = "dettaglio"
+		argsCluEnv["$select"] = "XKUBECLUSTERENV07"
+		argsCluEnv["$filter"] = "equals(XKUBECLUSTERENV03,'" + cluster + "') "
+		argsCluEnv["$filter"] += "equals(XKUBECLUSTERENV04,'" + restyKubeCluRes.BodyJson["XKUBECLUSTER06"].(string) + "') "
+		argsCluEnv["$filter"] += "XKUBECLUSTERENV05 eq " + strconv.Itoa(int(ambienteFloat)) + " "
+		argsCluEnv["$filter"] += "equals(XKUBECLUSTERENV06,'" + enviro + "') "
+
+		restyKubeCluEnvRes := ApiCallGET(false, argsCluEnv, "msdevops", "/devops/KUBECLUSTERENV", devopsToken, "")
+		if restyKubeCluEnvRes.Errore < 0 {
+			erro.Errore = -1
+			erro.Log = restyKubeCluEnvRes.Log
+			return master, erro
+		}
+
+		if len(restyKubeCluEnvRes.BodyJson) > 0 {
+			master.MetaName = restyKubeCluEnvRes.BodyJson["XKUBECLUSTERENV07"].(string)
+			Logga("KUBECLUSTERENV MASTER CONN OK")
+		}
 	} else {
 		Logga("KUBECLUSTER MASTER CONN MISSING")
 	}

@@ -160,7 +160,42 @@ func GetIstanceDetail(iresReq IresRequest, canaryProduction, devopsToken string)
 			clu.SwMultiEnvironment = x["XKUBECLUSTER17"].(string)
 
 			// PORCATA PER FATICARE AL VOLO SU KEEPUP-STAGE
-			clu.SwMultiEnvironment = "1"
+			// clu.SwMultiEnvironment = "1"
+
+			/**
+			Andiamo a vedere se esiste un record in KUBECLUSTERENV che fa l'overwrite di alcune proprietà di
+			KUBECLUSTER in base all'env
+			**/
+
+			argsCluEnv := make(map[string]string)
+			argsCluEnv["source"] = "devops-8"
+			argsCluEnv["center_dett"] = "dettaglio"
+			argsCluEnv["$filter"] = "equals(XKUBECLUSTERENV03,'" + x["XKUBECLUSTER03"].(string) + "') "
+			argsCluEnv["$filter"] += "equals(XKUBECLUSTERENV04,'" + clu.Owner + "') "
+			argsCluEnv["$filter"] += "XKUBECLUSTERENV05 eq " + strconv.Itoa(int(ambienteFloat)) + " "
+			argsCluEnv["$filter"] += "equals(XKUBECLUSTERENV06,'" + enviro + "') "
+
+			restyKubeCluEnvRes := ApiCallGET(false, argsCluEnv, "msdevops", "/devops/KUBECLUSTERENV", devopsToken, "")
+			if restyKubeCluEnvRes.Errore < 0 {
+				Logga(restyKubeCluEnvRes.Log)
+				LoggaErrore.Errore = restyKubeCluEnvRes.Errore
+				LoggaErrore.Log = restyKubeCluEnvRes.Log
+				return ims, LoggaErrore
+			}
+
+			if len(restyKubeCluEnvRes.BodyJson) > 0 {
+				clu.Domain = restyKubeCluEnvRes.BodyJson["XKUBECLUSTERENV08"].(string)
+				clu.RefappID = restyKubeCluEnvRes.BodyJson["XKUBECLUSTERENV09"].(string)
+				clu.MasterHost = restyKubeCluEnvRes.BodyJson["XKUBECLUSTERENV07"].(string)
+
+				Logga("KUBECLUSTERENV OK")
+			}
+
+			// if x["XKUBECLUSTER03"].(string) == "keepup-prod" && enviro == "uat" {
+			// 	clu.Domain = "ms-uat.keepup-pro.it"
+			// 	clu.RefappID = "00000UAT-0000-0000-0000-000CUSTOMER"
+			// 	clu.MasterHost = "kauat_admin"
+			// }
 
 			clus[x["XKUBECLUSTER03"].(string)] = clu
 
