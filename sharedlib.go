@@ -218,9 +218,9 @@ func GetIstanceDetail(iresReq IresRequest, canaryProduction, devopsToken string)
 			argsCluEnv["source"] = "devops-8"
 			argsCluEnv["center_dett"] = "dettaglio"
 			argsCluEnv["$filter"] = "equals(XKUBECLUSTERENV03,'" + x["XKUBECLUSTER03"].(string) + "') "
-			argsCluEnv["$filter"] += "equals(XKUBECLUSTERENV04,'" + clu.Owner + "') "
-			argsCluEnv["$filter"] += "XKUBECLUSTERENV05 eq " + strconv.Itoa(int(ambienteFloat)) + " "
-			argsCluEnv["$filter"] += "equals(XKUBECLUSTERENV06,'" + enviro + "') "
+			argsCluEnv["$filter"] += " and equals(XKUBECLUSTERENV04,'" + clu.Owner + "') "
+			argsCluEnv["$filter"] += " and XKUBECLUSTERENV05 eq " + strconv.Itoa(int(ambienteFloat)) + " "
+			argsCluEnv["$filter"] += " and equals(XKUBECLUSTERENV06,'" + enviro + "') "
 
 			restyKubeCluEnvRes := ApiCallGET(false, argsCluEnv, "msdevops", "/devops/KUBECLUSTERENV", devopsToken, "")
 			if restyKubeCluEnvRes.Errore < 0 {
