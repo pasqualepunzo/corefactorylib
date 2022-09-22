@@ -367,7 +367,7 @@ func GetCoreFactoryToken() (string, LoggaErrore) {
 
 	argsAuth := make(map[string]interface{})
 	argsAuth["access_token"] = os.Getenv("cfToken")
-	argsAuth["refappCustomer"] = "1"
+	argsAuth["refappCustomer"] = os.Getenv("refappCustomer")
 	argsAuth["resource"] = urlDevopsStripped
 	argsAuth["uuid"] = "devops-" + sha
 
