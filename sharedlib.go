@@ -93,7 +93,54 @@ func GetIstanceDetail(iresReq IresRequest, canaryProduction, devopsToken string)
 
 		Logga("KUBEIMICROSERV OK")
 	} else {
-		Logga("KUBEIMICROSERV MISSING")
+		fmt.Println("aspettamma a mauro con l'orchestretor ...")
+
+		istanzaArr := strings.Split(istanza, "-"+enviro+"-")
+
+		if len(istanzaArr) >= 2 {
+
+			_cluster := istanzaArr[0]
+
+			_msDirt := istanzaArr[len(istanzaArr)-1]
+
+			msArr := strings.Split(_msDirt, "-")
+			_ms := msArr[len(msArr)-1]
+
+			if monolith == 1 {
+				_ms = "msrefappmonolith"
+			}
+
+			ims.Microservice = _ms
+			microservice = _ms
+			ims.Cluster = _cluster
+
+			keyvalueslices := make([]map[string]interface{}, 0)
+			keyvalueslice := make(map[string]interface{})
+			keyvalueslice["debug"] = true
+			keyvalueslice["source"] = "devops-8"
+			keyvalueslice["XKUBEIMICROSERV03"] = istanza
+			keyvalueslice["XKUBEIMICROSERV04"] = _ms
+			keyvalueslice["XKUBEIMICROSERV05"] = _cluster
+			keyvalueslice["XKUBEIMICROSERV06"] = enviro
+
+			keyvalueslices = append(keyvalueslices, keyvalueslice)
+
+			resKubeims := ApiCallPOST(false, keyvalueslices, "msdevops", "/devops/KUBEIMICROSERV", devopsToken, "")
+
+			if resKubeims.Errore < 0 {
+				Logga("")
+				Logga("NON RIESCO A SCRIVRERE L'ISTANZA " + resKubeims.Log)
+				Logga("")
+
+				LoggaErrore.Errore = resKubeims.Errore
+				LoggaErrore.Log = resKubeims.Log
+				return ims, LoggaErrore
+			}
+
+		} else {
+
+			Logga("KUBEIMICROSERV MISSING")
+		}
 	}
 	Logga("")
 
@@ -171,9 +218,9 @@ func GetIstanceDetail(iresReq IresRequest, canaryProduction, devopsToken string)
 			argsCluEnv["source"] = "devops-8"
 			argsCluEnv["center_dett"] = "dettaglio"
 			argsCluEnv["$filter"] = "equals(XKUBECLUSTERENV03,'" + x["XKUBECLUSTER03"].(string) + "') "
-			argsCluEnv["$filter"] += "equals(XKUBECLUSTERENV04,'" + clu.Owner + "') "
-			argsCluEnv["$filter"] += "XKUBECLUSTERENV05 eq " + strconv.Itoa(int(ambienteFloat)) + " "
-			argsCluEnv["$filter"] += "equals(XKUBECLUSTERENV06,'" + enviro + "') "
+			argsCluEnv["$filter"] += " and equals(XKUBECLUSTERENV04,'" + clu.Owner + "') "
+			argsCluEnv["$filter"] += " and XKUBECLUSTERENV05 eq " + strconv.Itoa(int(ambienteFloat)) + " "
+			argsCluEnv["$filter"] += " and equals(XKUBECLUSTERENV06,'" + enviro + "') "
 
 			restyKubeCluEnvRes := ApiCallGET(false, argsCluEnv, "msdevops", "/devops/KUBECLUSTERENV", devopsToken, "")
 			if restyKubeCluEnvRes.Errore < 0 {
@@ -327,6 +374,7 @@ func GetIstanceDetail(iresReq IresRequest, canaryProduction, devopsToken string)
 	argsAmb["cluster"] = ims.Cluster
 	if ims.Monolith == 1 {
 		argsAmb["refappID"] = ims.PodName // MWPO DICE CHE ANCHE SE CE SCRITTO refappID é GIUSTO PASSARE IL PODNAME
+		argsAmb["customerDomain"] = customerDomain
 	}
 	argsAmb["monolith"] = strconv.Itoa(int(ims.Monolith))
 	argsAmb["env"] = strconv.Itoa(int(ims.ProfileInt))
