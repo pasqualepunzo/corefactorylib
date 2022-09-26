@@ -61,6 +61,7 @@ type LoginRes struct {
 	ClusterDomain           string       `json:"clusterDomain"`
 	GkeProjectID            string       `json:"gkeProjectID"`
 	Environment             string       `json:"environment"`
+	RefappCustomerID        string       `json:"refappCustomerID"`
 }
 type SprintBranch struct {
 	CurrentBranch string
