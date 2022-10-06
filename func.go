@@ -1060,7 +1060,7 @@ func CreateTag(branch, tag, repo string) {
 	respBranch, errBranch := clientBranch.R().
 		EnableTrace().
 		SetBasicAuth(os.Getenv("bitbucketUser"), os.Getenv("bitbucketToken")).
-		Get(os.Getenv("bitbucketHost") + "/repositories/sf-kir/" + repo + "/refs/branches/" + branch)
+		Get(os.Getenv("bitbucketHost") + "/repositories/" + os.Getenv("bitbucketProject") + "/" + repo + "/refs/branches/" + branch)
 
 	if errBranch != nil {
 		Logga(errBranch.Error())
@@ -1082,7 +1082,7 @@ func CreateTag(branch, tag, repo string) {
 		SetHeader("Content-Type", "application/json").
 		SetBasicAuth(os.Getenv("bitbucketUser"), os.Getenv("bitbucketToken")).
 		SetBody(body).
-		Post(os.Getenv("bitbucketHost") + "/repositories/sf-kir/" + repo + "/refs/tags")
+		Post(os.Getenv("bitbucketHost") + "/repositories/" + os.Getenv("bitbucketProject") + "/" + repo + "/refs/tags")
 
 	if errTag != nil {
 		Logga(errTag.Error())

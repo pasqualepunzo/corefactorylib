@@ -877,7 +877,7 @@ func GitMergeApi(src, dst, repo, tipo string) (string, string) {
 			SetHeader("Content-Type", "application/json").
 			SetBasicAuth(os.Getenv("bitbucketUser"), os.Getenv("bitbucketToken")).
 			SetBody(body).
-			Post(os.Getenv("bitbucketHost") + "/repositories/sf-kir/" + repo + "/refs/branches")
+			Post(os.Getenv("bitbucketHost") + "/repositories/" + os.Getenv("bitbucketProject") + "/" + repo + "/refs/branches")
 
 		if err != nil {
 			fmt.Println("_##START##_   !!! New branch on " + repo + " ERROR " + err.Error() + "_##STOP##_")
@@ -922,7 +922,7 @@ func GitMergeApi(src, dst, repo, tipo string) (string, string) {
 		SetHeader("Content-Type", "application/json").
 		SetBasicAuth(os.Getenv("bitbucketUser"), os.Getenv("bitbucketToken")).
 		SetBody(body).
-		Post(os.Getenv("bitbucketHost") + "/repositories/sf-kir/" + repo + "/pullrequests")
+		Post(os.Getenv("bitbucketHost") + "/repositories/" + os.Getenv("bitbucketProject") + "/" + repo + "/pullrequests")
 
 	if err != nil {
 		fmt.Println("_##START##_   !!! Merge di " + src + " su " + dst + " ERROR " + err.Error() + "_##STOP##_")
@@ -963,7 +963,7 @@ func GitMergeApi(src, dst, repo, tipo string) (string, string) {
 			clientMerge.Debug = false
 			respMerge, errMerge := clientMerge.R().
 				SetBasicAuth(os.Getenv("bitbucketUser"), os.Getenv("bitbucketToken")).
-				Post(os.Getenv("bitbucketHost") + "/repositories/sf-kir/" + repo + "/pullrequests/" + strconv.Itoa(restyRes.ID) + "/merge")
+				Post(os.Getenv("bitbucketHost") + "/repositories/" + os.Getenv("bitbucketProject") + "/" + repo + "/pullrequests/" + strconv.Itoa(restyRes.ID) + "/merge")
 			// fmt.Println(string(respMerge.Body()), errMerge)
 
 			if errMerge != nil {

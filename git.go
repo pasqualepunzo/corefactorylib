@@ -39,14 +39,14 @@ func GitPush(dir, branch string) {
 
 func GitInitRepo(nomeRepo string) {
 	comando := " curl -X POST -v -u \"laszlo72:2TvddWPjJaSdJFTqhUdD\" -H \"Content-Type: application/json\" "
-	comando += " https://api.bitbucket.org/2.0/repositories/sf-kir/" + nomeRepo
+	comando += " " + os.Getenv("bitbucketHost") + "/repositories/" + os.Getenv("bitbucketProject") + "/" + nomeRepo
 	comando += " -d '{\"scm\": \"git\", \"is_private\": \"true\",\"project\": {\"key\": \"MSF\"}, \"name\":\"" + nomeRepo + "\"}'"
 	ExecCommand(comando, true)
 }
 
 func GitCreateNewBranchApi(repo, branch string) {
 	comando := "curl -X POST -is -u \"laszlo72:2TvddWPjJaSdJFTqhUdD\" -H \"Content-Type: application/json\" "
-	comando += "https://api.bitbucket.org/2.0/repositories/sf-kir/" + repo + "/refs/branches "
+	comando += " " + os.Getenv("bitbucketHost") + "/repositories/" + os.Getenv("bitbucketProject") + "/" + repo + "/refs/branches "
 	comando += " -d '{ \"name\": \"" + branch + "\", \"target\": { \"hash\": \"master\" } }'"
 	ExecCommand(comando, true)
 }
@@ -119,7 +119,7 @@ func GitInit(dir, nomeRepo, GitSrcTipo, Namespace string) {
 	ExecCommand(comando, true)
 
 	// punto a bitbucket
-	comando = "cd " + dir + "; git remote add origin https://laszlo72:2TvddWPjJaSdJFTqhUdD@bitbucket.org/sf-kir/" + nomeRepo
+	comando = "cd " + dir + "; git remote add origin https://" + os.Getenv("bitbucketUser") + ":" + os.Getenv("bitbucketToken") + "@bitbucket.org/" + os.Getenv("bitbucketProject") + "/" + nomeRepo
 	ExecCommand(comando, true)
 
 	// // pull senno si incazza al secondo giro
