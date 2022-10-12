@@ -498,7 +498,10 @@ func GetIstanceDetail(iresReq IresRequest, canaryProduction, devopsToken string)
 	//os.Exit(0)
 	return ims, LoggaErrore
 }
-func UpdateIstanzaMicroservice(canaryProduction, versioneMicroservizio string, istanza IstanzaMicro, micros Microservice, utente, enviro, devopsToken string) []KillemallStruct {
+func UpdateIstanzaMicroservice(canaryProduction, versioneMicroservizio string, istanza IstanzaMicro, micros Microservice, utente, enviro, devopsToken string) ([]KillemallStruct, LoggaErrore) {
+
+	var LoggaErrore LoggaErrore
+	LoggaErrore.Errore = 0
 
 	Logga("")
 	Logga(" + + + + + + + + + + + + + + + + + + + + ")
@@ -548,8 +551,11 @@ func UpdateIstanzaMicroservice(canaryProduction, versioneMicroservizio string, i
 
 				filter := "equals(XDEPLOYLOG04,'" + istanza.Istanza + "') and equals(XDEPLOYLOG03,'canary') and XDEPLOYLOG06 eq 1"
 
-				ApiCallPUT(false, keyvalueslice, "msdevops", "/devops/DEPLOYLOG/"+filter, devopsToken, "")
+				_, erro := ApiCallPUT(false, keyvalueslice, "msdevops", "/devops/DEPLOYLOG/"+filter, devopsToken, "")
 
+				if erro.Errore < 0 {
+					return killMany, erro
+				}
 			}
 
 			break
@@ -585,7 +591,10 @@ func UpdateIstanzaMicroservice(canaryProduction, versioneMicroservizio string, i
 
 				filter := "equals(XDEPLOYLOG04,'" + istanza.Istanza + "') and equals(XDEPLOYLOG03,'production') and XDEPLOYLOG06 eq 1"
 
-				ApiCallPUT(false, keyvalueslice, "msdevops", "/devops/DEPLOYLOG/"+filter, devopsToken, "")
+				_, erro := ApiCallPUT(false, keyvalueslice, "msdevops", "/devops/DEPLOYLOG/"+filter, devopsToken, "")
+				if erro.Errore < 0 {
+					return killMany, erro
+				}
 
 			case "canary", "Canary":
 
@@ -597,7 +606,10 @@ func UpdateIstanzaMicroservice(canaryProduction, versioneMicroservizio string, i
 
 				filter := "equals(XDEPLOYLOG04,'" + istanza.Istanza + "') and equals(XDEPLOYLOG03,'canary')"
 
-				ApiCallPUT(false, keyvalueslice, "msdevops", "/devops/DEPLOYLOG/"+filter, devopsToken, "")
+				_, erro := ApiCallPUT(false, keyvalueslice, "msdevops", "/devops/DEPLOYLOG/"+filter, devopsToken, "")
+				if erro.Errore < 0 {
+					return killMany, erro
+				}
 
 				break
 			}
@@ -660,7 +672,11 @@ func UpdateIstanzaMicroservice(canaryProduction, versioneMicroservizio string, i
 	keyvalueslice["XDEPLOYLOG09"] = enviro
 	keyvalueslices = append(keyvalueslices, keyvalueslice)
 
-	ApiCallPOST(false, keyvalueslices, "msdevops", "/deploy/DEPLOYLOG", devopsToken, "")
+	resPOST := ApiCallPOST(false, keyvalueslices, "msdevops", "/deploy/DEPLOYLOG", devopsToken, "")
+	if resPOST.Errore < 0 {
+		LoggaErrore.Log = resPOST.Log
+		return killMany, LoggaErrore
+	}
 
 	Logga("updateIstanzaMicroservice end")
 	Logga(" - - - - - - - - - - - - - - - - - - - ")
@@ -669,7 +685,7 @@ func UpdateIstanzaMicroservice(canaryProduction, versioneMicroservizio string, i
 	fmt.Println(killMany)
 	LogJson(killMany)
 	//os.Exit(0)
-	return killMany
+	return killMany, LoggaErrore
 }
 func CloudBuils(docker, verPad, dirRepo string, swMonolith bool) string {
 
