@@ -288,7 +288,8 @@ type IstanzaMicro struct {
 	SwDb                                int
 	IstanzaMicroVersioni                []IstanzaMicroVersioni `json:"istanzaMicroVersioni"`
 	AttributiMS                         []AttributiMS          `json:"attributiMS"`
-	//Clusters                            map[string]clusterSt   `json:"clusters"`
+	ApiHost                             string                 `json:"apiHost"`
+	ApiToken                            string                 `json:"apiToken"`
 }
 
 type AttributiMS struct {
@@ -332,4 +333,6 @@ type ClusterSt struct {
 	RefappID           string `json:"refappID"`
 	SwMultiEnvironment string `json:"swMultiEnvironment"`
 	AccessToken        string `json:"accssToken"`
+	ApiHost            string `json:"apiHost"`
+	ApiToken           string `json:"apiToken"`
 }

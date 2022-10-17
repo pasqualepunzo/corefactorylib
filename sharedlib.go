@@ -154,7 +154,7 @@ func GetIstanceDetail(iresReq IresRequest, canaryProduction, devopsToken string)
 	argsClu := make(map[string]string)
 	argsClu["source"] = "devops-8"
 	argsClu["$select"] = "XKUBECLUSTER03,XKUBECLUSTER05,XKUBECLUSTER06,XKUBECLUSTER08,XKUBECLUSTER09,XKUBECLUSTER10,"
-	argsClu["$select"] += "XKUBECLUSTER11,XKUBECLUSTER12,XKUBECLUSTER15,XKUBECLUSTER17,XKUBECLUSTER20,XKUBECLUSTER21,XKUBECLUSTER22"
+	argsClu["$select"] += "XKUBECLUSTER11,XKUBECLUSTER12,XKUBECLUSTER15,XKUBECLUSTER16,XKUBECLUSTER17,XKUBECLUSTER18,XKUBECLUSTER20,XKUBECLUSTER21,XKUBECLUSTER22"
 	argsClu["center_dett"] = "allviews"
 	//["$filter"] = "equals(XKUBECLUSTER03,'" + ims.cluster + "') "
 
@@ -176,6 +176,9 @@ func GetIstanceDetail(iresReq IresRequest, canaryProduction, devopsToken string)
 
 			clu.ProjectID = x["XKUBECLUSTER05"].(string)
 			clu.Owner = x["XKUBECLUSTER06"].(string)
+
+			clu.ApiHost = x["XKUBECLUSTER16"].(string)
+			clu.ApiToken = x["XKUBECLUSTER18"].(string)
 
 			profileFloat := x["XKUBECLUSTER12"].(float64)
 			profileNum = int(profileFloat)
@@ -282,6 +285,8 @@ func GetIstanceDetail(iresReq IresRequest, canaryProduction, devopsToken string)
 		ims.ClusterRefAppID = clus[ims.Cluster].RefappID
 		ims.ClusterRefAppID = clus[ims.Cluster].RefappID
 		ims.SwMultiEnvironment = clus[ims.Cluster].SwMultiEnvironment
+		ims.ApiHost = clus[ims.Cluster].ApiHost
+		ims.ApiToken = clus[ims.Cluster].ApiToken
 
 		Logga("KUBECLUSTER OK")
 	} else {
