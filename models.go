@@ -1,5 +1,7 @@
 package lib
 
+import "time"
+
 type Repos struct {
 	Repo string
 	Nome string
@@ -335,4 +337,89 @@ type ClusterSt struct {
 	AccessToken        string `json:"accssToken"`
 	ApiHost            string `json:"apiHost"`
 	ApiToken           string `json:"apiToken"`
+}
+type DeploymntStatus struct {
+	Items []struct {
+		Metadata struct {
+			Name      string `json:"name"`
+			Namespace string `json:"namespace"`
+		} `json:"metadata,omitempty"`
+		Spec struct {
+			Replicas int `json:"replicas"`
+			Selector struct {
+				MatchLabels struct {
+					App     string `json:"app"`
+					Version string `json:"version"`
+				} `json:"matchLabels"`
+			} `json:"selector"`
+			Template struct {
+				Spec struct {
+					Containers []struct {
+						Env []struct {
+							Name  string `json:"name"`
+							Value string `json:"value"`
+						} `json:"env"`
+						EnvFrom []struct {
+							ConfigMapRef struct {
+								Name string `json:"name"`
+							} `json:"configMapRef"`
+						} `json:"envFrom"`
+						Image           string `json:"image"`
+						ImagePullPolicy string `json:"imagePullPolicy"`
+						Name            string `json:"name"`
+						Ports           []struct {
+							ContainerPort int    `json:"containerPort"`
+							Protocol      string `json:"protocol"`
+						} `json:"ports"`
+						Resources struct {
+							Limits struct {
+								CPU    string `json:"cpu"`
+								Memory string `json:"memory"`
+							} `json:"limits"`
+							Requests struct {
+								CPU    string `json:"cpu"`
+								Memory string `json:"memory"`
+							} `json:"requests"`
+						} `json:"resources"`
+						TerminationMessagePath   string `json:"terminationMessagePath"`
+						TerminationMessagePolicy string `json:"terminationMessagePolicy"`
+						VolumeMounts             []struct {
+							MountPath string `json:"mountPath"`
+							Name      string `json:"name"`
+							SubPath   string `json:"subPath,omitempty"`
+						} `json:"volumeMounts"`
+					} `json:"containers"`
+					Volumes []struct {
+						HostPath struct {
+							Path string `json:"path"`
+							Type string `json:"type"`
+						} `json:"hostPath,omitempty"`
+						Name                  string `json:"name"`
+						PersistentVolumeClaim struct {
+							ClaimName string `json:"claimName"`
+						} `json:"persistentVolumeClaim,omitempty"`
+						ConfigMap struct {
+							DefaultMode int    `json:"defaultMode"`
+							Name        string `json:"name"`
+						} `json:"configMap,omitempty"`
+					} `json:"volumes"`
+				} `json:"spec"`
+			} `json:"template"`
+		} `json:"spec"`
+		Status struct {
+			AvailableReplicas int `json:"availableReplicas"`
+			Conditions        []struct {
+				LastTransitionTime time.Time `json:"lastTransitionTime"`
+				LastUpdateTime     time.Time `json:"lastUpdateTime"`
+				Message            string    `json:"message"`
+				Reason             string    `json:"reason"`
+				Status             string    `json:"status"`
+				Type               string    `json:"type"`
+			} `json:"conditions"`
+			ObservedGeneration int `json:"observedGeneration"`
+			ReadyReplicas      int `json:"readyReplicas"`
+			Replicas           int `json:"replicas"`
+			UpdatedReplicas    int `json:"updatedReplicas"`
+		} `json:"status,omitempty"`
+	} `json:"items"`
 }

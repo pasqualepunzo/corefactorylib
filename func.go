@@ -1584,3 +1584,108 @@ func GetArrRepo(team, customSettings string) map[int]Repos {
 
 	return arrRepo
 }
+func getDeploymentApi(ires IstanzaMicro, namespace string) (DeploymntStatus, LoggaErrore) {
+
+	var erro LoggaErrore
+	erro.Errore = 0
+
+	var deploy DeploymntStatus
+
+	clientKUBE := resty.New()
+	clientKUBE.Debug = false
+	clientKUBE.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
+
+	resKUBE, errKUBE := clientKUBE.R().
+		SetHeader("Content-Type", "application/json").
+		SetAuthToken(ires.ApiToken).
+		Get("https://" + ires.ApiHost + "/apis/apps/v1/namespaces/" + namespace + "/deployments")
+
+	if errKUBE != nil {
+		erro.Errore = -1
+		erro.Log = errKUBE.Error()
+		return deploy, erro
+	}
+
+	if resKUBE.StatusCode() != 200 {
+		erro.Errore = -1
+		erro.Log = "API Res Status: " + resKUBE.Status()
+		return deploy, erro
+	}
+
+	a := map[string]interface{}{}
+	errUm := json.Unmarshal(resKUBE.Body(), &a)
+	if errUm != nil {
+		erro.Errore = -1
+		erro.Log = errUm.Error()
+		return deploy, erro
+	}
+
+	jsonStr, errMa := json.Marshal(a)
+	if errMa != nil {
+		erro.Errore = -1
+		erro.Log = errMa.Error()
+		return deploy, erro
+	}
+
+	errUm2 := json.Unmarshal(jsonStr, &deploy)
+	if errUm2 != nil {
+		erro.Errore = -1
+		erro.Log = errUm2.Error()
+		return deploy, erro
+	}
+
+	return deploy, erro
+}
+func checkPodHealth(ires IstanzaMicro, versione, namespace string) (bool, LoggaErrore) {
+
+	var erro LoggaErrore
+	erro.Errore = 0
+
+	msDeploy := ires.PodName + "-v" + versione
+	msMatch := false
+	i := 0
+	for {
+		item, err := getDeploymentApi(ires, namespace)
+		if err.Errore < 0 {
+			erro.Errore = -1
+			erro.Log = err.Log
+			return false, erro
+		} else {
+
+			if len(item.Items) == 0 {
+				erro.Errore = -1
+				erro.Log = "No Deployment Found in Namespace"
+				return false, erro
+			}
+
+			for _, item := range item.Items {
+
+				fmt.Println(item.Metadata.Name, "-", msDeploy)
+				if item.Metadata.Name == msDeploy {
+					msMatch = true
+
+					fmt.Println(item.Metadata.Name+" desired: ", item.Spec.Replicas, " - aviable: ", item.Status.ReadyReplicas)
+
+					if item.Spec.Replicas == item.Status.ReadyReplicas {
+						return true, erro
+					}
+				}
+
+				// sto girando a vuoto perche nessun item risponde a cio che cerco
+				if i >= 1 && !msMatch {
+					erro.Errore = -1
+					erro.Log = "nessun item risponde a cio che cerco"
+					return false, erro
+				}
+
+			}
+
+			time.Sleep(10 * time.Second)
+			if i > 25 {
+				erro.Errore = -1
+				erro.Log = "Time Out. Pod is not Running"
+				return false, erro
+			}
+		}
+	}
+}
