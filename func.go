@@ -1584,7 +1584,7 @@ func GetArrRepo(team, customSettings string) map[int]Repos {
 
 	return arrRepo
 }
-func getDeploymentApi(ires IstanzaMicro, namespace string) (DeploymntStatus, LoggaErrore) {
+func GetDeploymentApi(ires IstanzaMicro, namespace string) (DeploymntStatus, LoggaErrore) {
 
 	var erro LoggaErrore
 	erro.Errore = 0
@@ -1636,7 +1636,7 @@ func getDeploymentApi(ires IstanzaMicro, namespace string) (DeploymntStatus, Log
 
 	return deploy, erro
 }
-func checkPodHealth(ires IstanzaMicro, versione, namespace string) (bool, LoggaErrore) {
+func CheckPodHealth(ires IstanzaMicro, versione, namespace string) (bool, LoggaErrore) {
 
 	var erro LoggaErrore
 	erro.Errore = 0
@@ -1645,7 +1645,7 @@ func checkPodHealth(ires IstanzaMicro, versione, namespace string) (bool, LoggaE
 	msMatch := false
 	i := 0
 	for {
-		item, err := getDeploymentApi(ires, namespace)
+		item, err := GetDeploymentApi(ires, namespace)
 		if err.Errore < 0 {
 			erro.Errore = -1
 			erro.Log = err.Log
