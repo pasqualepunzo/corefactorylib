@@ -86,7 +86,7 @@ func GetYamlContainerProbes(prbsarray []Probes) string {
 
 	return yamlProbes
 }
-func getYamlHpa(ires IstanzaMicro, micros Microservice, versione string) string {
+func GetYamlHpa(ires IstanzaMicro, micros Microservice, versione string) string {
 
 	versioneApp := versione
 
