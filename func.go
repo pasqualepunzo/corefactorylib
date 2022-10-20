@@ -1420,7 +1420,7 @@ func GetJsonDatabases(stage, developer string, market int32, arrConn MasterConn)
 	keyvalueslice["customerId"] = developer
 	keyvalueslice["enableMonolith"] = true
 	keyvalueslice["host"] = arrConn.Host
-	keyvalueslice["apiUrl"] = arrConn.Domain
+	keyvalueslice["apiUrl"] = "ms-int." + arrConn.Domain
 	keyvalueslice["market"] = market
 	keyvalueslice["appID"] = "1"
 	keyvalueslice["refappCustomerID"] = developer
