@@ -165,8 +165,26 @@ type Pod struct {
 	Branch     Branch
 	Resource   Resource
 	PodBuild   PodBuild
+	Probes     []Probes
 }
-
+type Probes struct {
+	Category            string
+	Type                string
+	Command             string
+	HttpHost            string
+	HttpPort            int
+	HttpPath            string
+	HttpHeaders         string
+	HttpScheme          string
+	TcpHost             string
+	TcpPort             int
+	GrpcPort            int
+	InitialDelaySeconds int
+	PeriodSeconds       int
+	TimeoutSeconds      int
+	SuccessThreshold    int
+	FailureThreshold    int
+}
 type PodBuild struct {
 	Versione     string
 	Merged       string
@@ -422,4 +440,8 @@ type DeploymntStatus struct {
 			UpdatedReplicas    int `json:"updatedReplicas"`
 		} `json:"status,omitempty"`
 	} `json:"items"`
+}
+type HttpHeadersJson struct {
+	Name  string
+	Value string
 }

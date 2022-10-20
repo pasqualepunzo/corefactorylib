@@ -711,6 +711,71 @@ func GetMicroserviceDetail(team, ims, gitDevMaster, buildVersion, devopsToken st
 			/* ************************************************************************************************ */
 
 			/* ************************************************************************************************ */
+
+			// KUBEDKRPROBE
+			Logga("Getting KUBEDKRPROBE")
+			argsProbes := make(map[string]string)
+			argsProbes["source"] = "devops-8"
+			//argsProbes["$select"] = "XKUBEDKRPROBE04,XKUBEDKRPROBE05,XKUBEDKRPROBE06,XKUBEDKRPROBE07,XKUBEDKRPROBE08,XKUBEDKRPROBE09,XKUBEDKRPROBE10"
+			//argsProbes["$select"] += "XKUBEDKRPROBE11,XKUBEDKRPROBE12,XKUBEDKRPROBE13,XKUBEDKRPROBE14,XKUBEDKRPROBE15,XKUBEDKRPROBE16,XKUBEDKRPROBE17,XKUBEDKRPROBE18,XKUBEDKRPROBE19"
+			argsProbes["center_dett"] = "allviews"
+			argsProbes["$filter"] = "equals(XKUBEDKRPROBE03,'" + docker + "') "
+
+			restyKubePrbRes := ApiCallGET(false, argsProbes, "msdevops", "/devops/KUBEDKRPROBE", devopsToken, "")
+			if restyKubePrbRes.Errore < 0 {
+				Logga(restyKubePrbRes.Log)
+				loggaErrore.Errore = restyKubePrbRes.Errore
+				loggaErrore.Log = restyKubePrbRes.Log
+				return microservices, loggaErrore
+			}
+
+			if len(restyKubePrbRes.BodyArray) > 0 {
+
+				var probes []Probes
+				for _, x := range restyKubePrbRes.BodyArray {
+
+					var elem Probes
+
+					elem.Category = x["XKUBEDKRPROBE04"].(string)
+					elem.Type = x["XKUBEDKRPROBE05"].(string)
+					if x["XKUBEDKRPROBE06"] == nil {
+						elem.Command = ""
+					} else {
+						elem.Command = x["XKUBEDKRPROBE06"].(string)
+					}
+					elem.HttpHost = x["XKUBEDKRPROBE07"].(string)
+					elem.HttpPort = int(x["XKUBEDKRPROBE08"].(float64))
+					elem.HttpPath = x["XKUBEDKRPROBE09"].(string)
+					if x["XKUBEDKRPROBE10"] == nil {
+						elem.HttpHeaders = ""
+					} else {
+						elem.HttpHeaders = x["XKUBEDKRPROBE10"].(string)
+					}
+					elem.HttpScheme = x["XKUBEDKRPROBE11"].(string)
+					elem.TcpHost = x["XKUBEDKRPROBE12"].(string)
+					elem.TcpPort = int(x["XKUBEDKRPROBE13"].(float64))
+					elem.GrpcPort = int(x["XKUBEDKRPROBE14"].(float64))
+					elem.InitialDelaySeconds = int(x["XKUBEDKRPROBE15"].(float64))
+					elem.PeriodSeconds = int(x["XKUBEDKRPROBE16"].(float64))
+					elem.TimeoutSeconds = int(x["XKUBEDKRPROBE17"].(float64))
+					elem.SuccessThreshold = int(x["XKUBEDKRPROBE18"].(float64))
+					elem.FailureThreshold = int(x["XKUBEDKRPROBE19"].(float64))
+					probes = append(probes, elem)
+
+				}
+				pod.Probes = probes
+
+				//logga(probes)
+				Logga("KUBEDKRPROBE OK")
+			} else {
+				Logga("KUBEDKRPROBE MISSING")
+			}
+
+			Logga("")
+
+			/* ************************************************************************************************ */
+
+			/* ************************************************************************************************ */
 			// KUBESERVICEDKR
 			Logga("Getting KUBESERVICEDKR")
 			argsSrvDkr := make(map[string]string)
@@ -1584,7 +1649,7 @@ func GetArrRepo(team, customSettings string) map[int]Repos {
 
 	return arrRepo
 }
-func GetDeploymentApi(ires IstanzaMicro, namespace string) (DeploymntStatus, LoggaErrore) {
+func GetDeploymentApi(namespace, apiHost, apiToken string) (DeploymntStatus, LoggaErrore) {
 
 	var erro LoggaErrore
 	erro.Errore = 0
@@ -1597,8 +1662,8 @@ func GetDeploymentApi(ires IstanzaMicro, namespace string) (DeploymntStatus, Log
 
 	resKUBE, errKUBE := clientKUBE.R().
 		SetHeader("Content-Type", "application/json").
-		SetAuthToken(ires.ApiToken).
-		Get("https://" + ires.ApiHost + "/apis/apps/v1/namespaces/" + namespace + "/deployments")
+		SetAuthToken(apiToken).
+		Get("https://" + apiHost + "/apis/apps/v1/namespaces/" + namespace + "/deployments")
 
 	if errKUBE != nil {
 		erro.Errore = -1
@@ -1636,16 +1701,16 @@ func GetDeploymentApi(ires IstanzaMicro, namespace string) (DeploymntStatus, Log
 
 	return deploy, erro
 }
-func CheckPodHealth(ires IstanzaMicro, versione, namespace string) (bool, LoggaErrore) {
+func CheckPodHealth(microservice, versione, namespace, apiHost, apiToken string) (bool, LoggaErrore) {
 
 	var erro LoggaErrore
 	erro.Errore = 0
 
-	msDeploy := ires.PodName + "-v" + versione
+	msDeploy := microservice + "-v" + versione
 	msMatch := false
 	i := 0
 	for {
-		item, err := GetDeploymentApi(ires, namespace)
+		item, err := GetDeploymentApi(namespace, apiHost, apiToken)
 		if err.Errore < 0 {
 			erro.Errore = -1
 			erro.Log = err.Log
