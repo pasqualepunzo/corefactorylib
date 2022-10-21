@@ -1725,7 +1725,7 @@ func CheckPodHealth(microservice, versione, namespace, apiHost, apiToken string)
 
 			for _, item := range item.Items {
 
-				fmt.Println(item.Metadata.Name, "-", msDeploy)
+				//fmt.Println(item.Metadata.Name, "-", msDeploy)
 				if item.Metadata.Name == msDeploy {
 					msMatch = true
 
