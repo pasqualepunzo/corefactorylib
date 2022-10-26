@@ -7,27 +7,28 @@ import (
 )
 
 func GitClone(dir, repo string) {
-	comando := "cd " + dir + "; git clone " + repo + " ."
+	comando := "cd " + dir + " && git clone " + repo + " ."
 	ExecCommand(comando, true)
 }
 
 func GitAdd(dir string) {
-	comando := "cd " + dir + "; git add . "
+	comando := "cd " + dir + " && git add . "
 	ExecCommand(comando, true)
 }
 
 func GitNewbranch(dir, tag string) {
-	comando := "cd " + dir + "; git checkout -b " + tag
+	comando := "cd " + dir + " && git checkout -b " + tag
 	ExecCommand(comando, true)
 }
 
 func GitCheckout(dir, tag string) {
-	comando := "cd " + dir + "; git checkout " + tag
+
+	comando := "cd " + dir + " && git checkout " + tag
 	ExecCommand(comando, true)
 }
 
 func GitCommit(dir, message string) {
-	comando := "cd " + dir + "; git commit -m '" + message + "'"
+	comando := "cd " + dir + " && git commit -m '" + message + "'"
 	ExecCommand(comando, true)
 }
 
