@@ -13,6 +13,7 @@ import (
 	"math"
 	"os"
 	"os/exec"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -85,8 +86,12 @@ func SwitchProject(clusterProject string) {
 func ExecCommand(command string, printOutput bool) bool {
 
 	println()
-	cmd := exec.Command("bash", "-c", command)
-	//println(command)
+	var cmd *exec.Cmd
+	if runtime.GOOS == "windows" {
+		cmd = exec.Command("cmd", "/C", command)
+	} else {
+		cmd = exec.Command("bash", "-c", command)
+	}
 
 	var stdoutBuf, stderrBuf bytes.Buffer
 	stdoutIn, _ := cmd.StdoutPipe()
