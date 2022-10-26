@@ -3,6 +3,7 @@ package lib
 import (
 	"encoding/json"
 	"strconv"
+	"strings"
 )
 
 func GetYamlContainerProbes(prbsarray []Probes) string {
@@ -38,7 +39,8 @@ func GetYamlContainerProbes(prbsarray []Probes) string {
 			if err == nil {
 				for _, cmdvalue := range cmdarray {
 					if cmdvalue != "" {
-						yamlProbes += "            - " + cmdvalue + "\n"
+						//yamlProbes += "            - " + cmdvalue + "\n"
+						yamlProbes += "            - " + strings.Replace(cmdvalue, "_DQ_", "\"", -1) + "\n"
 					}
 				}
 			}
