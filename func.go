@@ -1759,17 +1759,13 @@ func CheckPodHealth(microservice, versione, namespace, apiHost, apiToken string)
 		}
 	}
 }
-func DeleteObsoleteMonolith(ires IstanzaMicro, versione, canaryProduction, namespace, enviro string) LoggaErrore {
+func DeleteObsoleteObjects(ires IstanzaMicro, versione, canaryProduction, namespace, enviro string) LoggaErrore {
 
 	var erro LoggaErrore
 	erro.Errore = 0
 
 	istanza := ires.Istanza
 	microservice := ires.PodName
-
-	// se canary devo cancellare il canarino precedente salvando la verdione PRODUCTION
-	// se faccio Production uccido tutti gli altri
-	// il tutto filtrato per refapp !!!!!
 
 	Logga("")
 	Logga("----------------------------------")
