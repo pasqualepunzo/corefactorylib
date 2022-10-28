@@ -503,7 +503,7 @@ func GetIstanceDetail(iresReq IresRequest, canaryProduction, devopsToken string)
 	//os.Exit(0)
 	return ims, LoggaErrore
 }
-func UpdateIstanzaMicroservice(canaryProduction, versioneMicroservizio string, istanza IstanzaMicro, micros Microservice, utente, enviro, devopsToken string) ([]KillemallStruct, LoggaErrore) {
+func UpdateIstanzaMicroservice(canaryProduction, versioneMicroservizio string, istanza IstanzaMicro, micros Microservice, utente, enviro, devopsToken string) LoggaErrore {
 
 	var LoggaErrore LoggaErrore
 	LoggaErrore.Errore = 0
@@ -516,14 +516,11 @@ func UpdateIstanzaMicroservice(canaryProduction, versioneMicroservizio string, i
 		Logga(ccc.TipoVersione + " " + ccc.Versione)
 	}
 
-	var clusterContext = "gke_" + istanza.ProjectID + "_europe-west1-d_" + istanza.Cluster
+	//var clusterContext = "gke_" + istanza.ProjectID + "_europe-west1-d_" + istanza.Cluster
 
 	// logica:
 	// se canary devo rendere obsoleto il vecchio canarino  se esiste e inserire il nuovo canarino
 	// se production devo rendere obsoleto la vecchia produzione e rendere il canarino produzione
-
-	var killOne KillemallStruct
-	var killMany []KillemallStruct
 
 	for _, versioni := range istanza.IstanzaMicroVersioni {
 
@@ -537,17 +534,6 @@ func UpdateIstanzaMicroservice(canaryProduction, versioneMicroservizio string, i
 				Logga("Make obsolete canary " + istanza.Istanza + " to version " + versioni.Versione)
 				Logga("New canary " + istanza.Istanza + " to version " + versioneMicroservizio)
 
-				// cancello fisicamente dal cluster
-				// nel caso sto facendo un canary production al volo mi trovo nel caso in
-				// cui la versione del canario e uguale a quella di produzione
-				// motivo per cui non scancello
-				if versioni.Versione != versioneMicroservizio {
-					killOne.ClusterContext = clusterContext
-					killOne.DeploymentToKill = istanza.Microservice + "-v" + versioni.Versione
-					killOne.Namespace = micros.Namespace
-					killMany = append(killMany, killOne)
-				}
-
 				// rendo obsoleto il vecchio canarino
 				keyvalueslice := make(map[string]interface{})
 				keyvalueslice["debug"] = false
@@ -559,7 +545,7 @@ func UpdateIstanzaMicroservice(canaryProduction, versioneMicroservizio string, i
 				_, erro := ApiCallPUT(false, keyvalueslice, "msdevops", "/devops/DEPLOYLOG/"+filter, devopsToken, "")
 
 				if erro.Errore < 0 {
-					return killMany, erro
+					return erro
 				}
 			}
 
@@ -576,18 +562,6 @@ func UpdateIstanzaMicroservice(canaryProduction, versioneMicroservizio string, i
 			switch versioni.TipoVersione {
 			case "production", "Production":
 
-				// nel caso sto facendo un canary production al volo mi trovo nel caso in
-				// cui la versione del canario e uguale a quella di produzione
-				// motivo per cui non scancello
-				if versioni.Versione != versioneMicroservizio {
-					// cancello fisicamente dal cluster
-					killOne.ClusterContext = clusterContext
-					killOne.DeploymentToKill = istanza.Microservice + "-v" + versioni.Versione
-					killOne.Namespace = micros.Namespace
-					killMany = append(killMany, killOne)
-
-				}
-
 				// rendo obsoleto il vecchio production
 				keyvalueslice := make(map[string]interface{})
 				keyvalueslice["debug"] = false
@@ -598,7 +572,7 @@ func UpdateIstanzaMicroservice(canaryProduction, versioneMicroservizio string, i
 
 				_, erro := ApiCallPUT(false, keyvalueslice, "msdevops", "/devops/DEPLOYLOG/"+filter, devopsToken, "")
 				if erro.Errore < 0 {
-					return killMany, erro
+					return erro
 				}
 
 			case "canary", "Canary":
@@ -613,7 +587,7 @@ func UpdateIstanzaMicroservice(canaryProduction, versioneMicroservizio string, i
 
 				_, erro := ApiCallPUT(false, keyvalueslice, "msdevops", "/devops/DEPLOYLOG/"+filter, devopsToken, "")
 				if erro.Errore < 0 {
-					return killMany, erro
+					return erro
 				}
 
 				break
@@ -680,17 +654,14 @@ func UpdateIstanzaMicroservice(canaryProduction, versioneMicroservizio string, i
 	resPOST := ApiCallPOST(false, keyvalueslices, "msdevops", "/deploy/DEPLOYLOG", devopsToken, "")
 	if resPOST.Errore < 0 {
 		LoggaErrore.Log = resPOST.Log
-		return killMany, LoggaErrore
+		return LoggaErrore
 	}
 
 	Logga("updateIstanzaMicroservice end")
 	Logga(" - - - - - - - - - - - - - - - - - - - ")
-	Logga("")
-	Logga("WHO DO I KILL ?")
-	fmt.Println(killMany)
-	LogJson(killMany)
+
 	//os.Exit(0)
-	return killMany, LoggaErrore
+	return LoggaErrore
 }
 func CloudBuils(docker, verPad, dirRepo string, swMonolith bool) string {
 
