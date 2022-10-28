@@ -1759,3 +1759,182 @@ func CheckPodHealth(microservice, versione, namespace, apiHost, apiToken string)
 		}
 	}
 }
+func DeleteObsoleteMonolith(ires IstanzaMicro, versione, canaryProduction, namespace, enviro string) LoggaErrore {
+
+	var erro LoggaErrore
+	erro.Errore = 0
+
+	istanza := ires.Istanza
+	microservice := ires.PodName
+
+	// se canary devo cancellare il canarino precedente salvando la verdione PRODUCTION
+	// se faccio Production uccido tutti gli altri
+	// il tutto filtrato per refapp !!!!!
+
+	Logga("")
+	Logga("----------------------------------")
+	Logga("DELETING OBSOLETE PODS")
+	Logga("")
+	Logga("")
+
+	// cerco il token di Corefactory
+	devopsToken, erro := GetCoreFactoryToken()
+	if erro.Errore < 0 {
+		Logga(erro.Log)
+	}
+	/* ************************************************************************************************ */
+	// DEPLOYLOG
+	Logga("Getting DEPLOYLOG - deleteObsoleteMonolith")
+
+	argsDeploy := make(map[string]string)
+	argsDeploy["source"] = "devops-8"
+	argsDeploy["$select"] = "XDEPLOYLOG03,XDEPLOYLOG05"
+	argsDeploy["center_dett"] = "visualizza"
+	argsDeploy["$filter"] = "equals(XDEPLOYLOG04,'" + istanza + "') "
+	argsDeploy["$filter"] += " and (equals(XDEPLOYLOG03,'canary') OR equals(XDEPLOYLOG03,'production'))  "
+	argsDeploy["$filter"] += " and equals(XDEPLOYLOG06,'1') "
+	if ires.SwMultiEnvironment == "1" {
+		argsDeploy["$filter"] += " and equals(XDEPLOYLOG09,'" + enviro + "') "
+	}
+
+	restyDeployRes := ApiCallGET(false, argsDeploy, "msdevops", "/devops/DEPLOYLOG", devopsToken, "")
+	if restyDeployRes.Errore < 0 {
+		Logga(restyDeployRes.Log)
+		return erro
+	}
+
+	versioneProductionDb := ""
+	versioneCanaryDb := ""
+	if len(restyDeployRes.BodyArray) > 0 {
+		for _, x := range restyDeployRes.BodyArray {
+
+			if x["XDEPLOYLOG03"].(string) == "canary" {
+				versioneCanaryDb = "v" + x["XDEPLOYLOG05"].(string)
+			}
+			if x["XDEPLOYLOG03"].(string) == "production" {
+				versioneProductionDb = "v" + x["XDEPLOYLOG05"].(string)
+			}
+
+		}
+		Logga("DEPLOYLOG OK")
+	} else {
+		Logga("DEPLOYLOG MISSING")
+	}
+	Logga("Canary: " + versioneCanaryDb)
+	Logga("Production: " + versioneProductionDb)
+	Logga("")
+	/* ************************************************************************************************ */
+
+	// ho recuperato le versioni canary e production che NON cancellero MAI :D
+
+	//msDeploy := microservice + "-v" + versione
+
+	//LogJson(ires)
+	item, err := GetDeploymentApi(namespace, ires.ApiHost, ires.ApiToken)
+	//LogJson(item)
+	if err.Errore < 0 {
+		erro.Errore = -1
+		erro.Log = err.Log
+		return erro
+	} else {
+
+		if len(item.Items) == 0 {
+			erro.Errore = -1
+			erro.Log = "No Deployment Found in Namespace"
+			return erro
+		}
+
+		for _, item := range item.Items {
+
+			//fmt.Println(item.Spec.Selector.MatchLabels.App, microservice)
+
+			// primo filtro sulla refapp giusta
+			if item.Spec.Selector.MatchLabels.App == microservice {
+
+				Logga("Kill everything with different version of canary: " + versioneCanaryDb + " or production: " + versioneProductionDb + " - Current version: " + item.Spec.Selector.MatchLabels.Version)
+				// secondo filtro sulle versione
+				if item.Spec.Selector.MatchLabels.Version == versioneCanaryDb || item.Spec.Selector.MatchLabels.Version == versioneProductionDb {
+					// SKIP
+				} else {
+
+					deployment := item.Spec.Selector.MatchLabels.App + "-" + item.Spec.Selector.MatchLabels.Version
+					fmt.Println("I DO DELETE: " + deployment)
+					// delete deployment
+					DeleteObjectsApi(namespace, ires.ApiHost, ires.ApiToken, deployment, "deployment")
+
+					// delete HPA
+					DeleteObjectsApi(namespace, ires.ApiHost, ires.ApiToken, deployment, "hpa")
+
+				}
+			}
+		}
+
+	}
+	return erro
+}
+func DeleteObjectsApi(namespace, apiHost, apiToken, object, kind string) LoggaErrore {
+
+	/* *************************************** */
+	// LEGGIMI
+	//
+	// PER AVERE TUTTE LE API :
+	//
+	// k api-resources
+
+	//http://localhost:8080/apis/autoscaling/v1/namespaces/uat-powerna/horizontalpodautoscalers/
+	/*
+	   NAME                               SHORTNAMES      APIVERSION                             NAMESPACED   KIND
+	   deployments                        deploy          apps/v1                                true         Deployment
+	   horizontalpodautoscalers           hpa             autoscaling/v1                         true         HorizontalPodAutoscaler
+	*/
+	apiversion := ""
+	name := ""
+	switch kind {
+	case "hpa":
+		apiversion = "autoscaling/v1"
+		name = "horizontalpodautoscalers"
+	case "deployment":
+		apiversion = "apps/v1"
+		name = "deployments"
+	}
+
+	var erro LoggaErrore
+	erro.Errore = 0
+
+	args := make(map[string]string)
+	args["kind"] = "DeleteOptions"
+	args["apiVersion"] = "v1"
+	args["apiVerpropagationPolicysion"] = "Foreground"
+
+	clientKUBE := resty.New()
+	clientKUBE.Debug = true
+	clientKUBE.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
+
+	resKUBE, errKUBE := clientKUBE.R().
+		SetHeader("Content-Type", "application/json").
+		SetAuthToken(apiToken).
+		SetQueryParams(args).
+		Delete("https://" + apiHost + "/apis/" + apiversion + "/namespaces/" + namespace + "/" + name + "/" + object)
+
+	if errKUBE != nil {
+		erro.Errore = -1
+		erro.Log = errKUBE.Error()
+		return erro
+	}
+
+	if resKUBE.StatusCode() != 200 {
+		erro.Errore = -1
+		erro.Log = "API Res Status: " + resKUBE.Status()
+		return erro
+	}
+
+	a := map[string]interface{}{}
+	errUm := json.Unmarshal(resKUBE.Body(), &a)
+	if errUm != nil {
+		erro.Errore = -1
+		erro.Log = errUm.Error()
+		return erro
+	}
+
+	return erro
+}
