@@ -356,6 +356,11 @@ type ClusterSt struct {
 	ApiHost            string `json:"apiHost"`
 	ApiToken           string `json:"apiToken"`
 }
+type ClusterAccess struct {
+	Domain            string `json="domain"`
+	AccessToken       string `json="accessToken"`
+	ReffappCustomerID string `json="reffappCustomerID"`
+}
 type DeploymntStatus struct {
 	Items []struct {
 		Metadata struct {

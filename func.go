@@ -1469,6 +1469,38 @@ func GetVersionPreviousStage(cluster, enviro, istanza, devopsToken, clusterDev s
 
 	return versione, istanzaOld
 }
+func GetAccessCluster(cluster, devopsToken string) ClusterAccess {
+	/* ************************************************************************************************ */
+	// KUBECLUSTER
+	Logga("Getting KUBECLUSTER")
+
+	argsClu := make(map[string]string)
+	argsClu["source"] = "devops-8"
+	argsClu["$select"] = "XKUBECLUSTER15,XKUBECLUSTER20,XKUBECLUSTER22"
+	argsClu["center_dett"] = "dettaglio"
+	argsClu["$filter"] = "equals(XKUBECLUSTER03,'" + cluster + "') "
+
+	restyKubeCluRes := ApiCallGET(false, argsClu, "msdevops", "/devops/KUBECLUSTER", devopsToken, "")
+	if restyKubeCluRes.Errore < 0 {
+		Logga(restyKubeCluRes.Log)
+	}
+
+	var cluAcc ClusterAccess
+	if len(restyKubeCluRes.BodyJson) > 0 {
+
+		cluAcc.Domain = restyKubeCluRes.BodyJson["XKUBECLUSTER15"].(string)
+		cluAcc.AccessToken = restyKubeCluRes.BodyJson["XKUBECLUSTER20"].(string)
+		cluAcc.ReffappCustomerID = restyKubeCluRes.BodyJson["XKUBECLUSTER22"].(string)
+
+		Logga("KUBECLUSTER OK")
+	} else {
+		Logga("   !!!   KUBECLUSTER MISSING")
+	}
+	Logga("")
+	/* ************************************************************************************************ */
+
+	return cluAcc
+}
 func GetJsonDatabases(stage, developer string, market int32, arrConn MasterConn) (map[string]interface{}, LoggaErrore) {
 	Logga("Getting Json Db")
 
@@ -1481,6 +1513,9 @@ func GetJsonDatabases(stage, developer string, market int32, arrConn MasterConn)
 	} else {
 		Logga("Token OK")
 	}
+
+	clusterDett := GetAccessCluster(stage, devopsToken)
+	clusterToken, erro := GetCustomerToken(clusterDett.AccessToken, clusterDett.ReffappCustomerID, clusterDett.Domain, clusterDett.Domain)
 
 	dominio := GetApiHost()
 
@@ -1503,7 +1538,7 @@ func GetJsonDatabases(stage, developer string, market int32, arrConn MasterConn)
 		SetHeader("Content-Type", "application/json").
 		SetHeader("Accept", "application/json").
 		SetHeader("microservice", "msappman").
-		SetAuthToken(devopsToken).
+		SetAuthToken(clusterToken).
 		SetBody(keyvalueslice).
 		Post(dominio + "/api/" + os.Getenv("coreapiVersion") + "/appman/getDeveloperMsList")
 
