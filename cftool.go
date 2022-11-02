@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"runtime"
 	"strings"
 
 	"github.com/go-resty/resty/v2"
@@ -348,6 +349,17 @@ var taskDone = Green + "OK" + Reset
 var taskError = Red + "KO" + Reset
 
 func Header(nome, descr, cfToolVers, swMono string) {
+	if runtime.GOOS == "windows" {
+		Reset = ""
+		Red = ""
+		Green = ""
+		Yellow = ""
+		Blue = ""
+		Purple = ""
+		Cyan = ""
+		Gray = ""
+		White = ""
+	}
 
 	cftool := "cftool"
 	y := 1 + 19 + 7 + 3 + len(nome) + len(cfToolVers) + 3 + 1
@@ -429,6 +441,17 @@ func WriteGraphixBottom() {
 func Footer(loginres LoginRes, fflag map[string]interface{}) {
 	//LogJson(loginres)
 
+	if runtime.GOOS == "windows" {
+		Reset = ""
+		Red = ""
+		Green = ""
+		Yellow = ""
+		Blue = ""
+		Purple = ""
+		Cyan = ""
+		Gray = ""
+		White = ""
+	}
 	var spMs, spMono string
 
 	if loginres.CurrentSprintBranchMs.CurrentBranch != "" {
