@@ -189,13 +189,17 @@ func Logga(i interface{}, level ...string) {
 	}
 
 	sugar := logger.Sugar()
-	switch level[0] {
-	case "info":
+	if len(level) > 0 {
+		switch level[0] {
+		case "info":
+			sugar.Info(text)
+		case "error":
+			sugar.Error(text)
+		case "warn":
+			sugar.Warn(text)
+		}
+	} else {
 		sugar.Info(text)
-	case "error":
-		sugar.Error(text)
-	case "warn":
-		sugar.Warn(text)
 	}
 
 }
