@@ -14,6 +14,26 @@ import (
 	"github.com/go-resty/resty/v2"
 )
 
+type RestyClientLogger struct{}
+
+func (cliLogger *RestyClientLogger) Debugf(format string, v ...interface{}) {
+	for _, m := range v {
+		Logga(m)
+	}
+}
+
+func (cliLogger *RestyClientLogger) Warnf(format string, v ...interface{}) {
+	for _, m := range v {
+		Logga(m)
+	}
+}
+
+func (cliLogger *RestyClientLogger) Errorf(format string, v ...interface{}) {
+	for _, m := range v {
+		Logga(m)
+	}
+}
+
 func ApiCallPOST(debug bool, args []map[string]interface{}, microservice, routing, token, dominio string) CallGetResponse {
 
 	Logga("apiCallPOST")
@@ -146,6 +166,11 @@ func ApiCallGET(debug bool, args map[string]string, microservice, routing, token
 	var resStruct CallGetResponse
 
 	client := resty.New()
+
+	// Set logrus as Logger
+	restyLogger := RestyClientLogger{}
+	client.SetLogger(&restyLogger)
+
 	if _env != "prod" {
 		client.Debug = true
 	} else {

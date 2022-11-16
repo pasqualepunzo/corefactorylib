@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+
 	"log"
 	"math"
 	"os"
@@ -20,6 +21,7 @@ import (
 	"time"
 
 	"github.com/go-resty/resty/v2"
+	"go.uber.org/zap"
 )
 
 func Base64decode(str string) string {
@@ -163,6 +165,7 @@ func LogJson(msg interface{}) {
 }
 func Logga(i interface{}) {
 
+	text := ""
 	switch v := i.(type) {
 	case int:
 		// v is an int here, so e.g. v + 1 is possible.
@@ -175,31 +178,38 @@ func Logga(i interface{}) {
 	default:
 		var b []byte
 		b, _ = json.MarshalIndent(i, "", "\t")
-		text := string(b)
-		fmt.Println(text)
+		text = string(b)
+		//fmt.Println(text)
 	}
 
-	/*
-		fmt.Println(strings.Trim(text, "\""))
+	logger, err := zap.NewProduction()
+	if err != nil {
+		log.Fatal(err)
+	}
 
-		pid := strconv.Itoa(os.Getpid())
-		hostname, _ := os.Hostname()
+	sugar := logger.Sugar()
 
-		log.SetFormatter(&log.JSONFormatter{})
-		log.SetOutput(os.Stdout)
+	sugar.Info(text)
 
-		logLevel, err := log.ParseLevel(os.Getenv("LOG_LEVEL"))
-		if err != nil {
-			logLevel = log.InfoLevel
-		}
+	/*fmt.Println(strings.Trim(text, "\""))
 
-		log.SetLevel(logLevel)
+	pid := strconv.Itoa(os.Getpid())
+	hostname, _ := os.Hostname()
 
-		log.WithFields(log.Fields{
-			"hostname": hostname,
-			"pid":      pid,
-		}).Info(text)
-	*/
+	log.SetFormatter(&log.JSONFormatter{})
+	log.SetOutput(os.Stdout)
+
+	logLevel, err := log.ParseLevel(os.Getenv("LOG_LEVEL"))
+	if err != nil {
+		logLevel = log.InfoLevel
+	}
+
+	log.SetLevel(logLevel)
+
+	log.WithFields(log.Fields{
+		"hostname": hostname,
+		"pid":      pid,
+	}).Info(text)
 
 	/*
 		// open a file
