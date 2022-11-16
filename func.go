@@ -163,18 +163,19 @@ func LogJson(msg interface{}) {
 	empJSON, _ := json.MarshalIndent(msg, "", "  ")
 	fmt.Printf("%s\n", string(empJSON))
 }
-func Logga(i interface{}) {
+func Logga(i interface{}, level ...string) {
 
 	text := ""
 	switch v := i.(type) {
 	case int:
 		// v is an int here, so e.g. v + 1 is possible.
 		fmt.Printf("Integer: %v", v)
+
 	case float64:
 		// v is a float64 here, so e.g. v + 1.0 is possible.
 		fmt.Printf("Float64: %v", v)
 	case string:
-		fmt.Println(i)
+		text = i.(string)
 	default:
 		var b []byte
 		b, _ = json.MarshalIndent(i, "", "\t")
@@ -188,53 +189,15 @@ func Logga(i interface{}) {
 	}
 
 	sugar := logger.Sugar()
-
-	sugar.Info(text)
-
-	/*fmt.Println(strings.Trim(text, "\""))
-
-	pid := strconv.Itoa(os.Getpid())
-	hostname, _ := os.Hostname()
-
-	log.SetFormatter(&log.JSONFormatter{})
-	log.SetOutput(os.Stdout)
-
-	logLevel, err := log.ParseLevel(os.Getenv("LOG_LEVEL"))
-	if err != nil {
-		logLevel = log.InfoLevel
+	switch level[0] {
+	case "info":
+		sugar.Info(text)
+	case "error":
+		sugar.Error(text)
+	case "warn":
+		sugar.Warn(text)
 	}
 
-	log.SetLevel(logLevel)
-
-	log.WithFields(log.Fields{
-		"hostname": hostname,
-		"pid":      pid,
-	}).Info(text)
-
-	/*
-		// open a file
-		f, err := os.OpenFile("/tmp/devops.log", os.O_APPEND|os.O_CREATE|os.O_RDWR, 0666)
-		if err != nil {
-			fmt.Printf("error opening file: %v", err)
-		}
-
-		// don't forget to close it
-		defer f.Close()
-
-		// Log as JSON instead of the default ASCII formatter.
-		log.SetFormatter(&log.TextFormatter{
-			DisableColors:   true,
-			TimestampFormat: "2006-01-02 15:04:05",
-			FullTimestamp:   true,
-		})
-
-		log.SetFormatter(&log.JSONFormatter{})
-
-		// Output to stderr instead of stdout, could also be a file.
-		log.SetOutput(f)
-		log.SetFormatter(&log.JSONFormatter{})
-		log.WithFields(log.Fields{"pid": pid, "hostname": hostname}).Println(text)
-	*/
 }
 func StrPad(input string, padLength int, padString string, padType string) string {
 	var output string

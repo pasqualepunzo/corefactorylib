@@ -18,19 +18,19 @@ type RestyClientLogger struct{}
 
 func (cliLogger *RestyClientLogger) Debugf(format string, v ...interface{}) {
 	for _, m := range v {
-		Logga(m)
+		Logga(m, "info")
 	}
 }
 
 func (cliLogger *RestyClientLogger) Warnf(format string, v ...interface{}) {
 	for _, m := range v {
-		Logga(m)
+		Logga(m, "warn")
 	}
 }
 
 func (cliLogger *RestyClientLogger) Errorf(format string, v ...interface{}) {
 	for _, m := range v {
-		Logga(m)
+		Logga(m, "error")
 	}
 }
 
