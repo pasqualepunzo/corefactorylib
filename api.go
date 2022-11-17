@@ -62,7 +62,12 @@ func ApiCallPOST(debug bool, args []map[string]interface{}, microservice, routin
 	LoggaErrore.Errore = 0
 
 	client := resty.New()
-	client.Debug = debug
+
+	// Set logrus as Logger
+	restyLogger := RestyClientLogger{}
+	client.SetLogger(&restyLogger)
+
+	client.Debug = true
 	// Set retry count to non zero to enable retries
 	client.SetRetryCount(2)
 	// You can override initial retry wait time.
@@ -136,8 +141,6 @@ func ApiCallGET(debug bool, args map[string]string, microservice, routing, token
 
 	Logga("apiCallGET")
 
-	_env := os.Getenv("APP_ENV")
-
 	type restyStruct struct {
 		Data    string      `json:"data"`
 		Errors  interface{} `json:"errors"`
@@ -171,11 +174,7 @@ func ApiCallGET(debug bool, args map[string]string, microservice, routing, token
 	restyLogger := RestyClientLogger{}
 	client.SetLogger(&restyLogger)
 
-	if _env != "prod" {
-		client.Debug = true
-	} else {
-		client.Debug = debug
-	}
+	client.Debug = true
 
 	// client.Debug = true
 	client.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
@@ -307,8 +306,13 @@ func ApiCallLOGIN(debug bool, args map[string]interface{}, microservice, routing
 	callResponse := map[string]interface{}{}
 
 	client := resty.New()
-	client.Debug = debug
-	//client.Debug = true
+
+	// Set logrus as Logger
+	restyLogger := RestyClientLogger{}
+	client.SetLogger(&restyLogger)
+
+	//client.Debug = debug
+	client.Debug = true
 	client.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 	res, err := client.R().
 		SetHeader("Content-Type", "application/json").
@@ -351,7 +355,10 @@ func ApiCallPUT(debug bool, args map[string]interface{}, microservice, routing, 
 	LoggaErrore.Errore = 0
 
 	client := resty.New()
-	client.Debug = debug
+	// Set logrus as Logger
+	restyLogger := RestyClientLogger{}
+	client.SetLogger(&restyLogger)
+	client.Debug = true
 	client.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 	res, err := client.R().
 		SetHeader("Content-Type", "application/json").
@@ -433,7 +440,10 @@ func ApiCallDELETE(debug bool, args map[string]string, microservice, routing, to
 
 	//fmt.Println("apiCallDELETE", debug)
 	client := resty.New()
-	client.Debug = debug
+	// Set logrus as Logger
+	restyLogger := RestyClientLogger{}
+	client.SetLogger(&restyLogger)
+	client.Debug = true
 	client.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 	res, err := client.R().
 		SetHeader("Content-Type", "application/json").
