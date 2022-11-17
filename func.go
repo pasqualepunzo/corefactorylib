@@ -165,12 +165,17 @@ func LogJson(msg interface{}) {
 }
 func Logga(i interface{}, level ...string) {
 
+	caller := ""
+	_, file, _, ok := runtime.Caller(1)
+	if ok {
+		caller = file //+ ":" + strconv.Itoa(no)
+	}
+
 	text := ""
 	switch v := i.(type) {
 	case int:
 		// v is an int here, so e.g. v + 1 is possible.
 		fmt.Printf("Integer: %v", v)
-
 	case float64:
 		// v is a float64 here, so e.g. v + 1.0 is possible.
 		fmt.Printf("Float64: %v", v)
@@ -184,22 +189,35 @@ func Logga(i interface{}, level ...string) {
 	}
 
 	logger, err := zap.NewProduction()
+
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer logger.Sync()
 
-	sugar := logger.Sugar()
 	if len(level) > 0 {
 		switch level[0] {
 		case "info":
-			sugar.Info(text)
+			logger.Info(text,
+				zap.Int("pid", os.Getpid()),
+				zap.String("caller", caller),
+			)
 		case "error":
-			sugar.Error(text)
+			logger.Error(text,
+				zap.Int("pid", os.Getpid()),
+				zap.String("caller", caller),
+			)
 		case "warn":
-			sugar.Warn(text)
+			logger.Warn(text,
+				zap.Int("pid", os.Getpid()),
+				zap.String("caller", caller),
+			)
 		}
 	} else {
-		sugar.Info(text)
+		logger.Info(text,
+			zap.Int("pid", os.Getpid()),
+			zap.String("caller", caller),
+		)
 	}
 
 }
