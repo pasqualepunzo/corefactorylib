@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"io"
 
-	"log"
+	//"log"
 	"math"
 	"os"
 	"os/exec"
@@ -21,7 +21,7 @@ import (
 	"time"
 
 	"github.com/go-resty/resty/v2"
-	"go.uber.org/zap"
+	log "github.com/sirupsen/logrus"
 )
 
 func Base64decode(str string) string {
@@ -188,36 +188,35 @@ func Logga(i interface{}, level ...string) {
 		//fmt.Println(text)
 	}
 
-	logger, err := zap.NewProduction()
-
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer logger.Sync()
+	log.SetFormatter(&log.JSONFormatter{})
+	log.SetOutput(os.Stdout)
 
 	if len(level) > 0 {
 		switch level[0] {
 		case "info":
-			logger.Info(text,
-				zap.Int("pid", os.Getpid()),
-				zap.String("caller", caller),
-			)
+			log.WithFields(log.Fields{
+				"pid":    os.Getpid(),
+				"caller": caller,
+			}).Info(text)
+
 		case "error":
-			logger.Error(text,
-				zap.Int("pid", os.Getpid()),
-				zap.String("caller", caller),
-			)
+			log.WithFields(log.Fields{
+				"pid":    os.Getpid(),
+				"caller": caller,
+			}).Fatal(text)
+
 		case "warn":
-			logger.Warn(text,
-				zap.Int("pid", os.Getpid()),
-				zap.String("caller", caller),
-			)
+			log.WithFields(log.Fields{
+				"pid":    os.Getpid(),
+				"caller": caller,
+			}).Warn(text)
+
 		}
 	} else {
-		logger.Info(text,
-			zap.Int("pid", os.Getpid()),
-			zap.String("caller", caller),
-		)
+		log.WithFields(log.Fields{
+			"pid":    os.Getpid(),
+			"caller": caller,
+		}).Info(text)
 	}
 
 }
