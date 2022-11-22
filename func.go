@@ -24,6 +24,70 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+func Logga(i interface{}, level ...string) {
+
+	// QUI SE VUOI VEDERE IL TESTO IN CHIARO
+	logtext := true
+
+	caller := ""
+
+	_, file, line, ok := runtime.Caller(1)
+	if ok {
+		caller = file + ":" + strconv.Itoa(line)
+	}
+
+	text := ""
+	switch v := i.(type) {
+	case int:
+		// v is an int here, so e.g. v + 1 is possible.
+		fmt.Printf("Integer: %v", v)
+	case float64:
+		// v is a float64 here, so e.g. v + 1.0 is possible.
+		fmt.Printf("Float64: %v", v)
+	case string:
+		text = i.(string)
+	default:
+		var b []byte
+		b, _ = json.MarshalIndent(i, "", "\t")
+		text = string(b)
+		//fmt.Println(text)
+	}
+
+	if logtext == true {
+		fmt.Println(text)
+	} else {
+
+		log.SetFormatter(&log.JSONFormatter{})
+		log.SetOutput(os.Stdout)
+
+		if len(level) > 0 {
+			switch level[0] {
+			case "info":
+				log.WithFields(log.Fields{
+					"pid":    os.Getpid(),
+					"caller": caller,
+				}).Info(text)
+
+			case "error":
+				log.WithFields(log.Fields{
+					"pid":    os.Getpid(),
+					"caller": caller,
+				}).Fatal(text)
+
+			case "warn":
+				log.WithFields(log.Fields{
+					"pid":    os.Getpid(),
+					"caller": caller,
+				}).Warn(text)
+			}
+		} else {
+			log.WithFields(log.Fields{
+				"pid":    os.Getpid(),
+				"caller": caller,
+			}).Info(text)
+		}
+	}
+}
 func Base64decode(str string) string {
 
 	if str != "" {
@@ -162,63 +226,6 @@ func LogJson(msg interface{}) {
 	//MarshalIndent
 	empJSON, _ := json.MarshalIndent(msg, "", "  ")
 	fmt.Printf("%s\n", string(empJSON))
-}
-func Logga(i interface{}, level ...string) {
-
-	caller := ""
-	_, file, _, ok := runtime.Caller(1)
-	if ok {
-		caller = file //+ ":" + strconv.Itoa(no)
-	}
-
-	text := ""
-	switch v := i.(type) {
-	case int:
-		// v is an int here, so e.g. v + 1 is possible.
-		fmt.Printf("Integer: %v", v)
-	case float64:
-		// v is a float64 here, so e.g. v + 1.0 is possible.
-		fmt.Printf("Float64: %v", v)
-	case string:
-		text = i.(string)
-	default:
-		var b []byte
-		b, _ = json.MarshalIndent(i, "", "\t")
-		text = string(b)
-		//fmt.Println(text)
-	}
-
-	log.SetFormatter(&log.JSONFormatter{})
-	log.SetOutput(os.Stdout)
-
-	if len(level) > 0 {
-		switch level[0] {
-		case "info":
-			log.WithFields(log.Fields{
-				"pid":    os.Getpid(),
-				"caller": caller,
-			}).Info(text)
-
-		case "error":
-			log.WithFields(log.Fields{
-				"pid":    os.Getpid(),
-				"caller": caller,
-			}).Fatal(text)
-
-		case "warn":
-			log.WithFields(log.Fields{
-				"pid":    os.Getpid(),
-				"caller": caller,
-			}).Warn(text)
-
-		}
-	} else {
-		log.WithFields(log.Fields{
-			"pid":    os.Getpid(),
-			"caller": caller,
-		}).Info(text)
-	}
-
 }
 func StrPad(input string, padLength int, padString string, padType string) string {
 	var output string
@@ -1795,12 +1802,8 @@ func DeleteObsoleteObjects(ires IstanzaMicro, versione, canaryProduction, namesp
 
 	istanza := ires.Istanza
 	microservice := ires.PodName
-
-	Logga("")
-	Logga("----------------------------------")
+	Logga("****************************************************************************************")
 	Logga("DELETING OBSOLETE PODS")
-	Logga("")
-	Logga("")
 
 	// cerco il token di Corefactory
 	devopsToken, erro := GetCoreFactoryToken()
@@ -1843,11 +1846,11 @@ func DeleteObsoleteObjects(ires IstanzaMicro, versione, canaryProduction, namesp
 		}
 		Logga("DEPLOYLOG OK")
 	} else {
-		Logga("DEPLOYLOG MISSING")
+		Logga("DEPLOYLOG MISSING", "warn")
 	}
 	Logga("Canary: " + versioneCanaryDb)
 	Logga("Production: " + versioneProductionDb)
-	Logga("")
+
 	/* ************************************************************************************************ */
 
 	// ho recuperato le versioni canary e production che NON cancellero MAI :D
@@ -1871,7 +1874,7 @@ func DeleteObsoleteObjects(ires IstanzaMicro, versione, canaryProduction, namesp
 
 		for _, item := range item.Items {
 
-			//fmt.Println(item.Spec.Selector.MatchLabels.App, microservice)
+			//Logga("item: " + item.Spec.Selector.MatchLabels.App)
 
 			// primo filtro sulla refapp giusta
 			if item.Spec.Selector.MatchLabels.App == microservice {
@@ -1883,7 +1886,9 @@ func DeleteObsoleteObjects(ires IstanzaMicro, versione, canaryProduction, namesp
 				} else {
 
 					deployment := item.Spec.Selector.MatchLabels.App + "-" + item.Spec.Selector.MatchLabels.Version
-					fmt.Println("I DO DELETE: " + deployment)
+					Logga("KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL")
+
+					Logga("I DO KILL: " + deployment)
 					// delete deployment
 					DeleteObjectsApi(namespace, ires.ApiHost, ires.ApiToken, deployment, "deployment")
 
