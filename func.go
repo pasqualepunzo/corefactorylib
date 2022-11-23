@@ -1031,7 +1031,7 @@ func GetPrifileInfo(token string) (map[string]interface{}, string) {
 func GetBuildLastTag(team, docker, tipo string) (string, LoggaErrore) {
 
 	sprint, erro := GetCurrentBranchSprint(team, tipo)
-	if erro.Errore < 1 {
+	if erro.Errore < 0 {
 		Logga(erro.Log)
 	}
 
