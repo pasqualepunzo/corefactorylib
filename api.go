@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"context"
 	"crypto/sha1"
 	"crypto/tls"
 	"encoding/hex"
@@ -18,25 +19,28 @@ type RestyClientLogger struct{}
 
 func (cliLogger *RestyClientLogger) Debugf(format string, v ...interface{}) {
 	for _, m := range v {
-		Logga(m, "info")
+		ctx := context.Background()
+		Logga(ctx, m, "info")
 	}
 }
 
 func (cliLogger *RestyClientLogger) Warnf(format string, v ...interface{}) {
 	for _, m := range v {
-		Logga(m, "warn")
+		ctx := context.Background()
+		Logga(ctx, m, "warn")
 	}
 }
 
 func (cliLogger *RestyClientLogger) Errorf(format string, v ...interface{}) {
 	for _, m := range v {
-		Logga(m, "error")
+		ctx := context.Background()
+		Logga(ctx, m, "error")
 	}
 }
 
-func ApiCallPOST(debug bool, args []map[string]interface{}, microservice, routing, token, dominio string) CallGetResponse {
+func ApiCallPOST(ctx context.Context, debug bool, args []map[string]interface{}, microservice, routing, token, dominio string) CallGetResponse {
 
-	Logga("apiCallPOST")
+	Logga(ctx, "apiCallPOST")
 
 	type restyPOSTStruct []struct {
 		Code   int         `json:"code"`
@@ -56,7 +60,7 @@ func ApiCallPOST(debug bool, args []map[string]interface{}, microservice, routin
 
 	var resStruct CallGetResponse
 
-	Logga(dominio + "/api/" + os.Getenv("coreapiVersion") + routing + " - " + microservice)
+	Logga(ctx, dominio+"/api/"+os.Getenv("coreapiVersion")+routing+" - "+microservice)
 
 	var LoggaErrore LoggaErrore
 	LoggaErrore.Errore = 0
@@ -137,9 +141,9 @@ func ApiCallPOST(debug bool, args []map[string]interface{}, microservice, routin
 
 	return resStruct
 }
-func ApiCallGET(debug bool, args map[string]string, microservice, routing, token, dominio string) CallGetResponse {
+func ApiCallGET(ctx context.Context, debug bool, args map[string]string, microservice, routing, token, dominio string) CallGetResponse {
 
-	Logga("apiCallGET")
+	Logga(ctx, "apiCallGET")
 
 	type restyStruct struct {
 		Data    string      `json:"data"`
@@ -164,7 +168,7 @@ func ApiCallGET(debug bool, args map[string]string, microservice, routing, token
 		dominio = "https://" + dominio
 	}
 
-	Logga(dominio + "/api/" + os.Getenv("coreapiVersion") + routing + " - " + microservice)
+	Logga(ctx, dominio+"/api/"+os.Getenv("coreapiVersion")+routing+" - "+microservice)
 
 	var resStruct CallGetResponse
 
@@ -274,7 +278,7 @@ func GetApiHost() string {
 
 	return "https://" + urlDevops
 }
-func ApiCallLOGIN(debug bool, args map[string]interface{}, microservice, routing, dominio string) (map[string]interface{}, LoggaErrore) {
+func ApiCallLOGIN(ctx context.Context, debug bool, args map[string]interface{}, microservice, routing, dominio string) (map[string]interface{}, LoggaErrore) {
 
 	//debug = true
 
@@ -291,14 +295,14 @@ func ApiCallLOGIN(debug bool, args map[string]interface{}, microservice, routing
 
 	args["uuid"] = args["uuid"].(string) + "-" + rnd
 
-	Logga("")
-	Logga("apiCallLOGIN")
-	Logga("Args : ")
+	Logga(ctx, "")
+	Logga(ctx, "apiCallLOGIN")
+	Logga(ctx, "Args : ")
 	jsonString, _ := json.Marshal(args)
-	Logga(string(jsonString))
+	Logga(ctx, string(jsonString))
 
-	Logga("Microservice : " + microservice)
-	Logga("Url : " + dominio + "/api/" + os.Getenv("coreapiVersion") + routing)
+	Logga(ctx, "Microservice : "+microservice)
+	Logga(ctx, "Url : "+dominio+"/api/"+os.Getenv("coreapiVersion")+routing)
 
 	var LoggaErrore LoggaErrore
 	LoggaErrore.Errore = 0
@@ -379,11 +383,11 @@ func ApiCallPUT(debug bool, args map[string]interface{}, microservice, routing, 
 	}
 	return res.Body(), LoggaErrore
 }
-func GetCoreFactoryToken() (string, LoggaErrore) {
+func GetCoreFactoryToken(ctx context.Context) (string, LoggaErrore) {
 	/* ************************************************************************************************ */
 	// cerco il token di devops
 
-	Logga("Core factory Token")
+	Logga(ctx, "Core factory Token")
 
 	var erro LoggaErrore
 	erro.Errore = 0
@@ -403,7 +407,7 @@ func GetCoreFactoryToken() (string, LoggaErrore) {
 	argsAuth["resource"] = urlDevopsStripped
 	argsAuth["uuid"] = "devops-" + sha
 
-	restyAuthResponse, restyAuthErr := ApiCallLOGIN(false, argsAuth, "msauth", "/auth/login", "")
+	restyAuthResponse, restyAuthErr := ApiCallLOGIN(ctx, false, argsAuth, "msauth", "/auth/login", "")
 	if restyAuthErr.Errore < 0 {
 		// QUI ERRORE
 		erro.Errore = -1
@@ -421,7 +425,7 @@ func GetCoreFactoryToken() (string, LoggaErrore) {
 
 	return "", erro
 }
-func ApiCallDELETE(debug bool, args map[string]string, microservice, routing, token, dominio string) CallGetResponse {
+func ApiCallDELETE(ctx context.Context, debug bool, args map[string]string, microservice, routing, token, dominio string) CallGetResponse {
 
 	if dominio == "" {
 		dominio = GetApiHost()
@@ -436,7 +440,7 @@ func ApiCallDELETE(debug bool, args map[string]string, microservice, routing, to
 
 	var resStruct CallGetResponse
 
-	Logga(dominio + "/api/" + os.Getenv("coreapiVersion") + routing + " - " + microservice)
+	Logga(ctx, dominio+"/api/"+os.Getenv("coreapiVersion")+routing+" - "+microservice)
 
 	//fmt.Println("apiCallDELETE", debug)
 	client := resty.New()

@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"context"
 	"os/exec"
 	"runtime/debug"
 	"strconv"
@@ -12,12 +13,12 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func DropMetadato(dbMetaName DbMetaConnMs, db *sql.DB) LoggaErrore {
+func DropMetadato(ctx context.Context, dbMetaName DbMetaConnMs, db *sql.DB) LoggaErrore {
 
 	var loggaErrore LoggaErrore
 	loggaErrore.Errore = 0
 
-	Logga("Drop metadata :" + dbMetaName.MetaName)
+	Logga(ctx, "Drop metadata :"+dbMetaName.MetaName)
 
 	_, err := db.Exec("drop database if exists " + dbMetaName.MetaName)
 	if err != nil {
@@ -25,35 +26,35 @@ func DropMetadato(dbMetaName DbMetaConnMs, db *sql.DB) LoggaErrore {
 		loggaErrore.Errore = -1
 		return loggaErrore
 	} else {
-		Logga("Database " + dbMetaName.MetaName + " dropped")
+		Logga(ctx, "Database "+dbMetaName.MetaName+" dropped")
 	}
 
 	loggaErrore.Log = ""
 	loggaErrore.Errore = 1
 	return loggaErrore
 }
-func CreateDbMeta(dbMetaName DbMetaConnMs, db *sql.DB) LoggaErrore {
+func CreateDbMeta(ctx context.Context, dbMetaName DbMetaConnMs, db *sql.DB) LoggaErrore {
 
 	var loggaErrore LoggaErrore
 	loggaErrore.Errore = 0
 
 	query := "CREATE DATABASE " + dbMetaName.MetaName
-	Logga(query)
+	Logga(ctx, query)
 	_, err := db.Exec(query)
 	if err != nil {
 		loggaErrore.Log = err.Error()
 		loggaErrore.Errore = -1
 		return loggaErrore
 	} else {
-		Logga("Database " + dbMetaName.MetaName + " instance done")
+		Logga(ctx, "Database "+dbMetaName.MetaName+" instance done")
 	}
 
 	// creo gli user
-	CreateUser(dbMetaName, db)
+	CreateUser(ctx, dbMetaName, db)
 
 	return loggaErrore
 }
-func CreateDbData(dbDataName DbDataConnMs, db *sql.DB) LoggaErrore {
+func CreateDbData(ctx context.Context, dbDataName DbDataConnMs, db *sql.DB) LoggaErrore {
 
 	// creazione dei DATABASE
 	var loggaErrore LoggaErrore
@@ -64,7 +65,7 @@ func CreateDbData(dbDataName DbDataConnMs, db *sql.DB) LoggaErrore {
 		loggaErrore.Errore = -1
 		return loggaErrore
 	} else {
-		Logga("Create Database " + dbDataName.DataName + " instance done")
+		Logga(ctx, "Create Database "+dbDataName.DataName+" instance done")
 	}
 
 	// creo gli user
@@ -73,7 +74,7 @@ func CreateDbData(dbDataName DbDataConnMs, db *sql.DB) LoggaErrore {
 	cons.MetaName = dbDataName.DataName
 	cons.MetaPass = dbDataName.DataPass
 	cons.MetaUser = dbDataName.DataUser
-	CreateUser(cons, db)
+	CreateUser(ctx, cons, db)
 
 	//os.Exit(0)
 
@@ -81,7 +82,7 @@ func CreateDbData(dbDataName DbDataConnMs, db *sql.DB) LoggaErrore {
 	loggaErrore.Errore = 1
 	return loggaErrore
 }
-func CreateUser(dbMetaName DbMetaConnMs, db *sql.DB) LoggaErrore {
+func CreateUser(ctx context.Context, dbMetaName DbMetaConnMs, db *sql.DB) LoggaErrore {
 
 	var loggaErrore LoggaErrore
 	loggaErrore.Errore = 0
@@ -99,39 +100,39 @@ func CreateUser(dbMetaName DbMetaConnMs, db *sql.DB) LoggaErrore {
 
 			// create user
 			query := "CREATE USER   '" + dbMetaName.MetaUser + "'@'%' IDENTIFIED BY '" + dbMetaName.MetaPass + "'"
-			Logga(query)
+			Logga(ctx, query)
 			_, err := db.Exec(query)
 			if err != nil {
 				loggaErrore.Log = err.Error()
 				loggaErrore.Errore = -1
 				return loggaErrore
 			} else {
-				Logga("CREATE USER    " + dbMetaName.MetaUser + " done")
+				Logga(ctx, "CREATE USER    "+dbMetaName.MetaUser+" done")
 			}
 
 			// grant su metadati
 			query = "GRANT ALL PRIVILEGES ON " + dbMetaName.MetaName + ".* TO '" + dbMetaName.MetaUser + "'@'%' WITH GRANT OPTION "
-			Logga(query)
+			Logga(ctx, query)
 			_, err = db.Exec(query)
-			//Logga("GRANT ALL PRIVILEGES ON " + ires.MetaName + ".* TO '" + ires.MetaUser + "'@'%'")
+			//Logga(ctx, "GRANT ALL PRIVILEGES ON " + ires.MetaName + ".* TO '" + ires.MetaUser + "'@'%'")
 			if err != nil {
 				loggaErrore.Log = err.Error()
 				loggaErrore.Errore = -1
 				return loggaErrore
 			} else {
-				Logga("GRANT ON " + dbMetaName.MetaName + " created")
+				Logga(ctx, "GRANT ON "+dbMetaName.MetaName+" created")
 			}
 
 			// grant su data
 			query = "FLUSH PRIVILEGES"
-			Logga(query)
+			Logga(ctx, query)
 			_, err = db.Exec(query)
 			if err != nil {
 				loggaErrore.Log = err.Error()
 				loggaErrore.Errore = -1
 				return loggaErrore
 			} else {
-				Logga("FLUSH PRIVILEGES " + dbMetaName.MetaName + " done")
+				Logga(ctx, "FLUSH PRIVILEGES "+dbMetaName.MetaName+" done")
 			}
 		} else {
 			loggaErrore.Log = errUser.Error()
@@ -141,14 +142,14 @@ func CreateUser(dbMetaName DbMetaConnMs, db *sql.DB) LoggaErrore {
 
 	} else {
 
-		Logga("User: " + dbMetaName.MetaUser + " already exists")
+		Logga(ctx, "User: "+dbMetaName.MetaUser+" already exists")
 	}
 
 	loggaErrore.Log = ""
 	loggaErrore.Errore = 0
 	return loggaErrore
 }
-func DropDbData(dbDataName DbDataConnMs, db *sql.DB) LoggaErrore {
+func DropDbData(ctx context.Context, dbDataName DbDataConnMs, db *sql.DB) LoggaErrore {
 
 	var loggaErrore LoggaErrore
 
@@ -158,13 +159,13 @@ func DropDbData(dbDataName DbDataConnMs, db *sql.DB) LoggaErrore {
 		loggaErrore.Errore = -1
 		return loggaErrore
 	} else {
-		Logga("Database " + dbDataName.DataName + " dropped")
+		Logga(ctx, "Database "+dbDataName.DataName+" dropped")
 	}
 	loggaErrore.Log = ""
 	loggaErrore.Errore = 1
 	return loggaErrore
 }
-func Comparedb(ires IstanzaMicro, dbDataName DbDataConnMs, db *sql.DB, db2 *sql.DB) (LoggaErrore, []string) {
+func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, db *sql.DB, db2 *sql.DB) (LoggaErrore, []string) {
 
 	var loggaErrore LoggaErrore
 
@@ -184,12 +185,12 @@ func Comparedb(ires IstanzaMicro, dbDataName DbDataConnMs, db *sql.DB, db2 *sql.
 		dbDataDst = dbDataName.DataName + "_compare_production_monolith"
 	}
 
-	Logga("")
-	Logga("*********")
-	Logga("Source Database: " + dbDataSrc)
-	Logga("Destination Database: " + dbDataDst)
-	Logga("*********")
-	Logga("")
+	Logga(ctx, "")
+	Logga(ctx, "*********")
+	Logga(ctx, "Source Database: "+dbDataSrc)
+	Logga(ctx, "Destination Database: "+dbDataDst)
+	Logga(ctx, "*********")
+	Logga(ctx, "")
 
 	var table_name, column_name, columns string
 
@@ -345,11 +346,11 @@ func Comparedb(ires IstanzaMicro, dbDataName DbDataConnMs, db *sql.DB, db2 *sql.
 	// fmt.Println(diffTbls)
 	// os.Exit(0)
 
-	Logga("Get all diff")
-	Logga("")
-	Logga("STO PER APPLICARE LE DIFF")
-	Logga("Change Database Structure on " + dbDataName.DataName)
-	Logga(dbDataName.DataHost + "|" + dbDataName.DataName)
+	Logga(ctx, "Get all diff")
+	Logga(ctx, "")
+	Logga(ctx, "STO PER APPLICARE LE DIFF")
+	Logga(ctx, "Change Database Structure on "+dbDataName.DataName)
+	Logga(ctx, dbDataName.DataHost+"|"+dbDataName.DataName)
 	//fmt.Println(missingTbls)
 
 	// **************************************************************************
@@ -370,7 +371,7 @@ func Comparedb(ires IstanzaMicro, dbDataName DbDataConnMs, db *sql.DB, db2 *sql.
 			loggaErrore.Errore = -1
 
 		} else {
-			Logga(sqlCompare + " ok")
+			Logga(ctx, sqlCompare+" ok")
 		}
 	}
 
@@ -406,7 +407,7 @@ func Comparedb(ires IstanzaMicro, dbDataName DbDataConnMs, db *sql.DB, db2 *sql.
 			loggaErrore.Errore = -1
 
 		} else {
-			Logga(sqlCompare + "  ok")
+			Logga(ctx, sqlCompare+"  ok")
 		}
 		// !!! fine blocco !!!
 
@@ -421,7 +422,7 @@ func Comparedb(ires IstanzaMicro, dbDataName DbDataConnMs, db *sql.DB, db2 *sql.
 			loggaErrore.Errore = -1
 
 		} else {
-			Logga("DROP DATABASE " + dbDataSrc + "  ok")
+			Logga(ctx, "DROP DATABASE "+dbDataSrc+"  ok")
 		}
 		//_, err = db.Exec("DROP DATABASE " + dbDataDst)
 		if err != nil {
@@ -429,7 +430,7 @@ func Comparedb(ires IstanzaMicro, dbDataName DbDataConnMs, db *sql.DB, db2 *sql.
 			loggaErrore.Errore = -1
 
 		} else {
-			Logga("DROP DATABASE " + dbDataSrc + "  ok")
+			Logga(ctx, "DROP DATABASE "+dbDataSrc+"  ok")
 		}
 	} else {
 		_, err = db.Exec("DROP DATABASE " + dbDataSrc)
@@ -438,12 +439,12 @@ func Comparedb(ires IstanzaMicro, dbDataName DbDataConnMs, db *sql.DB, db2 *sql.
 			loggaErrore.Errore = -1
 
 		} else {
-			Logga("DROP DATABASE " + dbDataSrc + "  ok")
+			Logga(ctx, "DROP DATABASE "+dbDataSrc+"  ok")
 		}
 	}
 
-	Logga("Compare Database terminated")
-	Logga("")
+	Logga(ctx, "Compare Database terminated")
+	Logga(ctx, "")
 
 	return loggaErrore, allCompareSql
 }
@@ -675,7 +676,7 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 
 	return loggaErrore, allCompareIdx
 }
-func RenameDatabases(dbMetaName DbMetaConnMs, masterDb MasterConn, db *sql.DB) {
+func RenameDatabases(ctx context.Context, dbMetaName DbMetaConnMs, masterDb MasterConn, db *sql.DB) {
 
 	query := "DROP DATABASE IF EXISTS " + dbMetaName.MetaName + "_METAOLD"
 	_, err := db.Exec(query)
@@ -726,7 +727,7 @@ func RenameDatabases(dbMetaName DbMetaConnMs, masterDb MasterConn, db *sql.DB) {
 	}
 
 	// creo gli user
-	CreateUser(dbMetaName, db)
+	CreateUser(ctx, dbMetaName, db)
 
 	//dump IN metadato
 	queryCommand = "mysql -u" + masterDb.User + " -p" + masterDb.Pass + " -h" + dbMetaName.MetaHost + " " + dbMetaName.MetaName + " < /tmp/" + dbMetaName.MetaName + "_canary.sql"
@@ -746,14 +747,14 @@ func RenameDatabases(dbMetaName DbMetaConnMs, masterDb MasterConn, db *sql.DB) {
 		fmt.Println(err)
 	}
 }
-func GetMasterConn(gruppoDeveloper, cluster, devopsToken, enviro string) (MasterConn, LoggaErrore) {
+func GetMasterConn(ctx context.Context, gruppoDeveloper, cluster, devopsToken, enviro string) (MasterConn, LoggaErrore) {
 
-	Logga("getMasterConn")
-	Logga("Cluster: " + cluster)
-	Logga("Gruppo: " + gruppoDeveloper)
+	Logga(ctx, "getMasterConn")
+	Logga(ctx, "Cluster: "+cluster)
+	Logga(ctx, "Gruppo: "+gruppoDeveloper)
 
 	if gruppoDeveloper == "" && cluster == "" {
-		Logga("BOTH GROUP AND CLUSTER MISSING")
+		Logga(ctx, "BOTH GROUP AND CLUSTER MISSING")
 		debug.PrintStack()
 		//os.Exit(0)
 	}
@@ -769,17 +770,17 @@ func GetMasterConn(gruppoDeveloper, cluster, devopsToken, enviro string) (Master
 	*/
 	if cluster == "" {
 		// ottengo lo stage
-		gruppo, erro := GetUserGroup(devopsToken, gruppoDeveloper)
+		gruppo, erro := GetUserGroup(ctx, devopsToken, gruppoDeveloper)
 		if erro.Errore < 0 {
-			Logga("getUserGroup")
-			Logga(erro.Log)
+			Logga(ctx, "getUserGroup")
+			Logga(ctx, erro.Log)
 		}
 		cluster = gruppo["stage"]
 	}
 
 	/* ************************************************************************************************ */
 	// KUBECLUSTER
-	Logga("Getting KUBECLUSTER MASTER CONN")
+	Logga(ctx, "Getting KUBECLUSTER MASTER CONN")
 
 	argsClu := make(map[string]string)
 	argsClu["source"] = "devops-8"
@@ -787,7 +788,7 @@ func GetMasterConn(gruppoDeveloper, cluster, devopsToken, enviro string) (Master
 	argsClu["center_dett"] = "dettaglio"
 	argsClu["$filter"] = "equals(XKUBECLUSTER03,'" + cluster + "') "
 
-	restyKubeCluRes := ApiCallGET(false, argsClu, "msdevops", "/devops/KUBECLUSTER", devopsToken, "")
+	restyKubeCluRes := ApiCallGET(ctx, false, argsClu, "msdevops", "/devops/KUBECLUSTER", devopsToken, "")
 	if restyKubeCluRes.Errore < 0 {
 		erro.Errore = -1
 		erro.Log = restyKubeCluRes.Log
@@ -803,7 +804,7 @@ func GetMasterConn(gruppoDeveloper, cluster, devopsToken, enviro string) (Master
 		master.Domain = restyKubeCluRes.BodyJson["XKUBECLUSTER15"].(string)
 		master.AccessToken = restyKubeCluRes.BodyJson["XKUBECLUSTER20"].(string)
 		master.Cluster = cluster
-		Logga("KUBECLUSTER MASTER CONN OK")
+		Logga(ctx, "KUBECLUSTER MASTER CONN OK")
 
 		/**
 		Andiamo a vedere se esiste un record in KUBECLUSTERENV che fa l'overwrite di alcune proprietà di
@@ -821,7 +822,7 @@ func GetMasterConn(gruppoDeveloper, cluster, devopsToken, enviro string) (Master
 		argsCluEnv["$filter"] += " and XKUBECLUSTERENV05 eq " + strconv.Itoa(int(ambienteFloat)) + " "
 		argsCluEnv["$filter"] += " and equals(XKUBECLUSTERENV06,'" + enviro + "') "
 
-		restyKubeCluEnvRes := ApiCallGET(false, argsCluEnv, "msdevops", "/devops/KUBECLUSTERENV", devopsToken, "")
+		restyKubeCluEnvRes := ApiCallGET(ctx, false, argsCluEnv, "msdevops", "/devops/KUBECLUSTERENV", devopsToken, "")
 		if restyKubeCluEnvRes.Errore < 0 {
 			erro.Errore = -1
 			erro.Log = restyKubeCluEnvRes.Log
@@ -830,12 +831,12 @@ func GetMasterConn(gruppoDeveloper, cluster, devopsToken, enviro string) (Master
 
 		if len(restyKubeCluEnvRes.BodyJson) > 0 {
 			master.MetaName = restyKubeCluEnvRes.BodyJson["XKUBECLUSTERENV07"].(string)
-			Logga("KUBECLUSTERENV MASTER CONN OK")
+			Logga(ctx, "KUBECLUSTERENV MASTER CONN OK")
 		}
 	} else {
-		Logga("KUBECLUSTER MASTER CONN MISSING")
+		Logga(ctx, "KUBECLUSTER MASTER CONN MISSING")
 	}
-	Logga("")
+	Logga(ctx, "")
 	/* ************************************************************************************************ */
 
 	if cluster == "" {
