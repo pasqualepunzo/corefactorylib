@@ -31,6 +31,8 @@ func Logga(ctx context.Context, i interface{}, level ...string) {
 	//logtext := true
 	logtext := false
 
+	JobID := ctx.Value("JobID").(string)
+
 	caller := ""
 
 	_, file, line, ok := runtime.Caller(1)
@@ -66,24 +68,28 @@ func Logga(ctx context.Context, i interface{}, level ...string) {
 			switch level[0] {
 			case "info":
 				log.WithFields(log.Fields{
+					"JobID":  JobID,
 					"pid":    os.Getpid(),
 					"caller": caller,
 				}).Info(text)
 
 			case "error":
 				log.WithFields(log.Fields{
+					"JobID":  JobID,
 					"pid":    os.Getpid(),
 					"caller": caller,
 				}).Fatal(text)
 
 			case "warn":
 				log.WithFields(log.Fields{
+					"JobID":  JobID,
 					"pid":    os.Getpid(),
 					"caller": caller,
 				}).Warn(text)
 			}
 		} else {
 			log.WithFields(log.Fields{
+				"JobID":  JobID,
 				"pid":    os.Getpid(),
 				"caller": caller,
 			}).Info(text)
