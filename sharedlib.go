@@ -703,7 +703,7 @@ func CloudBuils(ctx context.Context, docker, verPad, dirRepo string, swMonolith 
 	cloudBuild += "  machineType: 'E2_HIGHCPU_8'\n"
 	//cloudBuild += "  logStreamingOption: 'STREAM_ON'\n"
 
-	fmt.Println(cloudBuild)
+	Logga(ctx, cloudBuild)
 
 	f, errF := os.Create(fileCloudBuild)
 	if errF != nil {
@@ -717,12 +717,12 @@ func CloudBuils(ctx context.Context, docker, verPad, dirRepo string, swMonolith 
 
 	// RUN THE BUILD
 	command := "gcloud builds submit --async --config " + fileCloudBuild + " " + dir
-	fmt.Println(command)
+	Logga(ctx, command)
 	ExecCommand(command, false)
 
 	// SEEK THE BUILD ID
 	command = "gcloud builds list --filter \"tags='" + dockerName + "-" + verPad + "'\" --format=\"json\""
-	fmt.Println(command)
+	Logga(ctx, command)
 
 	fmt.Println("_##START##_Build Started_##STOP##_")
 
@@ -752,7 +752,7 @@ func CloudBuils(ctx context.Context, docker, verPad, dirRepo string, swMonolith 
 		var logRes []logStruct
 		errJson := json.Unmarshal(out, &logRes)
 		if errJson != nil {
-			fmt.Println(errJson)
+			Logga(ctx, errJson, "error")
 		}
 		// fmt.Println(len(logRes))
 		// LogJson(logRes)
@@ -761,7 +761,11 @@ func CloudBuils(ctx context.Context, docker, verPad, dirRepo string, swMonolith 
 			fmt.Println("_##START##_Build ID: " + logRes[0].ID + "_##STOP##_")
 			fmt.Println("_##START##_Build LOG at : " + logRes[0].LogUrl + "_##STOP##_")
 
-			erroTelegram := TelegramSendMessage(os.Getenv("telegramBotToken"), os.Getenv("telegramCftoolDevopsChatID"), dockerName+" - "+logRes[0].LogUrl)
+			JobID := ctx.Value("JobID").(string)
+			telegramText := "JobID: " + JobID
+			telegramText += " " + dockerName + " - " + logRes[0].LogUrl
+			erroTelegram := TelegramSendMessage(os.Getenv("telegramBotToken"), os.Getenv("telegramCftoolDevopsChatID"), telegramText)
+
 			if erroTelegram.Errore < 0 {
 
 				Logga(ctx, "")
