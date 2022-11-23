@@ -27,7 +27,8 @@ import (
 func Logga(i interface{}, level ...string) {
 
 	// QUI SE VUOI VEDERE IL TESTO IN CHIARO
-	logtext := true
+	//logtext := true
+	logtext := false
 
 	caller := ""
 
