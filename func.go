@@ -31,7 +31,10 @@ func Logga(ctx context.Context, i interface{}, level ...string) {
 	//logtext := true
 	logtext := false
 
-	JobID := ctx.Value("JobID").(string)
+	JobID := ""
+	if ctx.Value("JobID") != nil {
+		JobID = ctx.Value("JobID").(string)
+	}
 
 	caller := ""
 
