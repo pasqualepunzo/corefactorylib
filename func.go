@@ -1833,7 +1833,7 @@ func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, can
 		argsDeploy["$filter"] += " and equals(XDEPLOYLOG09,'" + enviro + "') "
 	}
 
-	restyDeployRes := ApiCallGET(ctx, false, argsDeploy, "msdevops", "/devops/DEPLOYLOG", devopsToken, "")
+	restyDeployRes := ApiCallGET(ctx, true, argsDeploy, "msdevops", "/devops/DEPLOYLOG", devopsToken, "")
 	if restyDeployRes.Errore < 0 {
 		Logga(ctx, restyDeployRes.Log)
 		return erro
@@ -1882,7 +1882,8 @@ func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, can
 
 		for _, item := range item.Items {
 
-			//Logga(ctx, "item: " + item.Spec.Selector.MatchLabels.App)
+			Logga(ctx, "item: "+item.Spec.Selector.MatchLabels.App)
+			Logga(ctx, "version: "+item.Spec.Selector.MatchLabels.Version)
 
 			// primo filtro sulla refapp giusta
 			if item.Spec.Selector.MatchLabels.App == microservice {
