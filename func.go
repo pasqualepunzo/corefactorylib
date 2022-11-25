@@ -1812,7 +1812,12 @@ func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, can
 	erro.Errore = 0
 
 	istanza := ires.Istanza
-	microservice := ires.PodName
+	microservice := ""
+	if ires.Monolith == 0 {
+		microservice = ires.Microservice
+	} else {
+		microservice = ires.PodName
+	}
 	Logga(ctx, "****************************************************************************************")
 	Logga(ctx, "DELETING OBSOLETE PODS")
 
@@ -1859,8 +1864,10 @@ func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, can
 	} else {
 		Logga(ctx, "DEPLOYLOG MISSING", "warn")
 	}
-	Logga(ctx, "Canary: "+versioneCanaryDb)
-	Logga(ctx, "Production: "+versioneProductionDb)
+	Logga(ctx, "=== NEVER DELETE INNOCENT DEPLOYMENTS === ")
+	Logga(ctx, "eventually to kill: "+microservice)
+	Logga(ctx, "Never kill Canary: "+versioneCanaryDb)
+	Logga(ctx, "Never kill Production: "+versioneProductionDb)
 
 	/* ************************************************************************************************ */
 
@@ -1883,11 +1890,13 @@ func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, can
 			return erro
 		}
 
+		Logga(ctx, "API returns : "+strconv.Itoa(len(item.Items))+" ITEMS")
+
 		for _, item := range item.Items {
 
-			Logga(ctx, "item: "+item.Spec.Selector.MatchLabels.App)
+			Logga(ctx, "item yaml: "+item.Spec.Selector.MatchLabels.App)
 			Logga(ctx, "version: "+item.Spec.Selector.MatchLabels.Version)
-
+			Logga(ctx, "item ires: "+microservice)
 			// primo filtro sulla refapp giusta
 			if item.Spec.Selector.MatchLabels.App == microservice {
 
