@@ -543,7 +543,7 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 
 				filter := "equals(XDEPLOYLOG04,'" + istanza.Istanza + "') and equals(XDEPLOYLOG03,'canary') and XDEPLOYLOG06 eq 1"
 
-				_, erro := ApiCallPUT(false, keyvalueslice, "msdevops", "/devops/DEPLOYLOG/"+filter, devopsToken, "")
+				_, erro := ApiCallPUT(ctx, false, keyvalueslice, "msdevops", "/devops/DEPLOYLOG/"+filter, devopsToken, "")
 
 				if erro.Errore < 0 {
 					return erro
@@ -571,7 +571,7 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 
 				filter := "equals(XDEPLOYLOG04,'" + istanza.Istanza + "') and equals(XDEPLOYLOG03,'production') and XDEPLOYLOG06 eq 1"
 
-				_, erro := ApiCallPUT(false, keyvalueslice, "msdevops", "/devops/DEPLOYLOG/"+filter, devopsToken, "")
+				_, erro := ApiCallPUT(ctx, false, keyvalueslice, "msdevops", "/devops/DEPLOYLOG/"+filter, devopsToken, "")
 				if erro.Errore < 0 {
 					return erro
 				}
@@ -586,7 +586,7 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 
 				filter := "equals(XDEPLOYLOG04,'" + istanza.Istanza + "') and equals(XDEPLOYLOG03,'canary')"
 
-				_, erro := ApiCallPUT(false, keyvalueslice, "msdevops", "/devops/DEPLOYLOG/"+filter, devopsToken, "")
+				_, erro := ApiCallPUT(ctx, false, keyvalueslice, "msdevops", "/devops/DEPLOYLOG/"+filter, devopsToken, "")
 				if erro.Errore < 0 {
 					return erro
 				}

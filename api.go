@@ -42,6 +42,15 @@ func ApiCallPOST(ctx context.Context, debug bool, args []map[string]interface{},
 
 	Logga(ctx, "apiCallPOST")
 
+	JobID := ""
+	if ctx.Value("JobID") != nil {
+		JobID = ctx.Value("JobID").(string)
+	}
+
+	jobIDSlice := make(map[string]interface{})
+	jobIDSlice["JobID"] = JobID
+	args = append(args, jobIDSlice)
+
 	type restyPOSTStruct []struct {
 		Code   int         `json:"code"`
 		Errors interface{} `json:"errors"`
@@ -144,6 +153,13 @@ func ApiCallPOST(ctx context.Context, debug bool, args []map[string]interface{},
 func ApiCallGET(ctx context.Context, debug bool, args map[string]string, microservice, routing, token, dominio string) CallGetResponse {
 
 	Logga(ctx, "apiCallGET")
+
+	JobID := ""
+	if ctx.Value("JobID") != nil {
+		JobID = ctx.Value("JobID").(string)
+	}
+
+	args["JobID"] = JobID
 
 	type restyStruct struct {
 		Data    string      `json:"data"`
@@ -288,6 +304,13 @@ func ApiCallLOGIN(ctx context.Context, debug bool, args map[string]interface{}, 
 		dominio = "https://" + dominio
 	}
 
+	JobID := ""
+	if ctx.Value("JobID") != nil {
+		JobID = ctx.Value("JobID").(string)
+	}
+
+	args["JobID"] = JobID
+
 	// dominio := getApiHost()
 
 	rand.Seed(time.Now().UnixNano())
@@ -347,13 +370,20 @@ func ApiCallLOGIN(ctx context.Context, debug bool, args map[string]interface{}, 
 	}
 	return callResponse, LoggaErrore
 }
-func ApiCallPUT(debug bool, args map[string]interface{}, microservice, routing, token, dominio string) ([]byte, LoggaErrore) {
+func ApiCallPUT(ctx context.Context, debug bool, args map[string]interface{}, microservice, routing, token, dominio string) ([]byte, LoggaErrore) {
 
 	if dominio == "" {
 		dominio = GetApiHost()
 	} else {
 		dominio = "https://" + dominio
 	}
+
+	JobID := ""
+	if ctx.Value("JobID") != nil {
+		JobID = ctx.Value("JobID").(string)
+	}
+
+	args["JobId"] = JobID
 
 	var LoggaErrore LoggaErrore
 	LoggaErrore.Errore = 0
@@ -432,6 +462,13 @@ func ApiCallDELETE(ctx context.Context, debug bool, args map[string]string, micr
 	} else {
 		dominio = "https://" + dominio
 	}
+
+	JobID := ""
+	if ctx.Value("JobID") != nil {
+		JobID = ctx.Value("JobID").(string)
+	}
+
+	args["JobID"] = JobID
 
 	type restyPOSTStruct struct {
 		Code   int         `json:"code"`
