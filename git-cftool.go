@@ -32,7 +32,8 @@ func writeStIgnore(dirRepo string) {
 
 	ignore := ".git\n"
 	ignore += "**/p2rSocket\n"
-	//ignore += "**/node_modules\n"
+	ignore += "**/node_modules\n"
+	ignore += "**/dist\n"
 	ignore += "**/vendor\n"
 	ignore += "**/svn.simple\n"
 	ignore += "**/.git\n"
