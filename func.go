@@ -113,9 +113,9 @@ func Base64decode(str string) string {
 }
 
 /*
- per i comandi che inviano in streamig al cf-tool del testo
- la convenzione è: se la stringa inizia con ### vuol dire che va printato qualcosa se dopo ### abbiamo Error è un errore
- altrimenti e una comunicazione
+per i comandi che inviano in streamig al cf-tool del testo
+la convenzione è: se la stringa inizia con ### vuol dire che va printato qualcosa se dopo ### abbiamo Error è un errore
+altrimenti e una comunicazione
 */
 func PrintaErroreStream(errorLabel, log string, flagDie bool) {
 	fmt.Println("_##ERROR##_", errorLabel, " - ", log)
@@ -1643,6 +1643,7 @@ func GetArrRepo(ctx context.Context, team, customSettings string) map[int]Repos 
 			repo.Nome = x["XKUBEMONOLITHREPO04"].(string)
 			repo.Repo = x["XKUBEMONOLITHREPO05"].(string)
 			repo.Sw = int(x["XKUBEMONOLITHREPO06"].(float64))
+
 			arrRepo[i] = repo
 			i++
 
@@ -1680,6 +1681,7 @@ func GetArrRepo(ctx context.Context, team, customSettings string) map[int]Repos 
 
 				repo.Nome = x["XKUBEMONOLITHCS06"].(string)
 				repo.Repo = x["XKUBEMONOLITHCS06"].(string)
+				repo.Tipo = "CS"
 				arrRepo[i] = repo
 				i++
 

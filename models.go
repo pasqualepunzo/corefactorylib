@@ -6,6 +6,7 @@ type Repos struct {
 	Repo string
 	Nome string
 	Sw   int
+	Tipo string
 }
 type loginAuth struct {
 	username, password string
