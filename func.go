@@ -1670,7 +1670,7 @@ func GetArrRepo(ctx context.Context, team, customSettings string) map[int]Repos 
 		args["center_dett"] = "visualizza"
 		args["$select"] = "XKUBEMONOLITHCS06"
 		args["$filter"] = "equals(XKUBEMONOLITHCS03,'" + team + "')"
-		args["$filter"] = " and equals(XKUBEMONOLITHCS07,'1')"
+		args["$filter"] += " and equals(XKUBEMONOLITHCS07,'1')"
 
 		restyKUBEMONOLITHCSRes := ApiCallGET(ctx, false, args, "msdevops", "/devops/KUBEMONOLITHCS", devopsToken, "")
 		if restyKUBEMONOLITHCSRes.Errore < 0 {
