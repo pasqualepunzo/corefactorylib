@@ -597,6 +597,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 			argsBld["$fullquery"] += "from TB_ANAG_KUBEDKRBUILD00 "
 			argsBld["$fullquery"] += "where 1>0 "
 			argsBld["$fullquery"] += "AND XKUBEDKRBUILD03 = '" + docker + "' "
+			argsBld["$fullquery"] += "AND XKUBEDKRBUILD08 = '" + team + "' "
 			// if ftNewStageProcess_FAC530 {
 			// 	argsBld["$fullquery"] += "AND XKUBEDKRBUILD15 = '" + enviro + "' "
 			// } else {
