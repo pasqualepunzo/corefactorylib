@@ -642,10 +642,58 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 				pod.Branch = branchs
 				Logga(ctx, "KUBEDKRBUILD OK")
 			} else {
-				Logga(ctx, "   !!! "+docker+"  KUBEDKRBUILD MISSING")
-				loggaErrore.Errore = -1
-				loggaErrore.Log = "!!! ERROR !!!\n\nThe component " + docker + " of the microservice " + microservices.Nome + " is MISSING,\nyou have to build it first.\nbye\n\n"
-				return microservices, loggaErrore
+				// se manca la build alla versione indicata proviamo a cercare l'ultima
+				// se manca anche questa allora errore mai fatta una build !!!!!
+
+				Logga(ctx, "KUBEDKRBUILD MISSING ON "+versione+" seek for latest")
+				argsBld := make(map[string]string)
+
+				argsBld["$fullquery"] = "select XKUBEDKRBUILD06,XKUBEDKRBUILD04,XKUBEDKRBUILD07,XKUBEDKRBUILD09,XKUBEDKRBUILD10,XKUBEDKRBUILD12,XKUBEDKRBUILD13 "
+				argsBld["$fullquery"] += "from TB_ANAG_KUBEDKRBUILD00 "
+				argsBld["$fullquery"] += "where 1>0 "
+				argsBld["$fullquery"] += "AND XKUBEDKRBUILD03 = '" + docker + "' "
+				argsBld["$fullquery"] += "AND XKUBEDKRBUILD08 = '" + team + "' "
+				argsBld["$fullquery"] += " order by (case when XKUBEDKRBUILD04 = 'master' then 0 else 1 end ) desc,cast(XKUBEDKRBUILD06 as unsigned) DESC "
+				argsBld["$fullquery"] += " limit 1 "
+				fmt.Println(argsBld["$fullquery"])
+
+				restyKubeBldRes := ApiCallGET(ctx, false, argsBld, "msdevops", "/core/custom/KUBEDKRBUILD/values", devopsToken, "")
+
+				//fmt.Println(restyKubeBldRes)
+				if restyKubeBldRes.Errore < 0 {
+					//fmt.Println("A")
+					Logga(ctx, restyKubeBldRes.Log)
+					loggaErrore.Errore = restyKubeBldRes.Errore
+					loggaErrore.Log = restyKubeBldRes.Log
+					return microservices, loggaErrore
+				}
+
+				if len(restyKubeBldRes.BodyArray) > 0 {
+
+					// fmt.Println("B")
+					var branchs Branch
+					branchs.Branch = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD04"].(string)
+					branchs.Version = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD06"].(string)
+					branchs.Sha = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD07"].(string)
+
+					var podBuild PodBuild
+					podBuild.Versione = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD06"].(string)
+					podBuild.Merged = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD13"].(string)
+					podBuild.Tag = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD09"].(string)
+					podBuild.MasterDev = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD04"].(string)
+					podBuild.ReleaseNote = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD12"].(string)
+					podBuild.SprintBranch = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD10"].(string)
+
+					pod.PodBuild = podBuild
+					pod.Branch = branchs
+					Logga(ctx, "KUBEDKRBUILD LATEST OK")
+				} else {
+
+					Logga(ctx, "   !!! "+docker+"  KUBEDKRBUILD MISSING")
+					loggaErrore.Errore = -1
+					loggaErrore.Log = "!!! ERROR !!!\n\nThe component " + docker + " of the microservice " + microservices.Nome + " is MISSING,\nyou have to build it first.\nbye\n\n"
+					return microservices, loggaErrore
+				}
 			}
 
 			Logga(ctx, "")
