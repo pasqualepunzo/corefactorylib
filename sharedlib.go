@@ -154,8 +154,8 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 
 	argsClu := make(map[string]string)
 	argsClu["source"] = "devops-8"
-	argsClu["$select"] = "XKUBECLUSTER03,XKUBECLUSTER05,XKUBECLUSTER06,XKUBECLUSTER08,XKUBECLUSTER09,XKUBECLUSTER10,"
-	argsClu["$select"] += "XKUBECLUSTER11,XKUBECLUSTER12,XKUBECLUSTER15,XKUBECLUSTER16,XKUBECLUSTER17,XKUBECLUSTER18,XKUBECLUSTER20,XKUBECLUSTER21,XKUBECLUSTER22"
+	// argsClu["$select"] = "XKUBECLUSTER03,XKUBECLUSTER05,XKUBECLUSTER06,XKUBECLUSTER08,XKUBECLUSTER09,XKUBECLUSTER10,"
+	// argsClu["$select"] += "XKUBECLUSTER11,XKUBECLUSTER12,XKUBECLUSTER15,XKUBECLUSTER16,XKUBECLUSTER17,XKUBECLUSTER18,XKUBECLUSTER20,XKUBECLUSTER21,XKUBECLUSTER22"
 	argsClu["center_dett"] = "allviews"
 	//["$filter"] = "equals(XKUBECLUSTER03,'" + ims.cluster + "') "
 
@@ -209,6 +209,9 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 			clu.Ambiente = int32(ambienteFloat)
 			clu.RefappID = x["XKUBECLUSTER22"].(string)
 			clu.SwMultiEnvironment = x["XKUBECLUSTER17"].(string)
+
+			clu.NetRegion = x["XKUBECLUSTER24"].(string)
+			clu.Autopilot = x["XKUBECLUSTER14"].(string)
 
 			// PORCATA PER FATICARE AL VOLO SU KEEPUP-STAGE
 			// clu.SwMultiEnvironment = "1"
@@ -271,6 +274,8 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 
 	if _, ok := clus[ims.Cluster]; ok {
 
+		Logga(ctx, " +++ KUBECLUSTER OK +++ ")
+
 		// fmt.Println(ims.cluster)
 		// LogJson(clus[ims.cluster])
 
@@ -288,6 +293,8 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 		ims.SwMultiEnvironment = clus[ims.Cluster].SwMultiEnvironment
 		ims.ApiHost = clus[ims.Cluster].ApiHost
 		ims.ApiToken = clus[ims.Cluster].ApiToken
+		ims.Autopilot = clus[ims.Cluster].Autopilot
+		ims.NetRegion = clus[ims.Cluster].NetRegion
 
 		Logga(ctx, "KUBECLUSTER OK")
 	} else {
@@ -680,8 +687,14 @@ func CloudBuils(ctx context.Context, docker, verPad, dirRepo string, swMonolith 
 		dockerName = docker
 	}
 
+	cloudNet := ""
+	if os.Getenv("gcloudNetRegion") != "" {
+		cloudNet = " --region " + os.Getenv("gcloudNetRegion")
+	} else {
+		cloudNet = " --zone " + os.Getenv("gcloudNetZone")
+	}
 	SwitchProject(os.Getenv("gcloudProjectID"))
-	SwitchCluster(os.Getenv("clusterKube8"))
+	SwitchCluster(os.Getenv("clusterKube8"), cloudNet)
 
 	fileCloudBuild := dir + "/cloudBuild.yaml"
 
@@ -838,11 +851,11 @@ func UpdateDockerVersion(ctx context.Context, docker, ver, user, devMaster, sha,
 }
 
 /*
-	Fa il merge di un branch sull'altro
-	se ci sono conflitti li segnala
+Fa il merge di un branch sull'altro
+se ci sono conflitti li segnala
 
-	accetta branch source, branch dest, tipo (tag o branch)
-	ritorna un LOG
+accetta branch source, branch dest, tipo (tag o branch)
+ritorna un LOG
 */
 func GitMergeApi(ctx context.Context, src, dst, repo, tipo string) (string, string) {
 

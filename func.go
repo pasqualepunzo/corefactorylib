@@ -148,9 +148,8 @@ func PrintaErroreStreamText(errorLabel, log string) string {
 }
 
 // SwitchCluster ...
-func SwitchCluster(clusterName string) {
-
-	comando := "gcloud container clusters get-credentials " + clusterName
+func SwitchCluster(clusterName, cloudNet string) {
+	comando := "gcloud container clusters get-credentials " + clusterName + cloudNet
 	ExecCommand(comando, true)
 }
 

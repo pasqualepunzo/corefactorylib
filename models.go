@@ -311,6 +311,8 @@ type IstanzaMicro struct {
 	AttributiMS                         []AttributiMS          `json:"attributiMS"`
 	ApiHost                             string                 `json:"apiHost"`
 	ApiToken                            string                 `json:"apiToken"`
+	Autopilot                           string                 `json:"autopilot"`
+	NetRegion                           string                 `json:"netRegion"`
 }
 
 type AttributiMS struct {
@@ -356,6 +358,8 @@ type ClusterSt struct {
 	AccessToken        string `json:"accssToken"`
 	ApiHost            string `json:"apiHost"`
 	ApiToken           string `json:"apiToken"`
+	NetRegion          string `json:"netRegion"`
+	Autopilot          string `json:"autopilot"`
 }
 type ClusterAccess struct {
 	Domain            string `json="domain"`
