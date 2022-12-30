@@ -210,7 +210,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 			clu.RefappID = x["XKUBECLUSTER22"].(string)
 			clu.SwMultiEnvironment = x["XKUBECLUSTER17"].(string)
 
-			clu.NetRegion = x["XKUBECLUSTER24"].(string)
+			clu.CloudNet = x["XKUBECLUSTER24"].(string)
 			clu.Autopilot = x["XKUBECLUSTER14"].(string)
 
 			// PORCATA PER FATICARE AL VOLO SU KEEPUP-STAGE
@@ -294,7 +294,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 		ims.ApiHost = clus[ims.Cluster].ApiHost
 		ims.ApiToken = clus[ims.Cluster].ApiToken
 		ims.Autopilot = clus[ims.Cluster].Autopilot
-		ims.NetRegion = clus[ims.Cluster].NetRegion
+		ims.CloudNet = clus[ims.Cluster].CloudNet
 
 		Logga(ctx, "KUBECLUSTER OK")
 	} else {

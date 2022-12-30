@@ -312,7 +312,7 @@ type IstanzaMicro struct {
 	ApiHost                             string                 `json:"apiHost"`
 	ApiToken                            string                 `json:"apiToken"`
 	Autopilot                           string                 `json:"autopilot"`
-	NetRegion                           string                 `json:"netRegion"`
+	CloudNet                            string                 `json:"cloudNet"`
 }
 
 type AttributiMS struct {
@@ -358,7 +358,7 @@ type ClusterSt struct {
 	AccessToken        string `json:"accssToken"`
 	ApiHost            string `json:"apiHost"`
 	ApiToken           string `json:"apiToken"`
-	NetRegion          string `json:"netRegion"`
+	CloudNet           string `json:"cloudNet"`
 	Autopilot          string `json:"autopilot"`
 }
 type ClusterAccess struct {
