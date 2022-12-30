@@ -532,7 +532,7 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 				sqlIdx += " order by SEQ_IN_INDEX"
 				// fmt.Println("+++++++++++++++++++++++++++++++++++++++++++++++")
 				// fmt.Println(sqlIdx)
-				selDB2, err = db3.Query(sqlIdx)
+				selDB2, err = db.Query(sqlIdx)
 				if err != nil {
 					loggaErrore.Log = err.Error()
 					loggaErrore.Errore = -1
@@ -588,6 +588,78 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 		}
 	}
 
+	if len(idxsMiss) > 0 {
+
+		fmt.Println("Find unique indexes to drop when adding new one")
+		fmt.Println()
+
+		var tbls = make(map[string]string)
+		for _, v := range idxsMiss {
+			if v.Unique == "1" {
+				tbls[v.Tbl] = v.Tbl
+			}
+		}
+
+		var idxsToDrop []CompareIndex
+		for _, v := range idxsDst {
+
+			if v.Unique == "1" {
+				_, ok := tbls[v.Tbl]
+				if ok {
+					var find bool
+					find = false
+
+					for _, vv := range idxsSrc {
+						//fmt.Println(v.index + "|" + vv.index)
+						if v.Index == vv.Index {
+							find = true
+						}
+					}
+
+					if find == false {
+						var idxMiss CompareIndex
+						idxMiss.Tbl = v.Tbl
+						idxMiss.NomeIdx = v.NomeIdx
+						idxMiss.Index = v.Index
+						idxMiss.Unique = v.Unique
+						idxMiss.NomeColonna = v.NomeColonna
+						fmt.Println("Append " + idxMiss.NomeIdx + " to list idxsToDrop")
+						idxsToDrop = append(idxsToDrop, idxMiss)
+					}
+				}
+
+			}
+		}
+
+		if len(idxsToDrop) > 0 {
+			fmt.Println("Dropping Unique Indexes that will be replaced")
+			fmt.Println()
+			var iddi = make(map[string]string)
+			for _, v := range idxsToDrop {
+				iddi[v.Tbl+"."+v.NomeIdx] = v.Tbl + "." + v.NomeIdx
+			}
+
+			for _, v := range iddi {
+				//fmt.Println(iddi[v])
+				nomeIndiceArr := strings.Split(iddi[v], ".")
+				dropIdx := "DROP INDEX " + nomeIndiceArr[1] + " on " + nomeIndiceArr[0]
+				//fmt.Println("CUSTOM PERFORM DROP OLD INDEX:" + dropIdx)
+
+				allCompareIdx = append(allCompareIdx, dropIdx)
+				_, err = db2.Exec(dropIdx)
+				if err != nil {
+					loggaErrore.Log = err.Error()
+					loggaErrore.Errore = -1
+					//return loggaErrore, allCompareIdx
+				} else {
+					//	fmt.Println(dropIdx + "  ok")
+				}
+
+			}
+		}
+
+	}
+
 	fmt.Println("Creating new indexes and editing the different ones")
 	fmt.Println()
 
@@ -614,7 +686,7 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 			sqlIdx += "and NAME_IDX = '" + nomeIndiceArr[1] + "' "
 			sqlIdx += " order by SEQUENCE_IDX"
 			//fmt.Println(sqlIdx)
-			selDB2, err := db2.Query(sqlIdx)
+			selDB2, err := db3.Query(sqlIdx)
 			if err != nil {
 				loggaErrore.Log = err.Error()
 				loggaErrore.Errore = -1
@@ -648,6 +720,7 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 			//fmt.Println(createIdx)
 
 			allCompareIdx = append(allCompareIdx, dropIdx)
+			//fmt.Println("CUSTOM PERFORM DROP INDEX:" + dropIdx)
 			_, err = db2.Exec(dropIdx)
 			if err != nil {
 				loggaErrore.Log = err.Error()
@@ -658,6 +731,7 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 			}
 
 			allCompareIdx = append(allCompareIdx, createIdx)
+			//fmt.Println("CUSTOM PERFORM CREATE INDEX:" + createIdx)
 			_, err = db2.Exec(createIdx)
 			if err != nil {
 
