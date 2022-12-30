@@ -42,15 +42,6 @@ func ApiCallPOST(ctx context.Context, debug bool, args []map[string]interface{},
 
 	Logga(ctx, "apiCallPOST")
 
-	JobID := ""
-	if ctx.Value("JobID") != nil {
-		JobID = ctx.Value("JobID").(string)
-	}
-
-	jobIDSlice := make(map[string]interface{})
-	jobIDSlice["JobID"] = JobID
-	args = append(args, jobIDSlice)
-
 	type restyPOSTStruct []struct {
 		Code   int         `json:"code"`
 		Errors interface{} `json:"errors"`
@@ -377,13 +368,6 @@ func ApiCallPUT(ctx context.Context, debug bool, args map[string]interface{}, mi
 	} else {
 		dominio = "https://" + dominio
 	}
-
-	JobID := ""
-	if ctx.Value("JobID") != nil {
-		JobID = ctx.Value("JobID").(string)
-	}
-
-	args["JobId"] = JobID
 
 	var LoggaErrore LoggaErrore
 	LoggaErrore.Errore = 0
