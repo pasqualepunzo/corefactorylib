@@ -281,6 +281,7 @@ type IstanzaMicro struct {
 	ProjectID                           string `json:"projectID"`
 	Owner                               string `json:"owner"`
 	Profile                             string `json:"profile"`
+	Enviro                              string `json:"enviro"`
 	TipoDeploy                          string `json:"tipoDeploy"`
 	Version                             string `json:"version"`
 	CustomerSalt                        string `json:"customSalt"`

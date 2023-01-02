@@ -29,7 +29,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	customerDomain := iresReq.CustomerDomain
 	monolithArg := iresReq.Monolith
 	tags := iresReq.Tags
-	profileDeployStr := iresReq.ProfileDeploy
+	profileDeployStr := iresReq.Enviro
 
 	tagsArr := []string{}
 	//rendo tags un array
@@ -50,6 +50,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	var ims IstanzaMicro
 	ims.Monolith = monolith
 	ims.ProfileDeploy = profileDeploy
+	ims.Enviro = enviro
 	ims.Tags = tagsArr
 	ims.Istanza = istanza
 
@@ -211,7 +212,8 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 			clu.SwMultiEnvironment = x["XKUBECLUSTER17"].(string)
 
 			clu.CloudNet = x["XKUBECLUSTER24"].(string)
-			clu.Autopilot = x["XKUBECLUSTER14"].(string)
+
+			clu.Autopilot = strconv.FormatFloat(x["XKUBECLUSTER14"].(float64), 'f', 0, 64)
 
 			// PORCATA PER FATICARE AL VOLO SU KEEPUP-STAGE
 			// clu.SwMultiEnvironment = "1"

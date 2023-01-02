@@ -363,7 +363,7 @@ func Times(str string, n int) string {
 	}
 	return strings.Repeat(str, n)
 }
-func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVersion, devopsToken string) (Microservice, LoggaErrore) {
+func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVersion, devopsToken, autopilot string) (Microservice, LoggaErrore) {
 
 	Logga(ctx, "")
 	Logga(ctx, " + + + + + + + + + + + + + + + + + + + + ")
@@ -514,42 +514,44 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 	}
 	Logga(ctx, "")
 
-	/* ************************************************************************************************ */
-	// KUBEMICROSERVHPA
-	Logga(ctx, "Getting KUBEMICROSERVHPA")
-	argsHpa := make(map[string]string)
-	argsHpa["source"] = "devops-8"
-	argsHpa["$select"] = "XKUBEMICROSERVHPA04,XKUBEMICROSERVHPA05,XKUBEMICROSERVHPA06,XKUBEMICROSERVHPA07,XKUBEMICROSERVHPA08,XKUBEMICROSERVHPA09"
-	argsHpa["center_dett"] = "dettaglio"
-	argsHpa["$filter"] = "equals(XKUBEMICROSERVHPA03,'" + hpaTmpl + "') "
+	if autopilot != "1" {
+		/* ************************************************************************************************ */
+		// KUBEMICROSERVHPA
+		Logga(ctx, "Getting KUBEMICROSERVHPA")
+		argsHpa := make(map[string]string)
+		argsHpa["source"] = "devops-8"
+		argsHpa["$select"] = "XKUBEMICROSERVHPA04,XKUBEMICROSERVHPA05,XKUBEMICROSERVHPA06,XKUBEMICROSERVHPA07,XKUBEMICROSERVHPA08,XKUBEMICROSERVHPA09"
+		argsHpa["center_dett"] = "dettaglio"
+		argsHpa["$filter"] = "equals(XKUBEMICROSERVHPA03,'" + hpaTmpl + "') "
 
-	restyKubeHpaRes := ApiCallGET(ctx, false, argsHpa, "msdevops", "/devops/KUBEMICROSERVHPA", devopsToken, "")
-	if restyKubeHpaRes.Errore < 0 {
-		Logga(ctx, restyKubeHpaRes.Log)
-		loggaErrore.Errore = restyKubeHpaRes.Errore
-		loggaErrore.Log = restyKubeHpaRes.Log
-		return microservices, loggaErrore
+		restyKubeHpaRes := ApiCallGET(ctx, false, argsHpa, "msdevops", "/devops/KUBEMICROSERVHPA", devopsToken, "")
+		if restyKubeHpaRes.Errore < 0 {
+			Logga(ctx, restyKubeHpaRes.Log)
+			loggaErrore.Errore = restyKubeHpaRes.Errore
+			loggaErrore.Log = restyKubeHpaRes.Log
+			return microservices, loggaErrore
+		}
+
+		if len(restyKubeHpaRes.BodyJson) > 0 {
+			var hpa Hpa
+			hpa.MinReplicas = strconv.FormatFloat(restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA04"].(float64), 'f', 0, 64)
+			hpa.MaxReplicas = strconv.FormatFloat(restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA05"].(float64), 'f', 0, 64)
+			hpa.CpuTipoTarget = restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA06"].(string)
+			hpa.CpuTarget = restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA07"].(string)
+			hpa.MemTipoTarget = restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA08"].(string)
+			hpa.MemTarget = restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA09"].(string)
+			microservices.Hpa = hpa
+			Logga(ctx, "KUBEMICROSERVHPA OK")
+		} else {
+			Logga(ctx, "   !!!   KUBEMICROSERVHPA MISSING")
+			loggaErrore.Errore = 0
+			loggaErrore.Log = "KUBEMICROSERVHPA MISSING"
+			//return microservices, loggaErrore
+		}
+		Logga(ctx, "")
+
+		/* ************************************************************************************************ */
 	}
-
-	if len(restyKubeHpaRes.BodyJson) > 0 {
-		var hpa Hpa
-		hpa.MinReplicas = strconv.FormatFloat(restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA04"].(float64), 'f', 0, 64)
-		hpa.MaxReplicas = strconv.FormatFloat(restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA05"].(float64), 'f', 0, 64)
-		hpa.CpuTipoTarget = restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA06"].(string)
-		hpa.CpuTarget = restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA07"].(string)
-		hpa.MemTipoTarget = restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA08"].(string)
-		hpa.MemTarget = restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA09"].(string)
-		microservices.Hpa = hpa
-		Logga(ctx, "KUBEMICROSERVHPA OK")
-	} else {
-		Logga(ctx, "   !!!   KUBEMICROSERVHPA MISSING")
-		loggaErrore.Errore = 0
-		loggaErrore.Log = "KUBEMICROSERVHPA MISSING"
-		//return microservices, loggaErrore
-	}
-	Logga(ctx, "")
-
-	/* ************************************************************************************************ */
 
 	/* ************************************************************************************************ */
 	// SELKUBEDKRLIST

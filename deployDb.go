@@ -204,7 +204,7 @@ func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, 
 	// os.Exit(0)
 	selDB, err := db.Query(sqlSel)
 	if err != nil {
-		loggaErrore.Log = err.Error()
+		loggaErrore.Log = err.Error() + " - " + sqlSel
 		loggaErrore.Errore = -1
 		return loggaErrore, allCompareSql
 	}
@@ -241,7 +241,7 @@ func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, 
 	// os.Exit(0)
 	selDB, err = db.Query(sqlSel)
 	if err != nil {
-		loggaErrore.Log = err.Error()
+		loggaErrore.Log = err.Error() + " - " + sqlSel
 		loggaErrore.Errore = -1
 		return loggaErrore, allCompareSql
 	}
@@ -359,7 +359,7 @@ func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, 
 	// da qui in poi si applica cio che e stato calcolato
 
 	for k, _ := range missingTbls {
-		sqlCompare := "CREATE TABLE " + k + " like " + dbDataSrc + "." + k
+		sqlCompare := "CREATE TABLE " + dbDataDst + "." + k + " like " + dbDataSrc + "." + k
 
 		// popolo un array con tutte le query da fare
 		allCompareSql = append(allCompareSql, sqlCompare)
@@ -367,7 +367,7 @@ func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, 
 		_, err = db2.Exec(sqlCompare)
 		if err != nil {
 
-			loggaErrore.Log += err.Error() + "\n"
+			loggaErrore.Log += err.Error() + " - " + sqlCompare + "\n"
 			loggaErrore.Errore = -1
 
 		} else {
@@ -403,7 +403,7 @@ func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, 
 
 		_, err = db2.Exec(sqlCompare)
 		if err != nil {
-			loggaErrore.Log += err.Error() + "\n"
+			loggaErrore.Log += err.Error() + " - " + sqlCompare + "\n"
 			loggaErrore.Errore = -1
 
 		} else {
@@ -470,7 +470,7 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 	//fmt.Println(sqlSel)
 	selDB, err := db.Query(sqlSel)
 	if err != nil {
-		loggaErrore.Log = err.Error()
+		loggaErrore.Log = err.Error() + " - " + sqlSel
 		loggaErrore.Errore = -1
 		return loggaErrore, allCompareIdx
 	}
@@ -501,7 +501,7 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 				//fmt.Println(sqlIdx)
 				selDB2, err := db3.Query(sqlIdx)
 				if err != nil {
-					loggaErrore.Log = err.Error()
+					loggaErrore.Log = err.Error() + " - " + sqlIdx
 					loggaErrore.Errore = -1
 					return loggaErrore, allCompareIdx
 				}
@@ -648,7 +648,7 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 				allCompareIdx = append(allCompareIdx, dropIdx)
 				_, err = db2.Exec(dropIdx)
 				if err != nil {
-					loggaErrore.Log = err.Error()
+					loggaErrore.Log = err.Error() + " - " + dropIdx
 					loggaErrore.Errore = -1
 					//return loggaErrore, allCompareIdx
 				} else {
@@ -688,7 +688,7 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 			//fmt.Println(sqlIdx)
 			selDB2, err := db3.Query(sqlIdx)
 			if err != nil {
-				loggaErrore.Log = err.Error()
+				loggaErrore.Log = err.Error() + " - " + sqlIdx
 				loggaErrore.Errore = -1
 				return loggaErrore, allCompareIdx
 			}
@@ -723,7 +723,7 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 			//fmt.Println("CUSTOM PERFORM DROP INDEX:" + dropIdx)
 			_, err = db2.Exec(dropIdx)
 			if err != nil {
-				loggaErrore.Log = err.Error()
+				loggaErrore.Log = err.Error() + " - " + dropIdx
 				loggaErrore.Errore = -1
 				//return loggaErrore, allCompareIdx
 			} else {
@@ -735,7 +735,7 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 			_, err = db2.Exec(createIdx)
 			if err != nil {
 
-				loggaErrore.Log = err.Error()
+				loggaErrore.Log = err.Error() + " - " + createIdx
 				loggaErrore.Errore = -1
 				return loggaErrore, allCompareIdx
 			} else {
