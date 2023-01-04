@@ -281,6 +281,7 @@ type IstanzaMicro struct {
 	ProjectID                           string `json:"projectID"`
 	Owner                               string `json:"owner"`
 	Profile                             string `json:"profile"`
+	Enviro                              string `json:"enviro"`
 	TipoDeploy                          string `json:"tipoDeploy"`
 	Version                             string `json:"version"`
 	CustomerSalt                        string `json:"customSalt"`
@@ -311,6 +312,8 @@ type IstanzaMicro struct {
 	AttributiMS                         []AttributiMS          `json:"attributiMS"`
 	ApiHost                             string                 `json:"apiHost"`
 	ApiToken                            string                 `json:"apiToken"`
+	Autopilot                           string                 `json:"autopilot"`
+	CloudNet                            string                 `json:"cloudNet"`
 }
 
 type AttributiMS struct {
@@ -356,6 +359,8 @@ type ClusterSt struct {
 	AccessToken        string `json:"accssToken"`
 	ApiHost            string `json:"apiHost"`
 	ApiToken           string `json:"apiToken"`
+	CloudNet           string `json:"cloudNet"`
+	Autopilot          string `json:"autopilot"`
 }
 type ClusterAccess struct {
 	Domain            string `json="domain"`
