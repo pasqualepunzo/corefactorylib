@@ -74,6 +74,8 @@ type LoginRes struct {
 	BitbucketUser           string       `json:"bitbucketUser"`
 	BitbucketToken          string       `json:"bitbucketToken"`
 	BitbucketProject        string       `json:"bitbucketProject"`
+	CoreGkeProject          string       `json:"coreGkeProject"`
+	CoreGkeUrl              string       `json:"coreGkeUrl"`
 }
 type SprintBranch struct {
 	CurrentBranch string
