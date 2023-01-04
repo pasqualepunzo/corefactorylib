@@ -1753,6 +1753,45 @@ func GetArrRepo(ctx context.Context, team, customSettings string) map[int]Repos 
 
 	return arrRepo
 }
+func GetCfToolEnv(ctx context.Context, token, dominio string) (map[string]string, LoggaErrore) {
+	Logga(ctx, "Getting KUBECFTOOLENV")
+
+	var loggaErrore LoggaErrore
+	loggaErrore.Errore = 0
+
+	args := make(map[string]string)
+	args["center_dett"] = "dettaglio"
+	args["source"] = "devops-8"
+
+	envRes := ApiCallGET(ctx, false, args, "msdevops", "/devops/KUBECFTOOLENV/equals(XKUBECFTOOLENV03,'"+dominio+"')", token, "")
+
+	env := make(map[string]string)
+
+	if len(envRes.BodyJson) > 0 {
+		env["gruppo"] = envRes.BodyJson["XGRU05"].(string)
+		env["telegramKey"] = envRes.BodyJson["XKUBECFTOOL04"].(string)
+		env["TelegramID"] = envRes.BodyJson["XKUBECFTOOL05"].(string)
+		env["coreApiVersion"] = envRes.BodyJson["XKUBECFTOOL06"].(string)
+		env["coreApiPort"] = envRes.BodyJson["XKUBECFTOOL07"].(string)
+		env["coreAccessToken"] = envRes.BodyJson["XKUBECFTOOL08"].(string)
+		env["atlassianHost"] = envRes.BodyJson["XKUBECFTOOL09"].(string)
+		env["atlassianUser"] = envRes.BodyJson["XKUBECFTOOL10"].(string)
+		env["atlassianToken"] = envRes.BodyJson["XKUBECFTOOL11"].(string)
+		env["bitbucketHost"] = envRes.BodyJson["XKUBECFTOOL12"].(string)
+		env["bitbucketUser"] = envRes.BodyJson["XKUBECFTOOL13"].(string)
+		env["bitbucketToken"] = envRes.BodyJson["XKUBECFTOOL14"].(string)
+		env["bitbucketProject"] = envRes.BodyJson["XKUBECFTOOL15"].(string)
+
+		Logga(ctx, "KUBECFTOOLENV OK")
+	} else {
+		Logga(ctx, "KUBECFTOOLENV MISSING")
+		loggaErrore.Errore = -1
+		loggaErrore.Log = "KUBECFTOOLENV MISSING"
+	}
+
+	return env, loggaErrore
+
+}
 func GetDeploymentApi(namespace, apiHost, apiToken string) (DeploymntStatus, LoggaErrore) {
 
 	var erro LoggaErrore
