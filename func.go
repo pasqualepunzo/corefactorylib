@@ -1769,7 +1769,6 @@ func GetCfToolEnv(ctx context.Context, token, dominio string) (map[string]string
 	env := make(map[string]string)
 
 	if len(envRes.BodyJson) > 0 {
-		env["gruppo"] = envRes.BodyJson["XGRU05"].(string)
 		env["telegramKey"] = envRes.BodyJson["XKUBECFTOOL04"].(string)
 		env["TelegramID"] = envRes.BodyJson["XKUBECFTOOL05"].(string)
 		env["coreApiVersion"] = envRes.BodyJson["XKUBECFTOOL06"].(string)
