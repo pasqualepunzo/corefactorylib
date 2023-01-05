@@ -1783,7 +1783,7 @@ func GetCfToolEnv(ctx context.Context, token, dominio string) (map[string]string
 		env["bitbucketProject"] = envRes.BodyJson["XKUBECFTOOLENV15"].(string)
 		env["coreGkeProject"] = envRes.BodyJson["XKUBECFTOOLENV16"].(string)
 		env["coreGkeUrl"] = envRes.BodyJson["XKUBECFTOOLENV17"].(string)
-		env["CoreApiDominio"] = envRes.BodyJson["XKUBECFTOOLENV18"].(string)
+		env["coreApiDominio"] = envRes.BodyJson["XKUBECFTOOLENV18"].(string)
 
 		Logga(ctx, "KUBECFTOOLENV OK")
 	} else {
