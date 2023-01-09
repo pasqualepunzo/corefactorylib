@@ -1602,7 +1602,7 @@ func GetJsonDatabases(ctx context.Context, stage, developer string, market int32
 		SetHeader("microservice", "msappman").
 		SetAuthToken(clusterToken).
 		SetBody(keyvalueslice).
-		Post(dominio + "/api/" + os.Getenv("coreapiVersion") + "/appman/getDeveloperMsList")
+		Post(dominio + "/api/" + os.Getenv("coreApiVersion") + "/appman/getDeveloperMsList")
 
 	callResponse := map[string]interface{}{}
 	if err != nil { // HTTP ERRORE
