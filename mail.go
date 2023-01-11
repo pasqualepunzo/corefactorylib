@@ -8,6 +8,7 @@ import (
 	"log"
 	"mime/quotedprintable"
 	"net/smtp"
+	"os"
 
 	"github.com/go-resty/resty/v2"
 )
@@ -32,9 +33,11 @@ func (a *loginAuth) Next(fromServer []byte, more bool) ([]byte, error) {
 	return nil, nil
 }
 func SendMail(subject, testo string, receivers []string) {
-	from_email := "devops@custom.it"
-	host := "relay.custom.it:465"
-	//auth := smtp.PlainAuth("", from_email, password, "custom.relay.it")
+
+	from_email := os.Getenv("smtpSender")
+	host := os.Getenv("smtpHost") + ":" + os.Getenv("smtpPort")
+	password := os.Getenv("smtpPass")
+	auth := smtp.PlainAuth("", from_email, password, os.Getenv("smtpHost"))
 	// auth := LoginAuth(from_email, password)
 
 	header := make(map[string]string)
@@ -42,9 +45,6 @@ func SendMail(subject, testo string, receivers []string) {
 	if len(receivers) > 0 {
 		to_email = receivers
 	}
-
-	// a prescindere mando a me e betto
-	to_email = append(to_email, "e.disanto@custom.it")
 
 	header["From"] = from_email
 	header["To"] = to_email[0]
@@ -67,7 +67,7 @@ func SendMail(subject, testo string, receivers []string) {
 
 	final_message := header_message + "\r\n" + body_message.String()
 
-	status := smtp.SendMail(host, nil, from_email, to_email, []byte(final_message))
+	status := smtp.SendMail(host, auth, from_email, to_email, []byte(final_message))
 	if status != nil {
 		log.Printf("Error from SMTP Server: %s", status)
 	}
