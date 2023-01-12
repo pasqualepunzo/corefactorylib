@@ -611,6 +611,7 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 	Logga(ctx, "Inserisco il record")
 
 	canaryProduction = strings.ToLower(canaryProduction)
+	ista := strings.ToLower(istanza.Istanza)
 
 	/* ----------------- */
 
@@ -653,7 +654,7 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 	keyvalueslice["debug"] = false
 	keyvalueslice["source"] = "devops-8"
 	keyvalueslice["XDEPLOYLOG03"] = canaryProduction
-	keyvalueslice["XDEPLOYLOG04"] = istanza.Istanza
+	keyvalueslice["XDEPLOYLOG04"] = ista
 	keyvalueslice["XDEPLOYLOG05"] = versioneMicroservizio
 	keyvalueslice["XDEPLOYLOG06"] = 1
 	keyvalueslice["XDEPLOYLOG07"] = 0
@@ -661,7 +662,7 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 	keyvalueslice["XDEPLOYLOG09"] = enviro
 	keyvalueslices = append(keyvalueslices, keyvalueslice)
 
-	resPOST := ApiCallPOST(ctx, false, keyvalueslices, "msdevops", "/deploy/DEPLOYLOG", devopsToken, "")
+	resPOST := ApiCallPOST(ctx, false, keyvalueslices, "msdevops", "/devops/DEPLOYLOG", devopsToken, "")
 	if resPOST.Errore < 0 {
 		LoggaErrore.Log = resPOST.Log
 		return LoggaErrore

@@ -1891,6 +1891,7 @@ func CheckPodHealth(microservice, versione, namespace, apiHost, apiToken string)
 
 			}
 
+			i++
 			time.Sleep(10 * time.Second)
 			if i > 25 {
 				erro.Errore = -1
