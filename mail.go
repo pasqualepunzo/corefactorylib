@@ -80,26 +80,26 @@ func BuildMail(data []byte, mail Mail, attachName string) []byte {
 
 	return buf.Bytes()
 }
-func SendMail(sender, subject, msg, smtpHost, port, password, attachName string, receivers []string, attach []byte) error {
+func SendMail(mailer Mailer) error {
 
-	from_email := sender
-	host := smtpHost + ":" + port
+	from_email := mailer.Sender
+	host := mailer.SmtpHost + ":" + mailer.Port
 
 	request := Mail{
 		Sender:  from_email,
-		To:      receivers,
-		Subject: subject,
-		Body:    msg,
+		To:      mailer.Receivers,
+		Subject: mailer.Subject,
+		Body:    mailer.Msg,
 	}
 
-	data := BuildMail(attach, request, attachName)
+	data := BuildMail(mailer.Attach, request, mailer.AttachName)
 
 	//auth := smtp.PlainAuth("", from_email, password, smtp)
-	auth := LoginAuth(from_email, password)
+	auth := LoginAuth(from_email, mailer.Passwd)
 
 	ctx := context.Background()
 
-	err := smtp.SendMail(host, auth, from_email, receivers, data)
+	err := smtp.SendMail(host, auth, from_email, mailer.Receivers, data)
 	if err == nil {
 		Logga(ctx, "Email Sent Successfully")
 		return nil

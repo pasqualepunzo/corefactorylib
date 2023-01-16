@@ -2,6 +2,18 @@ package lib
 
 import "time"
 
+type Mailer struct {
+	Sender     string   `json:"sender"`
+	Subject    string   `json:"subject"`
+	Msg        string   `json:"msg"`
+	SmtpHost   string   `json:"smtpHost"`
+	Port       string   `json:"port"`
+	Passwd     string   `json:"passwd"`
+	AttachName string   `json:"attachName"`
+	Receivers  []string `json:"receivers"`
+	Attach     []byte   `json:"attach"`
+}
+
 type Repos struct {
 	Repo string
 	Nome string
