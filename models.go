@@ -8,9 +8,7 @@ type Repos struct {
 	Sw   int
 	Tipo string
 }
-type loginAuth struct {
-	username, password string
-}
+
 type BranchResStruct struct {
 	Name   string `json:"name"`
 	Target struct {

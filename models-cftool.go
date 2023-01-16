@@ -60,6 +60,7 @@ type LoginRes struct {
 	Gruppo                  string       `json:"gruppo"`
 	ClusterDomain           string       `json:"clusterDomain"`
 	GkeProjectID            string       `json:"gkeProjectID"`
+	NetworkRegion           string       `json:"networkRegion"`
 	Environment             string       `json:"environment"`
 	RefappCustomerID        string       `json:"refappCustomerID"`
 	TelegramKey             string       `json:"telegramKey"`

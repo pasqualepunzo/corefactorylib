@@ -81,7 +81,7 @@ func Logga(ctx context.Context, i interface{}, level ...string) {
 					"JobID":  JobID,
 					"pid":    os.Getpid(),
 					"caller": caller,
-				}).Fatal(text)
+				}).Error(text)
 
 			case "warn":
 				log.WithFields(log.Fields{
@@ -1274,9 +1274,6 @@ func GetFutureToggle(ctx context.Context, cluster string) (bool, LoggaErrore) {
 	Logga(ctx, "")
 	/* ************************************************************************************************ */
 
-	// PORCATA PER FATICARE AL VOLO SU KEEPUP-STAGE
-	// sw = true
-
 	return sw, loggaErrore
 }
 func GetEnvironmentStatus(ctx context.Context, cluster, enviro, microserice, customer string) LoggaErrore {
@@ -1893,7 +1890,7 @@ func CheckPodHealth(microservice, versione, namespace, apiHost, apiToken string)
 
 			i++
 			time.Sleep(10 * time.Second)
-			if i > 25 {
+			if i > 150 { // superati 5 minuti direi che stann e plobble'
 				erro.Errore = -1
 				erro.Log = "Time Out. Pod is not Running"
 				return false, erro

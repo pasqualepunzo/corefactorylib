@@ -215,9 +215,6 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 
 			clu.Autopilot = strconv.FormatFloat(x["XKUBECLUSTER14"].(float64), 'f', 0, 64)
 
-			// PORCATA PER FATICARE AL VOLO SU KEEPUP-STAGE
-			// clu.SwMultiEnvironment = "1"
-
 			/**
 			Andiamo a vedere se esiste un record in KUBECLUSTERENV che fa l'overwrite di alcune proprietà di
 			KUBECLUSTER in base all'env
@@ -246,12 +243,6 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 
 				Logga(ctx, "KUBECLUSTERENV OK")
 			}
-
-			// if x["XKUBECLUSTER03"].(string) == "keepup-prod" && enviro == "uat" {
-			// 	clu.Domain = "ms-uat.keepup-pro.it"
-			// 	clu.RefappID = "00000UAT-0000-0000-0000-000CUSTOMER"
-			// 	clu.MasterHost = "kauat_admin"
-			// }
 
 			clus[x["XKUBECLUSTER03"].(string)] = clu
 

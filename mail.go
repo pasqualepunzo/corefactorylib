@@ -2,15 +2,27 @@ package lib
 
 import (
 	"bytes"
+	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
-	"mime/quotedprintable"
 	"net/smtp"
+	"strings"
 
 	"github.com/go-resty/resty/v2"
 )
+
+type loginAuth struct {
+	username, password string
+}
+
+type Mail struct {
+	Sender  string
+	To      []string
+	Subject string
+	Body    string
+}
 
 func LoginAuth(username, password string) smtp.Auth {
 	return &loginAuth{username, password}
@@ -31,47 +43,70 @@ func (a *loginAuth) Next(fromServer []byte, more bool) ([]byte, error) {
 	}
 	return nil, nil
 }
-func SendMail(subject, testo string, receivers []string) {
-	from_email := "devops@custom.it"
-	host := "relay.custom.it:465"
-	//auth := smtp.PlainAuth("", from_email, password, "custom.relay.it")
-	// auth := LoginAuth(from_email, password)
+func BuildMail(data []byte, mail Mail, attachName string) []byte {
 
-	header := make(map[string]string)
-	var to_email []string
-	if len(receivers) > 0 {
-		to_email = receivers
+	var buf bytes.Buffer
+
+	buf.WriteString(fmt.Sprintf("From: %s\r\n", mail.Sender))
+	buf.WriteString(fmt.Sprintf("To: %s\r\n", strings.Join(mail.To, ";")))
+	buf.WriteString(fmt.Sprintf("Subject: %s\r\n", mail.Subject))
+
+	if len(data) > 0 {
+		boundary := "my-boundary-779"
+		buf.WriteString("MIME-Version: 1.0\r\n")
+		buf.WriteString(fmt.Sprintf("Content-Type: multipart/mixed; boundary=%s\n",
+			boundary))
+
+		buf.WriteString(fmt.Sprintf("\r\n--%s\r\n", boundary))
+		buf.WriteString("Content-Type: text/plain; charset=\"utf-8\"\r\n")
+		buf.WriteString(fmt.Sprintf("\r\n%s", mail.Body))
+
+		buf.WriteString(fmt.Sprintf("\r\n--%s\r\n", boundary))
+		buf.WriteString("Content-Type: text/plain; charset=\"utf-8\"\r\n")
+		buf.WriteString("Content-Transfer-Encoding: base64\r\n")
+		buf.WriteString("Content-Disposition: attachment; filename=" + attachName + "\r\n")
+		buf.WriteString("Content-ID: <" + attachName + ">\r\n\r\n")
+
+		b := make([]byte, base64.StdEncoding.EncodedLen(len(data)))
+		base64.StdEncoding.Encode(b, data)
+		buf.Write(b)
+		buf.WriteString(fmt.Sprintf("\r\n--%s", boundary))
+
+		buf.WriteString("--")
+	} else {
+		buf.WriteString("Content-Type: text/plain; charset=\"utf-8\"\r\n")
+		buf.WriteString(fmt.Sprintf("\r\n%s", mail.Body))
 	}
 
-	// a prescindere mando a me e betto
-	to_email = append(to_email, "e.disanto@custom.it")
+	return buf.Bytes()
+}
+func SendMail(sender, subject, msg, smtpHost, port, password, attachName string, receivers []string, attach []byte) error {
 
-	header["From"] = from_email
-	header["To"] = to_email[0]
-	header["Subject"] = subject
+	from_email := sender
+	host := smtpHost + ":" + port
 
-	header["MIME-Version"] = "1.0"
-	header["Content-Disposition"] = "inline"
-	header["Content-Transfer-Encoding"] = "quoted-printable"
-
-	header_message := ""
-	for key, value := range header {
-		header_message += fmt.Sprintf("%s: %s\r\n", key, value)
+	request := Mail{
+		Sender:  from_email,
+		To:      receivers,
+		Subject: subject,
+		Body:    msg,
 	}
 
-	body := testo
-	var body_message bytes.Buffer
-	temp := quotedprintable.NewWriter(&body_message)
-	temp.Write([]byte(body))
-	temp.Close()
+	data := BuildMail(attach, request, attachName)
 
-	final_message := header_message + "\r\n" + body_message.String()
+	//auth := smtp.PlainAuth("", from_email, password, smtp)
+	auth := LoginAuth(from_email, password)
 
-	status := smtp.SendMail(host, nil, from_email, to_email, []byte(final_message))
-	if status != nil {
-		log.Printf("Error from SMTP Server: %s", status)
+	ctx := context.Background()
+
+	err := smtp.SendMail(host, auth, from_email, receivers, data)
+	if err == nil {
+		Logga(ctx, "Email Sent Successfully")
+		return nil
+	} else {
+		Logga(ctx, "ERROR: "+err.Error(), "error")
+		return err
 	}
-	log.Print("Email Sent Successfully")
 }
 func TelegramSendMessage(botToken, cftoolDevopsChatID, text string) LoggaErrore {
 	type telegramResStruct struct {
