@@ -94,7 +94,7 @@ func SendMail(mailer Mailer) error {
 
 	data := BuildMail(mailer.Attach, request, mailer.AttachName)
 
-	//auth := smtp.PlainAuth("", from_email, password, smtp)
+	// auth := smtp.PlainAuth("", from_email, password, smtp)
 	auth := LoginAuth(from_email, mailer.Passwd)
 
 	ctx := context.Background()
