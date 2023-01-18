@@ -361,11 +361,11 @@ func Header(nome, descr, cfToolVers, swMono string) {
 		White = ""
 	}
 
-	cftool := "cftool"
+	cftool := "q01sdk"
 	y := 1 + 19 + 7 + 3 + len(nome) + len(cfToolVers) + 3 + 1
 	x := 81 - y
 	if swMono == "mono" {
-		cftool = "cftoolmono"
+		cftool = "q01sdkmono"
 		x = 72 - y
 	}
 
