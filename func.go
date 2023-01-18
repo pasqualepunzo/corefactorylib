@@ -363,7 +363,7 @@ func Times(str string, n int) string {
 	}
 	return strings.Repeat(str, n)
 }
-func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVersion, devopsToken, autopilot string) (Microservice, LoggaErrore) {
+func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVersion, devopsToken, autopilot, enviro string) (Microservice, LoggaErrore) {
 
 	Logga(ctx, "")
 	Logga(ctx, " + + + + + + + + + + + + + + + + + + + + ")
@@ -908,6 +908,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 					sqlEndpoint += "JOIN TB_ANAG_KUBEIMICROSERV00 on (XKUBEENDPOINT05=XKUBEIMICROSERV04  and XKUBEIMICROSERV05 = '" + cluster + "' ) "
 					sqlEndpoint += "JOIN TB_ANAG_KUBECLUSTER00 on(XKUBECLUSTER03 = XKUBEIMICROSERV05 and XKUBECLUSTER12 = '" + profile + "') "
 					sqlEndpoint += "JOIN TB_ANAG_DEPLOYLOG00 on (XDEPLOYLOG04=XKUBEIMICROSERV03 "
+					sqlEndpoint += "and XDEPLOYLOG09='" + enviro + "' "
 					sqlEndpoint += "and XDEPLOYLOG03='production' "
 					sqlEndpoint += "and XDEPLOYLOG06=1 and XDEPLOYLOG07=0) ) bb "
 					sqlEndpoint += "on (aa.XKUBEENDPOINT03 = bb.XKUBEENDPOINTOVR03 ) "
@@ -948,6 +949,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 					sqlEndpoint += "JOIN TB_ANAG_KUBEIMICROSERV00 on (XKUBEENDPOINT05=XKUBEIMICROSERV04) "
 					sqlEndpoint += "JOIN TB_ANAG_KUBECLUSTER00 on(XKUBECLUSTER03 = XKUBEIMICROSERV05 and XKUBECLUSTER12 = '2' and XKUBECLUSTER06 != '" + clusterOwner + "') "
 					sqlEndpoint += "JOIN TB_ANAG_DEPLOYLOG00 on (XDEPLOYLOG04=XKUBEIMICROSERV03 "
+					sqlEndpoint += "and XDEPLOYLOG09='" + enviro + "' "
 					sqlEndpoint += "and XDEPLOYLOG03='production' "
 					sqlEndpoint += "and XDEPLOYLOG06=1 and XDEPLOYLOG07=0) ) bb "
 					sqlEndpoint += "on (aa.XKUBEENDPOINT03 = bb.XKUBEENDPOINTOVR03 ) "
