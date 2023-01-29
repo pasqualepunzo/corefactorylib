@@ -46,10 +46,13 @@ func ApiCallPOST(ctx context.Context, debug bool, args []map[string]interface{},
 		Code   int         `json:"code"`
 		Errors interface{} `json:"errors"`
 		Debug  struct {
-			SQL string `json:"sql"`
+			SQL    string      `json:"sql"`
+			Fields interface{} `json:"fields"`
+			Body   interface{} `json:"body"`
 		} `json:"debug"`
 		InsertedID string `json:"insertedId"`
-		RowCount   int    `json:"rowCount"`
+
+		RowCount int `json:"rowCount"`
 	}
 
 	if dominio == "" {
@@ -135,6 +138,8 @@ func ApiCallPOST(ctx context.Context, debug bool, args []map[string]interface{},
 				callResponse["InsertID"] = restyPOSTRes[0].InsertedID
 				resStruct.Kind = "Json"
 				resStruct.BodyJson = callResponse
+				resStruct.DebugFields = restyPOSTRes[0].Debug.Fields
+				resStruct.DebugBody = restyPOSTRes[0].Debug.Body
 			}
 		}
 	}

@@ -245,11 +245,13 @@ type Endpoint struct {
 }
 
 type CallGetResponse struct {
-	Kind      string
-	BodyJson  map[string]interface{}
-	BodyArray []map[string]interface{}
-	Errore    int32
-	Log       string
+	Kind        string
+	BodyJson    map[string]interface{}
+	BodyArray   []map[string]interface{}
+	DebugFields interface{}
+	DebugBody   interface{}
+	Errore      int32
+	Log         string
 }
 
 type LoggaErrore struct {
