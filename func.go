@@ -28,8 +28,8 @@ import (
 func Logga(ctx context.Context, i interface{}, level ...string) {
 
 	// QUI SE VUOI VEDERE IL TESTO IN CHIARO
-	//logtext := true
-	logtext := false
+	logtext := true
+	//logtext := false
 
 	JobID := ""
 	if ctx.Value("JobID") != nil {

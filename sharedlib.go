@@ -665,7 +665,7 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 	//os.Exit(0)
 	return LoggaErrore
 }
-func CloudBuils(ctx context.Context, docker, verPad, dirRepo string, swMonolith bool) string {
+func CloudBuils(ctx context.Context, docker, verPad, dirRepo, bArgs string, swMonolith bool) string {
 
 	Logga(ctx, "")
 	Logga(ctx, "CLOUD BUILD for "+docker)
@@ -699,6 +699,8 @@ func CloudBuils(ctx context.Context, docker, verPad, dirRepo string, swMonolith 
 	cloudBuild += "  args: ['build', "
 	if swMonolith == true {
 		cloudBuild += "'--build-arg', 'CLIENTE=" + docker + "', "
+	} else {
+		cloudBuild += bArgs
 	}
 	cloudBuild += "'-t', '" + os.Getenv("gcloudUrl") + "/" + os.Getenv("gcloudProjectID") + "/" + dockerName + ":" + verPad + "', '.']\n"
 	cloudBuild += "- name: 'gcr.io/cloud-builders/docker'\n"
