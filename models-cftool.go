@@ -78,6 +78,12 @@ type LoginRes struct {
 	CoreGkeProject          string       `json:"coreGkeProject"`
 	CoreGkeUrl              string       `json:"coreGkeUrl"`
 	CoreApiDominio          string       `json:"CoreApiDominio"`
+	Tenants                 []Tenant     `json:"Tenants"`
+}
+type Tenant struct {
+	Tenant      string `json:"Tenant"`
+	Master      string `json:"Master"`
+	Descrizione string `json:"Descrizione"`
 }
 type SprintBranch struct {
 	CurrentBranch string
