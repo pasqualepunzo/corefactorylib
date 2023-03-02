@@ -402,7 +402,7 @@ func ApiCallPUT(ctx context.Context, debug bool, args map[string]interface{}, mi
 	}
 	return res.Body(), LoggaErrore
 }
-func GetCoreFactoryToken(ctx context.Context) (string, LoggaErrore) {
+func GetCoreFactoryToken(ctx context.Context, tenant string) (string, LoggaErrore) {
 	/* ************************************************************************************************ */
 	// cerco il token di devops
 
@@ -422,7 +422,7 @@ func GetCoreFactoryToken(ctx context.Context) (string, LoggaErrore) {
 
 	argsAuth := make(map[string]interface{})
 	argsAuth["access_token"] = os.Getenv("cfToken")
-	argsAuth["refappCustomer"] = os.Getenv("refappCustomer")
+	argsAuth["refappCustomer"] = tenant
 	argsAuth["resource"] = urlDevopsStripped
 	argsAuth["uuid"] = "devops-" + sha
 

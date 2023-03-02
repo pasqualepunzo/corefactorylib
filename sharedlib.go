@@ -809,10 +809,10 @@ func CloudBuils(ctx context.Context, docker, verPad, dirRepo, bArgs string, swMo
 
 	return sha256
 }
-func UpdateDockerVersion(ctx context.Context, docker, ver, user, devMaster, sha, team, newTagName, releaseNote, parentBranch, cs, merged string) {
+func UpdateDockerVersion(ctx context.Context, docker, ver, user, devMaster, sha, team, newTagName, releaseNote, parentBranch, cs, merged, tenant string) {
 
 	Logga(ctx, "Getting token")
-	devopsToken, erro := GetCoreFactoryToken(ctx)
+	devopsToken, erro := GetCoreFactoryToken(ctx, tenant)
 	if erro.Errore < 0 {
 		Logga(ctx, erro.Log)
 	} else {

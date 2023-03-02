@@ -292,14 +292,14 @@ func GetUserGroup(ctx context.Context, token, gruppo string) (map[string]string,
 
 	return gru, loggaErrore
 }
-func GetNextVersion(ctx context.Context, masterBranch, nomeDocker string) (string, LoggaErrore) {
+func GetNextVersion(ctx context.Context, masterBranch, nomeDocker, tenant string) (string, LoggaErrore) {
 
 	var loggaErrore LoggaErrore
 	loggaErrore.Errore = 0
 
 	// cerco il token di Corefactory
 	Logga(ctx, "Getting token")
-	devopsToken, erro := GetCoreFactoryToken(ctx)
+	devopsToken, erro := GetCoreFactoryToken(ctx, tenant)
 	if erro.Errore < 0 {
 		Logga(ctx, erro.Log)
 	} else {
@@ -1124,9 +1124,9 @@ func GetProfileInfo(ctx context.Context, token string) (map[string]interface{}, 
 
 	return info, erro
 }
-func GetBuildLastTag(ctx context.Context, team, docker, tipo string) (string, LoggaErrore) {
+func GetBuildLastTag(ctx context.Context, team, docker, tipo, tenant string) (string, LoggaErrore) {
 
-	sprint, erro := GetCurrentBranchSprint(ctx, team, tipo)
+	sprint, erro := GetCurrentBranchSprint(ctx, team, tipo, tenant)
 	if erro.Errore < 0 {
 		Logga(ctx, erro.Log)
 	}
@@ -1136,7 +1136,7 @@ func GetBuildLastTag(ctx context.Context, team, docker, tipo string) (string, Lo
 
 	// cerco il token di Corefactory
 	Logga(ctx, "Getting token")
-	devopsToken, erro := GetCoreFactoryToken(ctx)
+	devopsToken, erro := GetCoreFactoryToken(ctx, tenant)
 	if erro.Errore < 0 {
 		Logga(ctx, erro.Log)
 	} else {
@@ -1178,14 +1178,14 @@ func GetBuildLastTag(ctx context.Context, team, docker, tipo string) (string, Lo
 
 	return tag, loggaErrore
 }
-func GetCurrentBranchSprint(ctx context.Context, team, tipo string) (string, LoggaErrore) {
+func GetCurrentBranchSprint(ctx context.Context, team, tipo, tenant string) (string, LoggaErrore) {
 
 	var loggaErrore LoggaErrore
 	loggaErrore.Errore = 0
 
 	// cerco il token di Corefactory
 	Logga(ctx, "Getting token")
-	devopsToken, erro := GetCoreFactoryToken(ctx)
+	devopsToken, erro := GetCoreFactoryToken(ctx, tenant)
 	if erro.Errore < 0 {
 		Logga(ctx, erro.Log)
 	} else {
@@ -1266,14 +1266,14 @@ func CreateTag(ctx context.Context, branch, tag, repo string) {
 		fmt.Println(repo, tagCreateRes.Error.Message)
 	}
 }
-func GetFutureToggle(ctx context.Context, cluster string) (bool, LoggaErrore) {
+func GetFutureToggle(ctx context.Context, cluster, tenant string) (bool, LoggaErrore) {
 
 	var loggaErrore LoggaErrore
 	loggaErrore.Errore = 0
 
 	// cerco il token di Corefactory
 	Logga(ctx, "Getting token")
-	devopsToken, erro := GetCoreFactoryToken(ctx)
+	devopsToken, erro := GetCoreFactoryToken(ctx, tenant)
 	if erro.Errore < 0 {
 		Logga(ctx, erro.Log)
 	} else {
@@ -1312,7 +1312,7 @@ func GetFutureToggle(ctx context.Context, cluster string) (bool, LoggaErrore) {
 
 	return sw, loggaErrore
 }
-func GetEnvironmentStatus(ctx context.Context, cluster, enviro, microserice, customer string) LoggaErrore {
+func GetEnvironmentStatus(ctx context.Context, cluster, enviro, microserice, customer, tenant string) LoggaErrore {
 
 	var loggaErrore LoggaErrore
 	loggaErrore.Errore = 0
@@ -1320,7 +1320,7 @@ func GetEnvironmentStatus(ctx context.Context, cluster, enviro, microserice, cus
 	status := ""
 
 	// cerco il token di Corefactory
-	devopsToken, erro := GetCoreFactoryToken(ctx)
+	devopsToken, erro := GetCoreFactoryToken(ctx, tenant)
 	if erro.Errore < 0 {
 		Logga(ctx, erro.Log)
 	}
@@ -1366,13 +1366,13 @@ func GetEnvironmentStatus(ctx context.Context, cluster, enviro, microserice, cus
 
 	return loggaErrore
 }
-func SetEnvironmentStatus(ctx context.Context, cluster, enviro, microserice, customer, user, toggle string) LoggaErrore {
+func SetEnvironmentStatus(ctx context.Context, cluster, enviro, microserice, customer, user, toggle, tenant string) LoggaErrore {
 
 	var loggaErrore LoggaErrore
 	loggaErrore.Errore = 0
 
 	// cerco il token di Corefactory
-	devopsToken, erro := GetCoreFactoryToken(ctx)
+	devopsToken, erro := GetCoreFactoryToken(ctx, tenant)
 	if erro.Errore < 0 {
 		Logga(ctx, erro.Log)
 		loggaErrore.Errore = erro.Errore
@@ -1596,13 +1596,13 @@ func GetAccessCluster(ctx context.Context, cluster, devopsToken string) ClusterA
 
 	return cluAcc
 }
-func GetJsonDatabases(ctx context.Context, stage, developer string, market int32, arrConn MasterConn) (map[string]interface{}, LoggaErrore) {
+func GetJsonDatabases(ctx context.Context, stage, developer string, market int32, arrConn MasterConn, tenant string) (map[string]interface{}, LoggaErrore) {
 	Logga(ctx, "Getting Json Db")
 
 	var erro LoggaErrore
 	erro.Errore = 0
 
-	devopsToken, erro := GetCoreFactoryToken(ctx)
+	devopsToken, erro := GetCoreFactoryToken(ctx, tenant)
 	if erro.Errore < 0 {
 		Logga(ctx, erro.Log)
 	} else {
@@ -1694,10 +1694,10 @@ func GetCustomerToken(ctx context.Context, accessToken, refappCustomer, resource
 		return "", erro
 	}
 }
-func GetArrRepo(ctx context.Context, team, customSettings string) map[int]Repos {
+func GetArrRepo(ctx context.Context, team, customSettings, tenant string) map[int]Repos {
 
 	// cerco il token di Corefactory
-	devopsToken, erro := GetCoreFactoryToken(ctx)
+	devopsToken, erro := GetCoreFactoryToken(ctx, tenant)
 	if erro.Errore < 0 {
 		Logga(ctx, erro.Log)
 	}
@@ -1787,7 +1787,7 @@ func GetArrRepo(ctx context.Context, team, customSettings string) map[int]Repos 
 
 	return arrRepo
 }
-func GetCfToolEnv(ctx context.Context, token, dominio string) (map[string]string, LoggaErrore) {
+func GetCfToolEnv(ctx context.Context, token, dominio string) (TenantEnv, LoggaErrore) {
 	Logga(ctx, "Getting KUBECFTOOLENV")
 
 	var loggaErrore LoggaErrore
@@ -1799,24 +1799,25 @@ func GetCfToolEnv(ctx context.Context, token, dominio string) (map[string]string
 
 	envRes := ApiCallGET(ctx, false, args, "msdevops", "/devops/KUBECFTOOLENV/equals(XKUBECFTOOLENV03,'"+dominio+"')", token, "")
 
-	env := make(map[string]string)
+	var tntEnv TenantEnv
 
 	if len(envRes.BodyJson) > 0 {
-		env["telegramKey"] = envRes.BodyJson["XKUBECFTOOLENV04"].(string)
-		env["TelegramID"] = envRes.BodyJson["XKUBECFTOOLENV05"].(string)
-		env["coreApiVersion"] = envRes.BodyJson["XKUBECFTOOLENV06"].(string)
-		env["coreApiPort"] = envRes.BodyJson["XKUBECFTOOLENV07"].(string)
-		env["coreAccessToken"] = envRes.BodyJson["XKUBECFTOOLENV08"].(string)
-		env["atlassianHost"] = envRes.BodyJson["XKUBECFTOOLENV09"].(string)
-		env["atlassianUser"] = envRes.BodyJson["XKUBECFTOOLENV10"].(string)
-		env["atlassianToken"] = envRes.BodyJson["XKUBECFTOOLENV11"].(string)
-		env["bitbucketHost"] = envRes.BodyJson["XKUBECFTOOLENV12"].(string)
-		env["bitbucketUser"] = envRes.BodyJson["XKUBECFTOOLENV13"].(string)
-		env["bitbucketToken"] = envRes.BodyJson["XKUBECFTOOLENV14"].(string)
-		env["bitbucketProject"] = envRes.BodyJson["XKUBECFTOOLENV15"].(string)
-		env["coreGkeProject"] = envRes.BodyJson["XKUBECFTOOLENV16"].(string)
-		env["coreGkeUrl"] = envRes.BodyJson["XKUBECFTOOLENV17"].(string)
-		env["coreApiDominio"] = envRes.BodyJson["XKUBECFTOOLENV18"].(string)
+
+		tntEnv.TelegramKey = envRes.BodyJson["XKUBECFTOOLENV04"].(string)
+		tntEnv.TelegramID = envRes.BodyJson["XKUBECFTOOLENV05"].(string)
+		tntEnv.CoreApiVersion = envRes.BodyJson["XKUBECFTOOLENV06"].(string)
+		tntEnv.CoreApiPort = envRes.BodyJson["XKUBECFTOOLENV07"].(string)
+		tntEnv.CoreAccessToken = envRes.BodyJson["XKUBECFTOOLENV08"].(string)
+		tntEnv.AtlassianHost = envRes.BodyJson["XKUBECFTOOLENV09"].(string)
+		tntEnv.AtlassianUser = envRes.BodyJson["XKUBECFTOOLENV10"].(string)
+		tntEnv.AtlassianToken = envRes.BodyJson["XKUBECFTOOLENV11"].(string)
+		tntEnv.BitbucketHost = envRes.BodyJson["XKUBECFTOOLENV12"].(string)
+		tntEnv.BitbucketUser = envRes.BodyJson["XKUBECFTOOLENV13"].(string)
+		tntEnv.BitbucketToken = envRes.BodyJson["XKUBECFTOOLENV14"].(string)
+		tntEnv.BitbucketProject = envRes.BodyJson["XKUBECFTOOLENV15"].(string)
+		tntEnv.CoreGkeProject = envRes.BodyJson["XKUBECFTOOLENV16"].(string)
+		tntEnv.CoreGkeUrl = envRes.BodyJson["XKUBECFTOOLENV17"].(string)
+		tntEnv.CoreApiDominio = envRes.BodyJson["XKUBECFTOOLENV18"].(string)
 
 		Logga(ctx, "KUBECFTOOLENV OK")
 	} else {
@@ -1825,7 +1826,7 @@ func GetCfToolEnv(ctx context.Context, token, dominio string) (map[string]string
 		loggaErrore.Log = "KUBECFTOOLENV MISSING"
 	}
 
-	return env, loggaErrore
+	return tntEnv, loggaErrore
 
 }
 func GetDeploymentApi(namespace, apiHost, apiToken string) (DeploymntStatus, LoggaErrore) {
@@ -1934,7 +1935,7 @@ func CheckPodHealth(microservice, versione, namespace, apiHost, apiToken string)
 		}
 	}
 }
-func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, canaryProduction, namespace, enviro string) LoggaErrore {
+func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, canaryProduction, namespace, enviro, tenant string) LoggaErrore {
 
 	var erro LoggaErrore
 	erro.Errore = 0
@@ -1950,7 +1951,7 @@ func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, can
 	Logga(ctx, "DELETING OBSOLETE PODS")
 
 	// cerco il token di Corefactory
-	devopsToken, erro := GetCoreFactoryToken(ctx)
+	devopsToken, erro := GetCoreFactoryToken(ctx, tenant)
 	if erro.Errore < 0 {
 		Logga(ctx, erro.Log)
 	}
