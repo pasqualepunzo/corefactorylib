@@ -1060,7 +1060,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 	// os.Exit(0)
 	return microservices, loggaErrore
 }
-func GetTenant(ctx context.Context, login, dominio, token string) ([]Tenant, LoggaErrore) {
+func GetTenant(ctx context.Context, token string) ([]Tenant, LoggaErrore) {
 	Logga(ctx, "TENANT")
 
 	var loggaErrore LoggaErrore
@@ -1068,14 +1068,9 @@ func GetTenant(ctx context.Context, login, dominio, token string) ([]Tenant, Log
 	var tenant Tenant
 
 	args := make(map[string]string)
-	args["debug"] = "false"
-	args["center_dett"] = "visualizza"
-	args["source"] = "auth-1"
-	args["$filter"] = "equals(XTENANT03,'" + login + "') "
-	args["$filter"] += " and equals(XTENANT06,'1') "
-	args["$select"] = "XTENANT04,XTENANT05,XTENANT07"
 
-	tenantRes := ApiCallGET(ctx, true, args, "msauth", "/auth/TENANT", token, "")
+	tenantRes := ApiCallGET(ctx, true, args, "msauth", "/auth/tenants", token, "")
+	LogJson(tenantRes)
 	if tenantRes.Errore < 0 {
 		Logga(ctx, tenantRes.Log, "error")
 		loggaErrore.Errore = -1
@@ -1085,9 +1080,9 @@ func GetTenant(ctx context.Context, login, dominio, token string) ([]Tenant, Log
 
 	if len(tenantRes.BodyArray) > 0 {
 		for _, y := range tenantRes.BodyArray {
-			tenant.Tenant = y["XTENANT04"].(string)
-			tenant.Master = strconv.FormatFloat(y["XTENANT05"].(float64), 'f', 0, 64)
-			tenant.Descrizione = y["XTENANT07"].(string)
+			tenant.Tenant = y["refTenantId"].(string)
+			tenant.Master = strconv.FormatFloat(y["isDefault"].(float64), 'f', 0, 64)
+			tenant.Descrizione = y["tenantDescription"].(string)
 			tenants = append(tenants, tenant)
 		}
 	}
