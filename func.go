@@ -1060,6 +1060,10 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 	// os.Exit(0)
 	return microservices, loggaErrore
 }
+func GetTenantEnv(ctx context.Context, tenant, dominio string) {
+	Logga(ctx, "TENANT-ENV")
+
+}
 func GetTenant(ctx context.Context, token string) ([]Tenant, LoggaErrore) {
 	Logga(ctx, "TENANT")
 
@@ -1782,7 +1786,7 @@ func GetArrRepo(ctx context.Context, team, customSettings, tenant string) map[in
 
 	return arrRepo
 }
-func GetCfToolEnv(ctx context.Context, token, dominio string) (TenantEnv, LoggaErrore) {
+func GetCfToolEnv(ctx context.Context, token, dominio, tenant string) (TenantEnv, LoggaErrore) {
 	Logga(ctx, "Getting KUBECFTOOLENV")
 
 	var loggaErrore LoggaErrore
@@ -1791,8 +1795,10 @@ func GetCfToolEnv(ctx context.Context, token, dominio string) (TenantEnv, LoggaE
 	args := make(map[string]string)
 	args["center_dett"] = "dettaglio"
 	args["source"] = "devops-8"
+	args["$filter"] = "equals(XKUBECFTOOLENV03,'" + dominio + "') "
+	args["$filter"] += " and equals(XKUBECFTOOLENV19,'" + tenant + "') "
 
-	envRes := ApiCallGET(ctx, false, args, "msdevops", "/devops/KUBECFTOOLENV/equals(XKUBECFTOOLENV03,'"+dominio+"')", token, "")
+	envRes := ApiCallGET(ctx, false, args, "msdevops", "/devops/KUBECFTOOLENV", token, "")
 
 	var tntEnv TenantEnv
 

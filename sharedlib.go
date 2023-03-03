@@ -665,7 +665,7 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 	//os.Exit(0)
 	return LoggaErrore
 }
-func CloudBuils(ctx context.Context, docker, verPad, dirRepo, bArgs string, swMonolith bool) string {
+func CloudBuils(ctx context.Context, docker, verPad, dirRepo, bArgs string, swMonolith bool, cftoolenv TenantEnv) string {
 
 	Logga(ctx, "")
 	Logga(ctx, "CLOUD BUILD for "+docker)
@@ -681,14 +681,14 @@ func CloudBuils(ctx context.Context, docker, verPad, dirRepo, bArgs string, swMo
 		dockerName = docker
 	}
 
-	cloudNet := ""
-	if os.Getenv("gcloudNetRegion") != "" {
-		cloudNet = " --region " + os.Getenv("gcloudNetRegion")
-	} else {
-		cloudNet = " --zone " + os.Getenv("gcloudNetZone")
-	}
-	SwitchProject(os.Getenv("gcloudProjectID"))
-	SwitchCluster(os.Getenv("clusterKube8"), cloudNet)
+	// cloudNet := ""
+	// if os.Getenv("gcloudNetRegion") != "" {
+	// 	cloudNet = " --region " + os.Getenv("gcloudNetRegion")
+	// } else {
+	// 	cloudNet = " --zone " + os.Getenv("gcloudNetZone")
+	// }
+	SwitchProject(cftoolenv.CoreGkeProject)
+	// SwitchCluster(os.Getenv("clusterKube8"), cloudNet)
 
 	fileCloudBuild := dir + "/cloudBuild.yaml"
 
@@ -702,10 +702,11 @@ func CloudBuils(ctx context.Context, docker, verPad, dirRepo, bArgs string, swMo
 	} else {
 		cloudBuild += bArgs
 	}
-	cloudBuild += "'-t', '" + os.Getenv("gcloudUrl") + "/" + os.Getenv("gcloudProjectID") + "/" + dockerName + ":" + verPad + "', '.']\n"
+
+	cloudBuild += "'-t', '" + cftoolenv.CoreGkeUrl + "/" + cftoolenv.CoreGkeProject + "/" + dockerName + ":" + verPad + "', '.']\n"
 	cloudBuild += "- name: 'gcr.io/cloud-builders/docker'\n"
-	cloudBuild += "  args: ['push', '" + os.Getenv("gcloudUrl") + "/" + os.Getenv("gcloudProjectID") + "/" + dockerName + ":" + verPad + "']\n"
-	cloudBuild += "images: ['" + os.Getenv("gcloudUrl") + "/" + os.Getenv("gcloudProjectID") + "/" + dockerName + ":" + verPad + "']\n"
+	cloudBuild += "  args: ['push', '" + cftoolenv.CoreGkeUrl + "/" + cftoolenv.CoreGkeProject + "/" + dockerName + ":" + verPad + "']\n"
+	cloudBuild += "images: ['" + cftoolenv.CoreGkeUrl + "/" + cftoolenv.CoreGkeProject + "/" + dockerName + ":" + verPad + "']\n"
 	cloudBuild += "tags:\n"
 	cloudBuild += "- '" + dockerName + "-" + verPad + "'\n"
 	cloudBuild += "options:\n"
