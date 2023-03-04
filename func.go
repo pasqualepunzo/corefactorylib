@@ -1060,10 +1060,6 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 	// os.Exit(0)
 	return microservices, loggaErrore
 }
-func GetTenantEnv(ctx context.Context, tenant, dominio string) {
-	Logga(ctx, "TENANT-ENV")
-
-}
 func GetTenant(ctx context.Context, token string) ([]Tenant, LoggaErrore) {
 	Logga(ctx, "TENANT")
 
@@ -1084,14 +1080,13 @@ func GetTenant(ctx context.Context, token string) ([]Tenant, LoggaErrore) {
 
 	if len(tenantRes.BodyArray) > 0 {
 		for _, y := range tenantRes.BodyArray {
-			tenant.Tenant = y["refTenantId"].(string)
+			tenant.Tenant = y["tenantId"].(string)
 			tenant.Master = strconv.FormatFloat(y["isDefault"].(float64), 'f', 0, 64)
 			tenant.Descrizione = y["tenantDescription"].(string)
 			tenants = append(tenants, tenant)
 		}
 	}
 	return tenants, loggaErrore
-
 }
 func GetProfileInfo(ctx context.Context, token string) (map[string]interface{}, string) {
 
