@@ -81,10 +81,10 @@ type LoginRes struct {
 	Tenants                 []Tenant     `json:"Tenants"`
 }
 type Tenant struct {
-	Tenant      string      `json:"Tenant"`
-	Master      string      `json:"Master"`
-	Descrizione string      `json:"Descrizione"`
-	TenantEnv   []TenantEnv `json:"TenantEnv"`
+	Tenant      string    `json:"Tenant"`
+	Master      string    `json:"Master"`
+	Descrizione string    `json:"Descrizione"`
+	TenantEnv   TenantEnv `json:"TenantEnv"`
 }
 type TenantEnv struct {
 	TelegramKey      string `json:"telegramKey"`
