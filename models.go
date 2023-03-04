@@ -468,20 +468,3 @@ type HttpHeadersJson struct {
 	Name  string
 	Value string
 }
-type TenantEnv struct {
-	TelegramKey      string `json:"telegramKey"`
-	TelegramID       string `json:"TelegramID"`
-	CoreApiVersion   string `json:"coreApiVersion"`
-	CoreApiPort      string `json:"coreApiPort"`
-	CoreAccessToken  string `json:"coreAccessToken"`
-	AtlassianHost    string `json:"atlassianHost"`
-	AtlassianUser    string `json:"atlassianUser"`
-	AtlassianToken   string `json:"atlassianToken"`
-	BitbucketHost    string `json:"bitbucketHost"`
-	BitbucketUser    string `json:"bitbucketUser"`
-	BitbucketToken   string `json:"bitbucketToken"`
-	BitbucketProject string `json:"bitbucketProject"`
-	CoreGkeProject   string `json:"coreGkeProject"`
-	CoreGkeUrl       string `json:"coreGkeUrl"`
-	CoreApiDominio   string `json:"coreApiDominio"`
-}

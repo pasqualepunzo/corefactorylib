@@ -78,12 +78,30 @@ type LoginRes struct {
 	CoreGkeProject          string       `json:"coreGkeProject"`
 	CoreGkeUrl              string       `json:"coreGkeUrl"`
 	CoreApiDominio          string       `json:"CoreApiDominio"`
-	Tenants                 Tenant       `json:"Tenants"`
+	Tenants                 []Tenant     `json:"Tenants"`
 }
 type Tenant struct {
-	Tenant      string `json:"Tenant"`
-	Master      string `json:"Master"`
-	Descrizione string `json:"Descrizione"`
+	Tenant      string      `json:"Tenant"`
+	Master      string      `json:"Master"`
+	Descrizione string      `json:"Descrizione"`
+	TenantEnv   []TenantEnv `json:"TenantEnv"`
+}
+type TenantEnv struct {
+	TelegramKey      string `json:"telegramKey"`
+	TelegramID       string `json:"TelegramID"`
+	CoreApiVersion   string `json:"coreApiVersion"`
+	CoreApiPort      string `json:"coreApiPort"`
+	CoreAccessToken  string `json:"coreAccessToken"`
+	AtlassianHost    string `json:"atlassianHost"`
+	AtlassianUser    string `json:"atlassianUser"`
+	AtlassianToken   string `json:"atlassianToken"`
+	BitbucketHost    string `json:"bitbucketHost"`
+	BitbucketUser    string `json:"bitbucketUser"`
+	BitbucketToken   string `json:"bitbucketToken"`
+	BitbucketProject string `json:"bitbucketProject"`
+	CoreGkeProject   string `json:"coreGkeProject"`
+	CoreGkeUrl       string `json:"coreGkeUrl"`
+	CoreApiDominio   string `json:"coreApiDominio"`
 }
 type SprintBranch struct {
 	CurrentBranch string
