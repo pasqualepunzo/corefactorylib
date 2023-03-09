@@ -71,15 +71,17 @@ type LoginRes struct {
 	AtlassianHost           string       `json:"atlassianHost"`
 	AtlassianUser           string       `json:"atlassianUser"`
 	AtlassianToken          string       `json:"atlassianToken"`
-	BitbucketHost           string       `json:"bitbucketHost"`
-	BitbucketUser           string       `json:"bitbucketUser"`
-	BitbucketToken          string       `json:"bitbucketToken"`
-	BitbucketProject        string       `json:"bitbucketProject"`
+	ApiHostGit              string       `json:"apiHostGit"`
+	UrlGit                  string       `json:"urlGit"`
+	UserGit                 string       `json:"userGit"`
+	TokenGit                string       `json:"tokenGit"`
+	ProjectGit              string       `json:"projectGit"`
 	CoreGkeProject          string       `json:"coreGkeProject"`
 	CoreGkeUrl              string       `json:"coreGkeUrl"`
 	CoreApiDominio          string       `json:"coreApiDominio"`
 	Tenants                 []Tenant     `json:"Tenants"`
 }
+
 type Tenant struct {
 	Tenant      string    `json:"Tenant"`
 	Master      string    `json:"Master"`
