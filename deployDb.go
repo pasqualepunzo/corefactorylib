@@ -845,9 +845,9 @@ func GetMasterConn(ctx context.Context, gruppoDeveloper, cluster, devopsToken, e
 	if cluster == "" {
 		// ottengo lo stage
 		gruppo, erro := GetUserGroup(ctx, devopsToken, gruppoDeveloper)
-		if erro.Errore < 0 {
+		if erro != nil {
 			Logga(ctx, "getUserGroup")
-			Logga(ctx, erro.Log)
+			Logga(ctx, erro.Error())
 		}
 		cluster = gruppo["stage"]
 	}
