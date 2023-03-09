@@ -63,6 +63,21 @@ type LoginRes struct {
 	NetworkRegion           string       `json:"networkRegion"`
 	Environment             string       `json:"environment"`
 	RefappCustomerID        string       `json:"refappCustomerID"`
+	TelegramKey             string       `json:"telegramKey"`
+	TelegramID              string       `json:"telegramID"`
+	CoreApiVersion          string       `json:"coreApiVersion"`
+	CoreApiPort             string       `json:"coreApiPort"`
+	CoreAccessToken         string       `json:"coreAccessToken"`
+	AtlassianHost           string       `json:"atlassianHost"`
+	AtlassianUser           string       `json:"atlassianUser"`
+	AtlassianToken          string       `json:"atlassianToken"`
+	BitbucketHost           string       `json:"bitbucketHost"`
+	BitbucketUser           string       `json:"bitbucketUser"`
+	BitbucketToken          string       `json:"bitbucketToken"`
+	BitbucketProject        string       `json:"bitbucketProject"`
+	CoreGkeProject          string       `json:"coreGkeProject"`
+	CoreGkeUrl              string       `json:"coreGkeUrl"`
+	CoreApiDominio          string       `json:"coreApiDominio"`
 	Tenants                 []Tenant     `json:"Tenants"`
 }
 type Tenant struct {

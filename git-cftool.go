@@ -11,7 +11,7 @@ import (
 	"github.com/briandowns/spinner"
 )
 
-func CloneRepo(dirRepo, newBranchName, userBitbucket, passBitbucket, bitbucketProject, actionBitbucket string, repo RepoListStruct) {
+func CloneRepo(dirRepo, newBranchName, userGit, passGit, projectGit, hostGit, actionGit string, repo RepoListStruct) {
 	err := os.RemoveAll(dirRepo)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -22,7 +22,7 @@ func CloneRepo(dirRepo, newBranchName, userBitbucket, passBitbucket, bitbucketPr
 	err = os.MkdirAll(dirRepo, 0755)
 
 	fmt.Println(" + Cloning: " + repo.Repo)
-	GitCloneCfTool(dirRepo, repo.Repo, userBitbucket, passBitbucket, bitbucketProject, actionBitbucket)
+	GitCloneCfTool(dirRepo, repo.Repo, userGit, passGit, projectGit, hostGit, actionGit)
 	fmt.Println("\n + Checking out: " + repo.Repo + " to " + newBranchName)
 	GitCheckout(dirRepo, newBranchName)
 
@@ -70,7 +70,7 @@ func writeStIgnore(dirRepo string) {
 	}
 }
 
-func GitCloneCfTool(dir, repo, userBitbucket, passBitbucket, bitbucketProject, actionBitbucket string) {
+func GitCloneCfTool(dir, repo, userGit, passGit, projectGit, hostGit, actionBitbucket string) {
 
 	//fmt.Println(dir)
 	var cmd *exec.Cmd
@@ -85,20 +85,20 @@ func GitCloneCfTool(dir, repo, userBitbucket, passBitbucket, bitbucketProject, a
 
 	if runtime.GOOS == "windows" {
 		if actionBitbucket == "ssh" {
-			aaa := "cd " + dir + " && git config --global core.autocrlf false && " + " git clone git@bitbucket.org:" + bitbucketProject + "/" + repo + " . "
+			aaa := "cd " + dir + " && git config --global core.autocrlf false && " + " git clone git@" + hostGit + ":" + projectGit + "/" + repo + " . "
 			//fmt.Println(aaa)
 
 			cmd = exec.Command("cmd", "/C", aaa)
 		} else {
-			aaa := "cd " + dir + " && git config --global core.autocrlf false && " + " git clone https://" + userBitbucket + ":" + passBitbucket + "@bitbucket.org/" + bitbucketProject + "/" + repo + " . "
+			aaa := "cd " + dir + " && git config --global core.autocrlf false && " + " git clone https://" + userGit + ":" + passGit + "@" + hostGit + "/" + projectGit + "/" + repo + " . "
 			//fmt.Println(aaa)
 			cmd = exec.Command("cmd", "/C", aaa)
 		}
 	} else {
 		if actionBitbucket == "ssh" {
-			comando = "cd " + dir + " && git clone git@bitbucket.org:" + bitbucketProject + "/" + repo + " . "
+			comando = "cd " + dir + " && git clone git@" + hostGit + ":" + projectGit + "/" + repo + " . "
 		} else {
-			comando = "cd " + dir + " && git clone https://" + userBitbucket + ":" + passBitbucket + "@bitbucket.org/" + bitbucketProject + "/" + repo + " . "
+			comando = "cd " + dir + " && git clone https://" + userGit + ":" + passGit + "@" + hostGit + "/" + projectGit + "/" + repo + " . "
 		}
 		//fmt.Println(comando)
 		cmd = exec.Command("bash", "-c", comando)

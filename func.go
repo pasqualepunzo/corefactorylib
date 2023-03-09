@@ -8,6 +8,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 
@@ -264,12 +265,11 @@ func StrPad(input string, padLength int, padString string, padType string) strin
 
 	return output
 }
-func GetUserGroup(ctx context.Context, token, gruppo string) (map[string]string, LoggaErrore) {
+func GetUserGroup(ctx context.Context, token, gruppo string) (map[string]string, error) {
 
 	Logga(ctx, "Getting GRU")
 
-	var loggaErrore LoggaErrore
-	loggaErrore.Errore = 0
+	var erro error
 
 	args := make(map[string]string)
 	args["center_dett"] = "dettaglio"
@@ -286,11 +286,10 @@ func GetUserGroup(ctx context.Context, token, gruppo string) (map[string]string,
 		Logga(ctx, "GRU OK")
 	} else {
 		Logga(ctx, "GRU MISSING")
-		loggaErrore.Errore = -1
-		loggaErrore.Log = "GRU MISSING"
+		erro = errors.New("GRU MISSING")
 	}
 
-	return gru, loggaErrore
+	return gru, erro
 }
 func GetNextVersion(ctx context.Context, masterBranch, nomeDocker, tenant string) (string, LoggaErrore) {
 
@@ -1088,16 +1087,15 @@ func GetTenant(ctx context.Context, token string) ([]Tenant, LoggaErrore) {
 	}
 	return tenants, loggaErrore
 }
-func GetProfileInfo(ctx context.Context, token string) (map[string]interface{}, string) {
+func GetProfileInfo(ctx context.Context, token string) (map[string]interface{}, error) {
 
 	Logga(ctx, "Getting getProfileInfo")
 
+	var erro error
 	info := make(map[string]interface{})
 
 	args := make(map[string]string)
 	infoRes := ApiCallGET(ctx, false, args, "mscore", "/core/getProfileInfo", token, "")
-
-	erro := ""
 
 	if len(infoRes.BodyJson) > 0 {
 		restyProfileInfoResponse := ProfileInfo{}
@@ -1112,7 +1110,7 @@ func GetProfileInfo(ctx context.Context, token string) (map[string]interface{}, 
 
 		Logga(ctx, "GetProfileInfo OK")
 	} else {
-		erro = "-1"
+		erro = errors.New("GetProfileInfo MISSING")
 		Logga(ctx, "GetProfileInfo MISSING")
 	}
 
@@ -1781,11 +1779,10 @@ func GetArrRepo(ctx context.Context, team, customSettings, tenant string) map[in
 
 	return arrRepo
 }
-func GetCfToolEnv(ctx context.Context, token, dominio, tenant string) (TenantEnv, LoggaErrore) {
+func GetCfToolEnv(ctx context.Context, token, dominio, tenant string) (TenantEnv, error) {
 	Logga(ctx, "Getting KUBECFTOOLENV")
 
-	var loggaErrore LoggaErrore
-	loggaErrore.Errore = 0
+	var erro error
 
 	args := make(map[string]string)
 	args["center_dett"] = "dettaglio"
@@ -1818,11 +1815,10 @@ func GetCfToolEnv(ctx context.Context, token, dominio, tenant string) (TenantEnv
 		Logga(ctx, "KUBECFTOOLENV OK")
 	} else {
 		Logga(ctx, "KUBECFTOOLENV MISSING")
-		loggaErrore.Errore = -1
-		loggaErrore.Log = "KUBECFTOOLENV MISSING"
+		erro = errors.New("KUBECFTOOLENV MISSING")
 	}
 
-	return tntEnv, loggaErrore
+	return tntEnv, erro
 
 }
 func GetDeploymentApi(namespace, apiHost, apiToken string) (DeploymntStatus, LoggaErrore) {
