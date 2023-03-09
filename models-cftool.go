@@ -87,6 +87,24 @@ type Tenant struct {
 	Master      string `json:"Master"`
 	Descrizione string `json:"Descrizione"`
 }
+type TenantEnv struct {
+	TelegramKey     string `json:"telegramKey"`
+	TelegramID      string `json:"TelegramID"`
+	CoreApiVersion  string `json:"coreApiVersion"`
+	CoreApiPort     string `json:"coreApiPort"`
+	CoreAccessToken string `json:"coreAccessToken"`
+	AtlassianHost   string `json:"atlassianHost"`
+	AtlassianUser   string `json:"atlassianUser"`
+	AtlassianToken  string `json:"atlassianToken"`
+	ApiHostGit      string `json:"apiHostGit"`
+	UrlGit          string `json:"urlGit"`
+	UserGit         string `json:"userGit"`
+	TokenGit        string `json:"tokenGit"`
+	ProjectGit      string `json:"projectGit"`
+	CoreGkeProject  string `json:"coreGkeProject"`
+	CoreGkeUrl      string `json:"coreGkeUrl"`
+	CoreApiDominio  string `json:"coreApiDominio"`
+}
 
 type SprintBranch struct {
 	CurrentBranch string
