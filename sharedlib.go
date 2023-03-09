@@ -3,6 +3,7 @@ package lib
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -665,11 +666,13 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 	//os.Exit(0)
 	return LoggaErrore
 }
-func CloudBuils(ctx context.Context, docker, verPad, dirRepo, bArgs string, swMonolith bool, cftoolenv TenantEnv) string {
+func CloudBuils(ctx context.Context, docker, verPad, dirRepo, bArgs string, swMonolith bool, cftoolenv TenantEnv) (string, error) {
 
 	Logga(ctx, "")
 	Logga(ctx, "CLOUD BUILD for "+docker)
 	Logga(ctx, "")
+
+	var errBuild error
 
 	dir := ""
 	dockerName := ""
@@ -718,11 +721,15 @@ func CloudBuils(ctx context.Context, docker, verPad, dirRepo, bArgs string, swMo
 	f, errF := os.Create(fileCloudBuild)
 	if errF != nil {
 		Logga(ctx, errF.Error())
+		errBuild = errors.New("errF.Error()")
+		return "", errBuild
 	}
 	_, errF = f.WriteString(cloudBuild)
 	if errF != nil {
 		Logga(ctx, errF.Error())
 		f.Close()
+		errBuild = errors.New("errF.Error()")
+		return "", errBuild
 	}
 
 	// RUN THE BUILD
@@ -755,6 +762,9 @@ func CloudBuils(ctx context.Context, docker, verPad, dirRepo, bArgs string, swMo
 		out, err := cmd.CombinedOutput()
 		if err != nil {
 			Logga(ctx, "cmd.Run() failed with %s\n"+err.Error())
+			errBuild = errors.New(err.Error())
+			return "", errBuild
+
 		}
 		//s := strings.TrimSpace(string(out))
 		//Logga(ctx, s)
@@ -763,6 +773,8 @@ func CloudBuils(ctx context.Context, docker, verPad, dirRepo, bArgs string, swMo
 		errJson := json.Unmarshal(out, &logRes)
 		if errJson != nil {
 			Logga(ctx, errJson, "error")
+			errBuild = errors.New(errJson.Error())
+			return "", errBuild
 		}
 		// fmt.Println(len(logRes))
 		// LogJson(logRes)
@@ -808,7 +820,7 @@ func CloudBuils(ctx context.Context, docker, verPad, dirRepo, bArgs string, swMo
 
 	fmt.Println("_##START##_Build Process Finished_##STOP##_")
 
-	return sha256
+	return sha256, errBuild
 }
 func UpdateDockerVersion(ctx context.Context, docker, ver, user, devMaster, sha, team, newTagName, releaseNote, parentBranch, cs, merged, tenant string) {
 

@@ -156,7 +156,7 @@ func SwitchCluster(clusterName, cloudNet string) {
 // SwitchProject ...
 func SwitchProject(clusterProject string) {
 
-	comando := "gcloud config set project  " + clusterProject
+	comando := "gcloud config set project  " + clusterProject + " --quiet "
 	ExecCommand(comando, true)
 }
 func ExecCommand(command string, printOutput bool) bool {
