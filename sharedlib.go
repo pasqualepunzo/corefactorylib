@@ -666,7 +666,7 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 	//os.Exit(0)
 	return LoggaErrore
 }
-func CloudBuils(ctx context.Context, docker, verPad, dirRepo, bArgs string, swMonolith bool, cftoolenv LoginRes) (string, error) {
+func CloudBuils(ctx context.Context, docker, verPad, dirRepo, bArgs string, swMonolith bool, cftoolenv TenantEnv) (string, error) {
 
 	Logga(ctx, "")
 	Logga(ctx, "CLOUD BUILD for "+docker)
