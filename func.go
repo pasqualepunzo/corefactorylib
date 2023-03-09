@@ -1059,10 +1059,10 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 	// os.Exit(0)
 	return microservices, loggaErrore
 }
-func GetTenant(ctx context.Context, token string) ([]Tenant, LoggaErrore) {
+func GetTenant(ctx context.Context, token string) ([]Tenant, error) {
 	Logga(ctx, "TENANT")
 
-	var loggaErrore LoggaErrore
+	var erro error
 	var tenants []Tenant
 	var tenant Tenant
 
@@ -1072,9 +1072,10 @@ func GetTenant(ctx context.Context, token string) ([]Tenant, LoggaErrore) {
 	LogJson(tenantRes)
 	if tenantRes.Errore < 0 {
 		Logga(ctx, tenantRes.Log, "error")
-		loggaErrore.Errore = -1
-		loggaErrore.Log = tenantRes.Log
-		return tenants, loggaErrore
+
+		erro = errors.New(tenantRes.Log)
+
+		return tenants, erro
 	}
 
 	if len(tenantRes.BodyArray) > 0 {
@@ -1085,7 +1086,7 @@ func GetTenant(ctx context.Context, token string) ([]Tenant, LoggaErrore) {
 			tenants = append(tenants, tenant)
 		}
 	}
-	return tenants, loggaErrore
+	return tenants, erro
 }
 func GetProfileInfo(ctx context.Context, token string) (map[string]interface{}, error) {
 
