@@ -26,7 +26,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	istanza := iresReq.Istanza
 	enviro := iresReq.Enviro
 	refAppID := iresReq.RefAppID
-	refAppCustomerID := iresReq.RefAppCustomerID
+	//refAppCustomerID := iresReq.RefAppCustomerID
 	customerDomain := iresReq.CustomerDomain
 	monolithArg := iresReq.Monolith
 	tags := iresReq.Tags
@@ -305,9 +305,6 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	argsAmbdomain["source"] = "auth-1"
 	argsAmbdomain["$select"] = "XAMBDOMAIN05,XAMBDOMAIN07,XAMBDOMAIN08,XAMBDOMAIN09,XAMBDOMAIN10,XAMBDOMAIN11"
 	argsAmbdomain["center_dett"] = "dettaglio"
-	if refAppCustomerID != "" { // oggi 18 maggio 2021 davide afferma che questo è un pezzotto
-		argsAmbdomain["$filter"] = "equals(XAMBDOMAIN05,'" + refAppCustomerID + "') and "
-	}
 	argsAmbdomain["$filter"] += "  equals(XAMBDOMAIN04,'" + customerDomain + "') "
 	restyAmbdomainRes := ApiCallGET(ctx, false, argsAmbdomain, "msauth", "/core/AMBDOMAIN", devopsToken, "")
 	if restyAmbdomainRes.Errore < 0 {
@@ -319,7 +316,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 
 	if len(restyAmbdomainRes.BodyJson) > 0 {
 		ims.CustomerSalt = restyAmbdomainRes.BodyJson["XAMBDOMAIN11"].(string)
-		ims.RefappCustomerID = restyAmbdomainRes.BodyJson["XAMBDOMAIN05"].(string)
+
 		ims.MasterHostData = restyAmbdomainRes.BodyJson["XAMBDOMAIN07"].(string)
 		ims.MasterHostMeta = restyAmbdomainRes.BodyJson["XAMBDOMAIN07"].(string)
 		Logga(ctx, "AMBDOMAIN OK")
