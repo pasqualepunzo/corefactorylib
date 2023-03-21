@@ -121,7 +121,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 			keyvalueslice := make(map[string]interface{})
 			keyvalueslice["debug"] = true
 			keyvalueslice["source"] = "devops-8"
-			keyvalueslice["XKUBEIMICROSERV03"] = istanza
+			keyvalueslice["XKUBEIMICROSERV03"] = strings.ToLower(istanza)
 			keyvalueslice["XKUBEIMICROSERV04"] = _ms
 			keyvalueslice["XKUBEIMICROSERV05"] = _cluster
 			keyvalueslice["XKUBEIMICROSERV06"] = enviro
