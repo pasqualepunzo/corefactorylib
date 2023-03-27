@@ -819,17 +819,9 @@ func CloudBuils(ctx context.Context, docker, verPad, dirRepo, bArgs string, swMo
 
 	return sha256, errBuild
 }
-func UpdateDockerVersion(ctx context.Context, docker, ver, user, devMaster, sha, team, newTagName, releaseNote, parentBranch, cs, merged, tenant string) {
+func UpdateDockerVersion(ctx context.Context, docker, ver, user, devMaster, sha, team, newTagName, releaseNote, parentBranch, cs, merged, tenant, devopsToken string) error {
 
-	Logga(ctx, "Getting token")
-	devopsToken, erro := GetCoreFactoryToken(ctx, tenant)
-	if erro.Errore < 0 {
-		Logga(ctx, erro.Log)
-	} else {
-		Logga(ctx, "Token OK")
-	}
-
-	/* ***************************************************** */
+	var erro error
 	Logga(ctx, "Insert TB_ANAG_KUBEDKRBUILD00 ")
 
 	keyvalueslices := make([]map[string]interface{}, 0)
@@ -853,7 +845,11 @@ func UpdateDockerVersion(ctx context.Context, docker, ver, user, devMaster, sha,
 	res := ApiCallPOST(ctx, false, keyvalueslices, "msdevops", "/devops/KUBEDKRBUILD", devopsToken, "")
 	if res.Errore != 0 {
 		Logga(ctx, res.Log)
+		erro = errors.New(res.Log)
+		return erro
 	}
+	Logga(ctx, "Insert TB_ANAG_KUBEDKRBUILD00 DONE")
+	return erro
 }
 
 /*
