@@ -385,15 +385,15 @@ func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, 
 		xxx := strings.Split(vv.Columns, ":")
 		if vv.Tipo == "CHANGE" {
 			if xxx[1] != "" {
-				sqlCompare = "ALTER TABLE " + vv.Tbl + " CHANGE " + vv.Column_name + " " + vv.Column_name + " " + xxx[0] + " DEFAULT " + xxx[1]
+				sqlCompare = "ALTER TABLE " + dbDataName.DataName + "." + vv.Tbl + " CHANGE " + vv.Column_name + " " + vv.Column_name + " " + xxx[0] + " DEFAULT " + xxx[1]
 			} else {
-				sqlCompare = "ALTER TABLE " + vv.Tbl + " CHANGE " + vv.Column_name + " " + vv.Column_name + " " + xxx[0]
+				sqlCompare = "ALTER TABLE " + dbDataName.DataName + "." + vv.Tbl + " CHANGE " + vv.Column_name + " " + vv.Column_name + " " + xxx[0]
 			}
 		} else {
 			if xxx[1] != "" {
-				sqlCompare = "ALTER TABLE " + vv.Tbl + " ADD " + vv.Column_name + " " + xxx[0] + " DEFAULT " + xxx[1]
+				sqlCompare = "ALTER TABLE " + dbDataName.DataName + "." + vv.Tbl + " ADD " + vv.Column_name + " " + xxx[0] + " DEFAULT " + xxx[1]
 			} else {
-				sqlCompare = "ALTER TABLE " + vv.Tbl + " ADD " + vv.Column_name + " " + xxx[0]
+				sqlCompare = "ALTER TABLE " + dbDataName.DataName + "." + vv.Tbl + " ADD " + vv.Column_name + " " + xxx[0]
 			}
 		}
 		//	fmt.Println(sqlCompare)
@@ -642,7 +642,7 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 			for _, v := range iddi {
 				//fmt.Println(iddi[v])
 				nomeIndiceArr := strings.Split(iddi[v], ".")
-				dropIdx := "DROP INDEX " + nomeIndiceArr[1] + " on " + nomeIndiceArr[0]
+				dropIdx := "DROP INDEX " + nomeIndiceArr[1] + " on " + dbDataName.DataName + "." + nomeIndiceArr[0]
 				//fmt.Println("CUSTOM PERFORM DROP OLD INDEX:" + dropIdx)
 
 				allCompareIdx = append(allCompareIdx, dropIdx)
@@ -709,7 +709,7 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 						createIdx += " UNIQUE "
 					}
 					dropIdx += NAME_IDX + " on " + nomeIndiceArr[0]
-					createIdx += " INDEX " + NAME_IDX + " on " + nomeIndiceArr[0] + " ( "
+					createIdx += " INDEX " + NAME_IDX + " on " + dbDataName.DataName + "." + nomeIndiceArr[0] + " ( "
 				}
 				createIdx += COLUMN_NAME + ", "
 
