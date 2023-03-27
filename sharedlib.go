@@ -842,7 +842,9 @@ func UpdateDockerVersion(ctx context.Context, docker, ver, user, devMaster, sha,
 
 	keyvalueslices = append(keyvalueslices, keyvalueslice)
 
+	Logga(ctx, "beore ApiCallPOST")
 	res := ApiCallPOST(ctx, false, keyvalueslices, "msdevops", "/devops/KUBEDKRBUILD", devopsToken, "")
+	Logga(ctx, "after ApiCallPOST")
 	if res.Errore != 0 {
 		Logga(ctx, res.Log)
 		erro = errors.New(res.Log)
