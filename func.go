@@ -2113,3 +2113,74 @@ func DeleteObjectsApi(namespace, apiHost, apiToken, object, kind string) LoggaEr
 
 	return erro
 }
+func GetOverrideTenantEnv(ctx context.Context, bearerToken, team string, tntEnv TenantEnv) (TenantEnv, error) {
+	// ho le env di default
+	// cerco per ogni valore su KUBETEAMBRANCH se trovo sovrascrivo
+	var erro error
+
+	args := make(map[string]string)
+	args["center_dett"] = "dettaglio"
+	args["source"] = "devops-8"
+	args["$filter"] = "equals(XKUBETEAMBRANCH03,'" + team + "') "
+
+	envRes := ApiCallGET(ctx, false, args, "msdevops", "/devops/KUBETEAMBRANCH", bearerToken, "")
+
+	if len(envRes.BodyJson) > 0 {
+
+		if envRes.BodyJson["XKUBETEAMBRANCH07"].(string) != "" {
+			Logga(ctx, "overrdide 07")
+			tntEnv.TelegramKey = envRes.BodyJson["XKUBETEAMBRANCH07"].(string)
+		}
+
+		if envRes.BodyJson["XKUBETEAMBRANCH08"].(string) != "" {
+			Logga(ctx, "overrdide 08")
+			tntEnv.TelegramID = envRes.BodyJson["XKUBETEAMBRANCH08"].(string)
+		}
+
+		if envRes.BodyJson["XKUBETEAMBRANCH09"].(string) != "" {
+			Logga(ctx, "overrdide 09")
+			tntEnv.AtlassianHost = envRes.BodyJson["XKUBETEAMBRANCH09"].(string)
+		}
+
+		if envRes.BodyJson["XKUBETEAMBRANCH10"].(string) != "" {
+			Logga(ctx, "overrdide 10")
+			tntEnv.AtlassianUser = envRes.BodyJson["XKUBETEAMBRANCH10"].(string)
+		}
+
+		if envRes.BodyJson["XKUBETEAMBRANCH11"].(string) != "" {
+			Logga(ctx, "overrdide 11")
+			tntEnv.AtlassianToken = envRes.BodyJson["XKUBETEAMBRANCH11"].(string)
+		}
+
+		if envRes.BodyJson["XKUBETEAMBRANCH12"].(string) != "" {
+			Logga(ctx, "overrdide 12")
+			tntEnv.ApiHostGit = envRes.BodyJson["XKUBETEAMBRANCH12"].(string)
+		}
+
+		if envRes.BodyJson["XKUBETEAMBRANCH13"].(string) != "" {
+			Logga(ctx, "overrdide 13")
+			tntEnv.UserGit = envRes.BodyJson["XKUBETEAMBRANCH13"].(string)
+		}
+
+		if envRes.BodyJson["XKUBETEAMBRANCH14"].(string) != "" {
+			Logga(ctx, "overrdide 14")
+			tntEnv.TokenGit = envRes.BodyJson["XKUBETEAMBRANCH14"].(string)
+		}
+
+		if envRes.BodyJson["XKUBETEAMBRANCH15"].(string) != "" {
+			Logga(ctx, "overrdide 15")
+			tntEnv.ProjectGit = envRes.BodyJson["XKUBETEAMBRANCH15"].(string)
+		}
+
+		if envRes.BodyJson["XKUBETEAMBRANCH16"].(string) != "" {
+			Logga(ctx, "overrdide 16")
+			tntEnv.UrlGit = envRes.BodyJson["XKUBETEAMBRANCH15"].(string)
+		}
+
+		Logga(ctx, "KUBETEAMBRANCH OK")
+	} else {
+		Logga(ctx, "KUBETEAMBRANCH MISSING")
+		erro = errors.New("KUBETEAMBRANCH MISSING")
+	}
+	return tntEnv, erro
+}
