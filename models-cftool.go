@@ -1,10 +1,11 @@
 package lib
 
 type EnviroStruc struct {
-	CodiceEnv string
-	Namespace string
-	DescEnv   string
-	SwBuild   string
+	CodiceEnv   string
+	Namespace   string
+	DescEnv     string
+	SwBuild     string
+	SwProdStage string
 }
 type Cluster struct {
 	Nome             string `json:"nome"`
