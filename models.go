@@ -344,9 +344,9 @@ type DbMetaConnMs struct {
 }
 type DbDataConnMs struct {
 	DataHost     string `json:"dataHost"`
-	DataName     string `json:"sataName"`
-	DataUser     string `json:"sataUser"`
-	DataPass     string `json:"sataPass"`
+	DataName     string `json:"dataName"`
+	DataUser     string `json:"dataUser"`
+	DataPass     string `json:"dataPass"`
 	DataMicroAmb string `json:"dataMicroAmb"`
 	Cluster      string `json:"cluster"`
 }
