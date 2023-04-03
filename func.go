@@ -1930,7 +1930,7 @@ func CheckPodHealth(microservice, versione, namespace, apiHost, apiToken string)
 		}
 	}
 }
-func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, canaryProduction, namespace, enviro, tenant string) LoggaErrore {
+func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, canaryProduction, namespace, enviro, tenant, devopsToken string) LoggaErrore {
 
 	var erro LoggaErrore
 	erro.Errore = 0
@@ -1945,11 +1945,6 @@ func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, can
 	Logga(ctx, "****************************************************************************************")
 	Logga(ctx, "DELETING OBSOLETE PODS")
 
-	// cerco il token di Corefactory
-	devopsToken, erro := GetCoreFactoryToken(ctx, tenant)
-	if erro.Errore < 0 {
-		Logga(ctx, erro.Log)
-	}
 	/* ************************************************************************************************ */
 	// DEPLOYLOG
 	Logga(ctx, "Getting DEPLOYLOG - deleteObsoleteMonolith")
