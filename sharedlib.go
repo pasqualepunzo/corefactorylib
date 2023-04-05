@@ -31,7 +31,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	}
 
 	istanza := iresReq.Istanza
-	istanzaDst := iresReq.IstanzaDst
+	//istanzaDst := iresReq.IstanzaDst
 	microservice := iresReq.Microservice
 	enviro := iresReq.Enviro
 	refAppID := iresReq.RefAppID
@@ -81,7 +81,8 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 
 	/* ************************************************************************************************ */
 	// KUBEIMICROSERV
-	if istanzaDst != "" { // se stiamo in migrazione non server fare questa chiamata perche nella destinazione non esiste e non deve esistere
+
+	if !iresReq.SwDest { // se stiamo in migrazione non server fare questa chiamata perche nella destinazione non esiste e non deve esistere
 		Logga(ctx, "Getting KUBEIMICROSERV - deploy.go")
 		argsImicro := make(map[string]string)
 		argsImicro["source"] = "devops-8"
@@ -155,6 +156,8 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 		}
 		Logga(ctx, "")
 	} else {
+
+		Logga(ctx, "CLUSTER PRESO DA iresReq")
 		// se siamo in migrazione non applichiamo questo metodo ma abbiamo necessita di avere il cluster valorizzato
 		ims.Cluster = iresReq.ClusterDst
 	}

@@ -277,6 +277,7 @@ type IresRequest struct {
 	TokenSrc         string `json:"tokerSrc"`
 	TokenDst         string `json:"tokerDst"`
 	ClusterDst       string `json:"clusterDst"`
+	SwDest           bool   `json:"swDest"`
 }
 
 type HealthPod struct {
