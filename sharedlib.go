@@ -157,22 +157,20 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 		Logga(ctx, "")
 	} else {
 
-		Logga(ctx, "CLUSTER PRESO DA iresReq")
+		Logga(ctx, "CLUSTER PRESO DA iresReq "+iresReq.ClusterDst)
 		// se siamo in migrazione non applichiamo questo metodo ma abbiamo necessita di avere il cluster valorizzato
 		ims.Cluster = iresReq.ClusterDst
 	}
 	/* ************************************************************************************************ */
 	// KUBECLUSTER
-	//
-	// FAC-563
-	// gestione MASTER HOST USER E PASSWD per OGNI CLUSTER
+
 	Logga(ctx, "Getting KUBECLUSTER")
 
 	argsClu := make(map[string]string)
 	argsClu["source"] = "devops-8"
 	argsClu["center_dett"] = "allviews"
 
-	restyKubeCluRes := ApiCallGET(ctx, false, argsClu, "msdevops", "/devops/KUBECLUSTER", devopsToken, "")
+	restyKubeCluRes := ApiCallGET(ctx, false, argsClu, "msdevops", "/devops/KUBECLUSTER", devopsTokenDst, "")
 	if restyKubeCluRes.Errore < 0 {
 		Logga(ctx, restyKubeCluRes.Log)
 		LoggaErrore.Errore = restyKubeCluRes.Errore

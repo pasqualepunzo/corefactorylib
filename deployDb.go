@@ -821,7 +821,7 @@ func RenameDatabases(ctx context.Context, dbMetaName DbMetaConnMs, masterDb Mast
 		fmt.Println(err)
 	}
 }
-func GetMasterConn(ctx context.Context, gruppoDeveloper, cluster, devopsToken, enviro string) (MasterConn, LoggaErrore) {
+func GetMasterConn(ctx context.Context, gruppoDeveloper, cluster, devopsToken, devopsTokenDst, enviro string) (MasterConn, LoggaErrore) {
 
 	Logga(ctx, "getMasterConn")
 	Logga(ctx, "Cluster: "+cluster)
@@ -862,7 +862,7 @@ func GetMasterConn(ctx context.Context, gruppoDeveloper, cluster, devopsToken, e
 	argsClu["center_dett"] = "dettaglio"
 	argsClu["$filter"] = "equals(XKUBECLUSTER03,'" + cluster + "') "
 
-	restyKubeCluRes := ApiCallGET(ctx, false, argsClu, "msdevops", "/devops/KUBECLUSTER", devopsToken, "")
+	restyKubeCluRes := ApiCallGET(ctx, false, argsClu, "msdevops", "/devops/KUBECLUSTER", devopsTokenDst, "")
 	if restyKubeCluRes.Errore < 0 {
 		erro.Errore = -1
 		erro.Log = restyKubeCluRes.Log
@@ -896,7 +896,7 @@ func GetMasterConn(ctx context.Context, gruppoDeveloper, cluster, devopsToken, e
 		argsCluEnv["$filter"] += " and XKUBECLUSTERENV05 eq " + strconv.Itoa(int(ambienteFloat)) + " "
 		argsCluEnv["$filter"] += " and equals(XKUBECLUSTERENV06,'" + enviro + "') "
 
-		restyKubeCluEnvRes := ApiCallGET(ctx, false, argsCluEnv, "msdevops", "/devops/KUBECLUSTERENV", devopsToken, "")
+		restyKubeCluEnvRes := ApiCallGET(ctx, false, argsCluEnv, "msdevops", "/devops/KUBECLUSTERENV", devopsTokenDst, "")
 		if restyKubeCluEnvRes.Errore < 0 {
 			erro.Errore = -1
 			erro.Log = restyKubeCluEnvRes.Log
