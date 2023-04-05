@@ -14,7 +14,7 @@ import (
 	"github.com/go-resty/resty/v2"
 )
 
-func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction, devopsToken string) (IstanzaMicro, LoggaErrore) {
+func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction string) (IstanzaMicro, LoggaErrore) {
 
 	Logga(ctx, "")
 	Logga(ctx, " + + + + + + + + + + + + + + + + + + + +")
@@ -23,10 +23,18 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	var LoggaErrore LoggaErrore
 	LoggaErrore.Errore = 0
 
+	devopsToken := iresReq.TokenSrc
+	devopsTokenDst := iresReq.TokenDst
+
+	if devopsTokenDst == "" {
+		devopsTokenDst = devopsToken
+	}
+
 	istanza := iresReq.Istanza
+	istanzaDst := iresReq.IstanzaDst
+	microservice := iresReq.Microservice
 	enviro := iresReq.Enviro
 	refAppID := iresReq.RefAppID
-	//refAppCustomerID := iresReq.RefAppCustomerID
 	customerDomain := iresReq.CustomerDomain
 	monolithArg := iresReq.Monolith
 	tags := iresReq.Tags
@@ -73,80 +81,80 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 
 	/* ************************************************************************************************ */
 	// KUBEIMICROSERV
-	Logga(ctx, "Getting KUBEIMICROSERV - deploy.go")
-	argsImicro := make(map[string]string)
-	argsImicro["source"] = "devops-8"
-	argsImicro["$select"] = "XKUBEIMICROSERV04,XKUBEIMICROSERV05"
-	argsImicro["center_dett"] = "dettaglio"
-	argsImicro["$filter"] = "equals(XKUBEIMICROSERV03,'" + istanza + "') "
+	if istanzaDst != "" { // se stiamo in migrazione non server fare questa chiamata perche nella destinazione non esiste e non deve esistere
+		Logga(ctx, "Getting KUBEIMICROSERV - deploy.go")
+		argsImicro := make(map[string]string)
+		argsImicro["source"] = "devops-8"
+		argsImicro["$select"] = "XKUBEIMICROSERV04,XKUBEIMICROSERV05"
+		argsImicro["center_dett"] = "dettaglio"
+		argsImicro["$filter"] = "equals(XKUBEIMICROSERV03,'" + istanza + "') "
 
-	restyKubeImicroservRes := ApiCallGET(ctx, false, argsImicro, "msdevops", "/devops/KUBEIMICROSERV", devopsToken, "")
-	if restyKubeImicroservRes.Errore < 0 {
-		Logga(ctx, restyKubeImicroservRes.Log)
-		LoggaErrore.Errore = restyKubeImicroservRes.Errore
-		LoggaErrore.Log = restyKubeImicroservRes.Log
-		return ims, LoggaErrore
-	}
-
-	microservice := ""
-	if len(restyKubeImicroservRes.BodyJson) > 0 {
-		microservice = restyKubeImicroservRes.BodyJson["XKUBEIMICROSERV04_COD"].(string)
-		ims.Cluster = restyKubeImicroservRes.BodyJson["XKUBEIMICROSERV05"].(string)
-		ims.Microservice = microservice
-
-		Logga(ctx, "KUBEIMICROSERV OK")
-	} else {
-		fmt.Println("aspettamma a mauro con l'orchestretor ...")
-
-		istanzaArr := strings.Split(istanza, "-"+enviro+"-")
-
-		if len(istanzaArr) >= 2 {
-
-			_cluster := istanzaArr[0]
-
-			_msDirt := istanzaArr[len(istanzaArr)-1]
-
-			msArr := strings.Split(_msDirt, "-")
-			_ms := msArr[len(msArr)-1]
-
-			if monolith == 1 {
-				_ms = "msrefappmonolith"
-			}
-
-			ims.Microservice = _ms
-			microservice = _ms
-			ims.Cluster = _cluster
-
-			keyvalueslices := make([]map[string]interface{}, 0)
-			keyvalueslice := make(map[string]interface{})
-			keyvalueslice["debug"] = true
-			keyvalueslice["source"] = "devops-8"
-			keyvalueslice["XKUBEIMICROSERV03"] = strings.ToLower(istanza)
-			keyvalueslice["XKUBEIMICROSERV04"] = _ms
-			keyvalueslice["XKUBEIMICROSERV05"] = _cluster
-			keyvalueslice["XKUBEIMICROSERV06"] = enviro
-
-			keyvalueslices = append(keyvalueslices, keyvalueslice)
-
-			resKubeims := ApiCallPOST(ctx, false, keyvalueslices, "msdevops", "/devops/KUBEIMICROSERV", devopsToken, "")
-
-			if resKubeims.Errore < 0 {
-				Logga(ctx, "")
-				Logga(ctx, "NON RIESCO A SCRIVRERE L'ISTANZA "+resKubeims.Log)
-				Logga(ctx, "")
-
-				LoggaErrore.Errore = resKubeims.Errore
-				LoggaErrore.Log = resKubeims.Log
-				return ims, LoggaErrore
-			}
-
-		} else {
-
-			Logga(ctx, "KUBEIMICROSERV MISSING")
+		restyKubeImicroservRes := ApiCallGET(ctx, false, argsImicro, "msdevops", "/devops/KUBEIMICROSERV", devopsToken, "")
+		if restyKubeImicroservRes.Errore < 0 {
+			Logga(ctx, restyKubeImicroservRes.Log)
+			LoggaErrore.Errore = restyKubeImicroservRes.Errore
+			LoggaErrore.Log = restyKubeImicroservRes.Log
+			return ims, LoggaErrore
 		}
-	}
-	Logga(ctx, "")
 
+		if len(restyKubeImicroservRes.BodyJson) > 0 {
+			microservice = restyKubeImicroservRes.BodyJson["XKUBEIMICROSERV04_COD"].(string)
+			ims.Cluster = restyKubeImicroservRes.BodyJson["XKUBEIMICROSERV05"].(string)
+			ims.Microservice = microservice
+
+			Logga(ctx, "KUBEIMICROSERV OK")
+		} else {
+			fmt.Println("aspettamma a mauro con l'orchestretor ...")
+
+			istanzaArr := strings.Split(istanza, "-"+enviro+"-")
+
+			if len(istanzaArr) >= 2 {
+
+				_cluster := istanzaArr[0]
+
+				_msDirt := istanzaArr[len(istanzaArr)-1]
+
+				msArr := strings.Split(_msDirt, "-")
+				_ms := msArr[len(msArr)-1]
+
+				if monolith == 1 {
+					_ms = "msrefappmonolith"
+				}
+
+				ims.Microservice = _ms
+				microservice = _ms
+				ims.Cluster = _cluster
+
+				keyvalueslices := make([]map[string]interface{}, 0)
+				keyvalueslice := make(map[string]interface{})
+				keyvalueslice["debug"] = true
+				keyvalueslice["source"] = "devops-8"
+				keyvalueslice["XKUBEIMICROSERV03"] = strings.ToLower(istanza)
+				keyvalueslice["XKUBEIMICROSERV04"] = _ms
+				keyvalueslice["XKUBEIMICROSERV05"] = _cluster
+				keyvalueslice["XKUBEIMICROSERV06"] = enviro
+
+				keyvalueslices = append(keyvalueslices, keyvalueslice)
+
+				resKubeims := ApiCallPOST(ctx, false, keyvalueslices, "msdevops", "/devops/KUBEIMICROSERV", devopsToken, "")
+
+				if resKubeims.Errore < 0 {
+					Logga(ctx, "")
+					Logga(ctx, "NON RIESCO A SCRIVRERE L'ISTANZA "+resKubeims.Log)
+					Logga(ctx, "")
+
+					LoggaErrore.Errore = resKubeims.Errore
+					LoggaErrore.Log = resKubeims.Log
+					return ims, LoggaErrore
+				}
+
+			} else {
+
+				Logga(ctx, "KUBEIMICROSERV MISSING")
+			}
+		}
+		Logga(ctx, "")
+	}
 	/* ************************************************************************************************ */
 	// KUBECLUSTER
 	//
@@ -384,7 +392,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	argsAmb["env"] = strconv.Itoa(int(ims.ProfileInt))
 	argsAmb["swMultiEnvironment"] = ims.SwMultiEnvironment
 
-	restyKubeAmbRes := ApiCallGET(ctx, true, argsAmb, "msauth", "/auth/getAmbDomainMs", devopsToken, "")
+	restyKubeAmbRes := ApiCallGET(ctx, true, argsAmb, "msauth", "/auth/getAmbDomainMs", devopsTokenDst, "")
 	if restyKubeAmbRes.Errore < 0 {
 		Logga(ctx, restyKubeAmbRes.Log)
 		LoggaErrore.Errore = restyKubeAmbRes.Errore
@@ -469,7 +477,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 		argsDeploy["$filter"] += " and equals(XDEPLOYLOG09,'" + enviro + "') "
 	}
 
-	restyDeployRes := ApiCallGET(ctx, false, argsDeploy, "msdevops", "/devops/DEPLOYLOG", devopsToken, "")
+	restyDeployRes := ApiCallGET(ctx, false, argsDeploy, "msdevops", "/devops/DEPLOYLOG", devopsTokenDst, "")
 	if restyDeployRes.Errore < 0 {
 		Logga(ctx, restyDeployRes.Log)
 		LoggaErrore.Errore = restyDeployRes.Errore

@@ -261,6 +261,8 @@ type LoggaErrore struct {
 
 type IresRequest struct {
 	Istanza          string `json:"istanza"`
+	IstanzaDst       string `json:"istanzaDst"`
+	Microservice     string `json:"microservice"`
 	AppID            string `json:"appID"`
 	RefAppID         string `json:"refAppID"`
 	CustomerID       string `json:"customerID"`
@@ -272,6 +274,8 @@ type IresRequest struct {
 	RefAppCustomerID string `json:"refAppCustomerID"`
 	CustomerDomain   string `json:"customerDomain"`
 	Enviro           string `json:"enviro"`
+	TokenSrc         string `json:"tokerSrc"`
+	TokenDst         string `json:"tokerDst"`
 }
 
 type HealthPod struct {
