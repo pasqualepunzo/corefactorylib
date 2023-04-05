@@ -154,6 +154,9 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 			}
 		}
 		Logga(ctx, "")
+	} else {
+		// se siamo in migrazione non applichiamo questo metodo ma abbiamo necessita di avere il cluster valorizzato
+		ims.Cluster = iresReq.ClusterDst
 	}
 	/* ************************************************************************************************ */
 	// KUBECLUSTER
@@ -164,10 +167,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 
 	argsClu := make(map[string]string)
 	argsClu["source"] = "devops-8"
-	// argsClu["$select"] = "XKUBECLUSTER03,XKUBECLUSTER05,XKUBECLUSTER06,XKUBECLUSTER08,XKUBECLUSTER09,XKUBECLUSTER10,"
-	// argsClu["$select"] += "XKUBECLUSTER11,XKUBECLUSTER12,XKUBECLUSTER15,XKUBECLUSTER16,XKUBECLUSTER17,XKUBECLUSTER18,XKUBECLUSTER20,XKUBECLUSTER21,XKUBECLUSTER22"
 	argsClu["center_dett"] = "allviews"
-	//["$filter"] = "equals(XKUBECLUSTER03,'" + ims.cluster + "') "
 
 	restyKubeCluRes := ApiCallGET(ctx, false, argsClu, "msdevops", "/devops/KUBECLUSTER", devopsToken, "")
 	if restyKubeCluRes.Errore < 0 {
