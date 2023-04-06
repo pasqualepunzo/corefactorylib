@@ -1930,11 +1930,9 @@ func CheckPodHealth(microservice, versione, namespace, apiHost, apiToken string)
 		}
 	}
 }
-func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, canaryProduction, namespace, enviro, tenant, devopsToken string) LoggaErrore {
+func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, canaryProduction, namespace, enviro, tenant, devopsToken string) error {
 
-	var erro LoggaErrore
-	erro.Errore = 0
-
+	var erro error
 	istanza := ires.Istanza
 	microservice := ""
 	if ires.Monolith == 0 {
@@ -1963,6 +1961,7 @@ func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, can
 	restyDeployRes := ApiCallGET(ctx, true, argsDeploy, "msdevops", "/devops/DEPLOYLOG", devopsToken, "")
 	if restyDeployRes.Errore < 0 {
 		Logga(ctx, restyDeployRes.Log)
+		erro = errors.New(restyDeployRes.Log)
 		return erro
 	}
 
@@ -1998,19 +1997,24 @@ func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, can
 	item, err := GetDeploymentApi(namespace, ires.ApiHost, ires.ApiToken)
 	//LogJson(item)
 	if err.Errore < 0 {
-		erro.Errore = -1
-		erro.Log = err.Log
+		erro = errors.New(err.Log)
 		return erro
 	} else {
 
 		if len(item.Items) == 0 {
-			erro.Errore = -1
-			erro.Log = "No Deployment Found in Namespace"
+
+			erro = errors.New("No Deployment Found in Namespace")
 			return erro
 		}
 
 		Logga(ctx, "API returns : "+strconv.Itoa(len(item.Items))+" ITEMS")
 
+		// se non abbiamo ne la versione canary ne quella production
+		// stiamo al primo giro di giostra e non sevo cancellare anything
+		if versioneCanaryDb == "" && versioneProductionDb == "" {
+			Logga(ctx, "First Deploy - no items to kill, of course ")
+			return nil
+		}
 		for _, item := range item.Items {
 
 			Logga(ctx, "item yaml: "+item.Spec.Selector.MatchLabels.App)
@@ -2037,6 +2041,7 @@ func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, can
 
 				}
 			}
+
 		}
 
 	}

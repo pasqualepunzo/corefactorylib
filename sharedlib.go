@@ -14,7 +14,7 @@ import (
 	"github.com/go-resty/resty/v2"
 )
 
-func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction string) (IstanzaMicro, LoggaErrore) {
+func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction string) (IstanzaMicro, error) {
 
 	Logga(ctx, "")
 	Logga(ctx, " + + + + + + + + + + + + + + + + + + + +")
@@ -22,6 +22,8 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 
 	var LoggaErrore LoggaErrore
 	LoggaErrore.Errore = 0
+
+	var erro error
 
 	devopsToken := iresReq.TokenSrc
 	devopsTokenDst := iresReq.TokenDst
@@ -93,9 +95,8 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 		restyKubeImicroservRes := ApiCallGET(ctx, false, argsImicro, "msdevops", "/devops/KUBEIMICROSERV", devopsToken, "")
 		if restyKubeImicroservRes.Errore < 0 {
 			Logga(ctx, restyKubeImicroservRes.Log)
-			LoggaErrore.Errore = restyKubeImicroservRes.Errore
-			LoggaErrore.Log = restyKubeImicroservRes.Log
-			return ims, LoggaErrore
+			erro = errors.New(restyKubeImicroservRes.Log)
+			return ims, erro
 		}
 
 		if len(restyKubeImicroservRes.BodyJson) > 0 {
@@ -144,9 +145,8 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 					Logga(ctx, "NON RIESCO A SCRIVRERE L'ISTANZA "+resKubeims.Log)
 					Logga(ctx, "")
 
-					LoggaErrore.Errore = resKubeims.Errore
-					LoggaErrore.Log = resKubeims.Log
-					return ims, LoggaErrore
+					erro = errors.New(resKubeims.Log)
+					return ims, erro
 				}
 
 			} else {
@@ -173,9 +173,9 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	restyKubeCluRes := ApiCallGET(ctx, false, argsClu, "msdevops", "/devops/KUBECLUSTER", devopsTokenDst, "")
 	if restyKubeCluRes.Errore < 0 {
 		Logga(ctx, restyKubeCluRes.Log)
-		LoggaErrore.Errore = restyKubeCluRes.Errore
-		LoggaErrore.Log = restyKubeCluRes.Log
-		return ims, LoggaErrore
+
+		erro = errors.New(restyKubeCluRes.Log)
+		return ims, erro
 	}
 
 	profile := ""
@@ -241,9 +241,9 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 			restyKubeCluEnvRes := ApiCallGET(ctx, false, argsCluEnv, "msdevops", "/devops/KUBECLUSTERENV", devopsToken, "")
 			if restyKubeCluEnvRes.Errore < 0 {
 				Logga(ctx, restyKubeCluEnvRes.Log)
-				LoggaErrore.Errore = restyKubeCluEnvRes.Errore
-				LoggaErrore.Log = restyKubeCluEnvRes.Log
-				return ims, LoggaErrore
+
+				erro = errors.New(restyKubeCluEnvRes.Log)
+				return ims, erro
 			}
 
 			if len(restyKubeCluEnvRes.BodyJson) > 0 {
@@ -318,9 +318,9 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	restyAmbdomainRes := ApiCallGET(ctx, false, argsAmbdomain, "msauth", "/core/AMBDOMAIN", devopsToken, "")
 	if restyAmbdomainRes.Errore < 0 {
 		Logga(ctx, restyAmbdomainRes.Log)
-		LoggaErrore.Errore = restyAmbdomainRes.Errore
-		LoggaErrore.Log = restyAmbdomainRes.Log
-		return ims, LoggaErrore
+
+		erro = errors.New(restyAmbdomainRes.Log)
+		return ims, erro
 	}
 
 	if len(restyAmbdomainRes.BodyJson) > 0 {
@@ -345,9 +345,9 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	restyKubeMSRes := ApiCallGET(ctx, false, argsMS, "msdevops", "/devops/KUBEMICROSERV", devopsToken, "")
 	if restyKubeMSRes.Errore < 0 {
 		Logga(ctx, restyKubeMSRes.Log)
-		LoggaErrore.Errore = restyKubeMSRes.Errore
-		LoggaErrore.Log = restyKubeMSRes.Log
-		return ims, LoggaErrore
+
+		erro = errors.New(restyKubeMSRes.Log)
+		return ims, erro
 	}
 
 	if len(restyKubeMSRes.BodyJson) > 0 {
@@ -396,9 +396,9 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	restyKubeAmbRes := ApiCallGET(ctx, true, argsAmb, "msauth", "/auth/getAmbDomainMs", devopsTokenDst, "")
 	if restyKubeAmbRes.Errore < 0 {
 		Logga(ctx, restyKubeAmbRes.Log)
-		LoggaErrore.Errore = restyKubeAmbRes.Errore
-		LoggaErrore.Log = restyKubeAmbRes.Log
-		return ims, LoggaErrore
+
+		erro = errors.New(restyKubeAmbRes.Log)
+		return ims, erro
 	}
 
 	var dbMetaConnMss []DbMetaConnMs
@@ -481,9 +481,9 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	restyDeployRes := ApiCallGET(ctx, false, argsDeploy, "msdevops", "/devops/DEPLOYLOG", devopsTokenDst, "")
 	if restyDeployRes.Errore < 0 {
 		Logga(ctx, restyDeployRes.Log)
-		LoggaErrore.Errore = restyDeployRes.Errore
-		LoggaErrore.Log = restyDeployRes.Log
-		return ims, LoggaErrore
+
+		erro = errors.New(restyDeployRes.Log)
+		return ims, erro
 	}
 
 	if len(restyDeployRes.BodyArray) > 0 {
@@ -509,7 +509,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	Logga(ctx, " - - - - - - - - - - - - - - - - - - - ")
 	Logga(ctx, "")
 	//os.Exit(0)
-	return ims, LoggaErrore
+	return ims, erro
 }
 func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMicroservizio string, istanza IstanzaMicro, micros Microservice, utente, enviro, devopsToken string) LoggaErrore {
 
