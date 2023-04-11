@@ -471,12 +471,13 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	argsDeploy["source"] = "devops-8"
 	argsDeploy["$select"] = "XDEPLOYLOG03,XDEPLOYLOG05"
 	argsDeploy["center_dett"] = "visualizza"
-	argsDeploy["$filter"] = "equals(XDEPLOYLOG04,'" + istanza + "') "
-	argsDeploy["$filter"] += " and equals(XDEPLOYLOG06,'1') "
-
-	if ims.SwMultiEnvironment == "1" {
-		argsDeploy["$filter"] += " and equals(XDEPLOYLOG09,'" + enviro + "') "
+	if iresReq.SwDest { // MIGRAZIONE MS
+		argsDeploy["$filter"] = "equals(XDEPLOYLOG04,'" + iresReq.IstanzaDst + "') "
+	} else {
+		argsDeploy["$filter"] = "equals(XDEPLOYLOG04,'" + istanza + "') "
 	}
+	argsDeploy["$filter"] += " and equals(XDEPLOYLOG09,'" + enviro + "') "
+	argsDeploy["$filter"] += " and equals(XDEPLOYLOG06,'1') "
 
 	restyDeployRes := ApiCallGET(ctx, false, argsDeploy, "msdevops", "/devops/DEPLOYLOG", devopsTokenDst, "")
 	if restyDeployRes.Errore < 0 {
