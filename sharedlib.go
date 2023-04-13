@@ -391,7 +391,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	}
 	argsAmb["monolith"] = strconv.Itoa(int(ims.Monolith))
 	argsAmb["env"] = strconv.Itoa(int(ims.ProfileInt))
-	argsAmb["swMultiEnvironment"] = ims.SwMultiEnvironment
+	//argsAmb["swMultiEnvironment"] = ims.SwMultiEnvironment
 
 	restyKubeAmbRes := ApiCallGET(ctx, true, argsAmb, "msauth", "/auth/getAmbDomainMs", devopsTokenDst, "")
 	if restyKubeAmbRes.Errore < 0 {
