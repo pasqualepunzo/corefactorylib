@@ -871,7 +871,7 @@ se ci sono conflitti li segnala
 accetta branch source, branch dest, tipo (tag o branch)
 ritorna un LOG
 */
-func GitMergeApi(ctx context.Context, src, dst, repo, tipo string) (string, string) {
+func GitMergeApi(ctx context.Context, src, dst, repo, tipo string, bitbucketEnv MergeToMaster) (string, string) {
 
 	Logga(ctx, "gitMergeApi")
 
@@ -890,6 +890,21 @@ func GitMergeApi(ctx context.Context, src, dst, repo, tipo string) (string, stri
 
 		tmpBranch = src + "-tmp-branch"
 
+		clientTagDel := resty.New()
+		clientTagDel.Debug = false
+		restyTagResponseDel, errDel := clientTagDel.R().
+			SetHeader("Content-Type", "application/json").
+			SetBasicAuth(bitbucketEnv.UserGit, bitbucketEnv.TokenGit).
+			Delete(bitbucketEnv.ApiHostGit + "/repositories/" + bitbucketEnv.ProjectGit + "/" + repo + "/refs/branches/" + tmpBranch)
+
+		if errDel != nil {
+			fmt.Println("_##START##_   !!! Cannot delete previous temporary branch " + tmpBranch + " ERROR " + errDel.Error() + "_##STOP##_")
+		}
+
+		if restyTagResponseDel.StatusCode() == 404 {
+			fmt.Println("_##START##_   *WARNING* Cannot delete previous temporary branch " + tmpBranch + " _##STOP##_")
+		}
+
 		Logga(ctx, repo+": creo branch dal tag "+src)
 		// creo un branch vivo dal tag
 
@@ -899,12 +914,12 @@ func GitMergeApi(ctx context.Context, src, dst, repo, tipo string) (string, stri
 		clientTag.Debug = false
 		restyTagResponse, err := clientTag.R().
 			SetHeader("Content-Type", "application/json").
-			SetBasicAuth(os.Getenv("bitbucketUser"), os.Getenv("bitbucketToken")).
+			SetBasicAuth(bitbucketEnv.UserGit, bitbucketEnv.TokenGit).
 			SetBody(body).
-			Post(os.Getenv("bitbucketHost") + "/repositories/" + os.Getenv("bitbucketProject") + "/" + repo + "/refs/branches")
+			Post(bitbucketEnv.ApiHostGit + "/repositories/" + bitbucketEnv.ProjectGit + "/" + repo + "/refs/branches")
 
 		if err != nil {
-			fmt.Println("_##START##_   !!! New branch on " + repo + " ERROR " + err.Error() + "_##STOP##_")
+			fmt.Println("_##START##_   !ERROR! New branch on " + repo + " ERROR " + err.Error() + "_##STOP##_")
 
 			mergeRes.Error += "Error: "
 			erroMerge = true
@@ -944,9 +959,9 @@ func GitMergeApi(ctx context.Context, src, dst, repo, tipo string) (string, stri
 	clientPullR.Debug = false
 	restyPullReqResponse, err := clientPullR.R().
 		SetHeader("Content-Type", "application/json").
-		SetBasicAuth(os.Getenv("bitbucketUser"), os.Getenv("bitbucketToken")).
+		SetBasicAuth(bitbucketEnv.UserGit, bitbucketEnv.TokenGit).
 		SetBody(body).
-		Post(os.Getenv("bitbucketHost") + "/repositories/" + os.Getenv("bitbucketProject") + "/" + repo + "/pullrequests")
+		Post(bitbucketEnv.ApiHostGit + "/repositories/" + bitbucketEnv.ProjectGit + "/" + repo + "/pullrequests")
 
 	if err != nil {
 		fmt.Println("_##START##_   !!! Merge di " + src + " su " + dst + " ERROR " + err.Error() + "_##STOP##_")
@@ -986,8 +1001,8 @@ func GitMergeApi(ctx context.Context, src, dst, repo, tipo string) (string, stri
 			clientMerge := resty.New()
 			clientMerge.Debug = false
 			respMerge, errMerge := clientMerge.R().
-				SetBasicAuth(os.Getenv("bitbucketUser"), os.Getenv("bitbucketToken")).
-				Post(os.Getenv("bitbucketHost") + "/repositories/" + os.Getenv("bitbucketProject") + "/" + repo + "/pullrequests/" + strconv.Itoa(restyRes.ID) + "/merge")
+				SetBasicAuth(bitbucketEnv.UserGit, bitbucketEnv.TokenGit).
+				Post(bitbucketEnv.ApiHostGit + "/repositories/" + bitbucketEnv.ProjectGit + "/" + repo + "/pullrequests/" + strconv.Itoa(restyRes.ID) + "/merge")
 			// fmt.Println(string(respMerge.Body()), errMerge)
 
 			if errMerge != nil {
@@ -1008,7 +1023,7 @@ func GitMergeApi(ctx context.Context, src, dst, repo, tipo string) (string, stri
 				clientConflict.Debug = false
 				respConflict, errConflict := clientConflict.R().
 					EnableTrace().
-					SetBasicAuth(os.Getenv("bitbucketUser"), os.Getenv("bitbucketToken")).
+					SetBasicAuth(bitbucketEnv.UserGit, bitbucketEnv.TokenGit).
 					Get(restyRes.Links.Diff.Href)
 
 				if errConflict != nil {
