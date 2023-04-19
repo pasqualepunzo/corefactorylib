@@ -474,3 +474,48 @@ type HttpHeadersJson struct {
 	Name  string
 	Value string
 }
+type CallPUTRes struct {
+	Code  int `json:"code"`
+	Debug struct {
+		Body struct {
+			Xkubedkrbuild04 string `json:"XKUBEDKRBUILD04"`
+			Xkubedkrbuild13 string `json:"XKUBEDKRBUILD13"`
+			Debug           bool   `json:"debug"`
+			Source          string `json:"source"`
+			UpdateByCond    string `json:"updateByCond"`
+		} `json:"body"`
+		Fields struct {
+			KubedkrbuildID  string `json:"KUBEDKRBUILD_ID"`
+			Xkubedkrbuild04 string `json:"XKUBEDKRBUILD04"`
+			Xkubedkrbuild13 string `json:"XKUBEDKRBUILD13"`
+		} `json:"fields"`
+		SQL string `json:"sql"`
+	} `json:"debug"`
+	ModifiedID string `json:"modifiedId"`
+}
+type MergeToMaster struct {
+	TelegramKey string `json:"telegramKey"`
+	TelegramID  string `json:"TelegramID"`
+	ApiHostGit  string `json:"apiHostGit"`
+	UrlGit      string `json:"urlGit"`
+	UserGit     string `json:"userGit"`
+	TokenGit    string `json:"tokenGit"`
+	ProjectGit  string `json:"projectGit"`
+
+	Team    string    `json:"team"`
+	Istanza string    `json:"istanza"`
+	User    string    `json:"user"`
+	Tenant  string    `json:"tenant"`
+	Tags    []mtmTags `json:"tags"`
+}
+type mtmTags struct {
+	Docker       string `json:"docker"`
+	Tag          string `json:"tag"`
+	Versione     string `json:"versione"`
+	Merged       string `json:"merged"`
+	MasterDev    string `json:"masterDev"`
+	ReleaseNote  string `json:"releaseNote"`
+	SprintBranch string `json:"sprintBranch"`
+	Sha          string `json:"sha"`
+	GitRepo      string `json:"gitRepo"`
+}

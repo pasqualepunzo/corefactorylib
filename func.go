@@ -608,7 +608,11 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 			if versione != "" {
 				argsBld["$fullquery"] += " AND XKUBEDKRBUILD06 = '" + versione + "' "
 			}
-			argsBld["$fullquery"] += " order by (case when XKUBEDKRBUILD04 = 'master' then 0 else 1 end ) desc,cast(XKUBEDKRBUILD06 as unsigned) DESC "
+
+			// 2023 04 13 - laszlo mwpo e scarp non ricordano il perche della esclusione dei master e la mandano a fanculo, cosi a puorc
+			// perche a prescindere riteniamo che in caso di build dobbiamo prendere
+			//argsBld["$fullquery"] += " order by (case when XKUBEDKRBUILD04 = 'master' then 0 else 1 end ) desc,cast(XKUBEDKRBUILD06 as unsigned) DESC "
+			argsBld["$fullquery"] += " order by cast(XKUBEDKRBUILD06 as unsigned) DESC "
 			argsBld["$fullquery"] += " limit 1 "
 			fmt.Println(argsBld["$fullquery"])
 
