@@ -427,7 +427,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 
 	argsClu := make(map[string]string)
 	argsClu["source"] = "devops-8"
-	argsClu["$select"] = "XKUBECLUSTER06,XKUBECLUSTER12,XKUBECLUSTER15,XKUBECLUSTER17"
+	argsClu["$select"] = "XKUBECLUSTER06,XKUBECLUSTER12,XKUBECLUSTER15"
 	argsClu["center_dett"] = "dettaglio"
 	argsClu["$filter"] = "equals(XKUBECLUSTER03,'" + cluster + "') "
 
@@ -978,39 +978,32 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 
 							var endpoint Endpoint
 
-							if (x["domain"].(string) == "ketch-app.com" || x["domain"].(string) == "labketch-app.it") && x["microservice_dst"].(string) == "mscoreservice" {
+							endpoint.MicroserviceDst = x["microservice_dst"].(string)
+							endpoint.DockerDst = x["docker_dst"].(string)
+							endpoint.TypeSrvDst = x["type_dst"].(string)
+							endpoint.RouteDst = x["route_dst"].(string)
+							endpoint.RewriteDst = x["rewrite_dst"].(string)
+							endpoint.NamespaceDst = x["namespace_dst"].(string)
+							endpoint.VersionDst = x["version_dst"].(string)
 
-							} else {
+							endpoint.MicroserviceSrc = x["microservice_src"].(string)
+							endpoint.DockerSrc = x["docker_src"].(string)
+							endpoint.TypeSrvSrc = x["type_src"].(string)
+							endpoint.RouteSrc = x["route_src"].(string)
+							endpoint.RewriteSrc = x["rewrite_src"].(string)
+							endpoint.NamespaceSrc = microservices.Namespace
+							endpoint.VersionSrc = ""
 
-								endpoint.MicroserviceDst = x["microservice_dst"].(string)
-								endpoint.DockerDst = x["docker_dst"].(string)
-								endpoint.TypeSrvDst = x["type_dst"].(string)
-								endpoint.RouteDst = x["route_dst"].(string)
-								endpoint.RewriteDst = x["rewrite_dst"].(string)
-								endpoint.NamespaceDst = x["namespace_dst"].(string)
-								endpoint.VersionDst = x["version_dst"].(string)
+							endpoint.Domain = x["domain"].(string)
+							endpoint.Market = x["market"].(string)
+							endpoint.Partner = x["partner"].(string)
+							endpoint.Customer = x["customer"].(string)
 
-								endpoint.MicroserviceSrc = x["microservice_src"].(string)
-								endpoint.DockerSrc = x["docker_src"].(string)
-								endpoint.TypeSrvSrc = x["type_src"].(string)
-								endpoint.RouteSrc = x["route_src"].(string)
-								endpoint.RewriteSrc = x["rewrite_src"].(string)
-								endpoint.NamespaceSrc = microservices.Namespace
-								endpoint.VersionSrc = ""
+							endpoints = append(endpoints, endpoint)
 
-								endpoint.Domain = x["domain"].(string)
-								endpoint.Market = x["market"].(string)
-								endpoint.Partner = x["partner"].(string)
-								endpoint.Customer = x["customer"].(string)
-
-								endpoints = append(endpoints, endpoint)
-
-							}
 						}
 						Logga(ctx, "ENDPOINTS OK")
 					} else {
-						// loggaErrore.Errore = 0
-						// loggaErrore.Log = "ENDPOINTS MISSING"
 						Logga(ctx, "ENDPOINTS MISSING")
 					}
 					Logga(ctx, "")
@@ -1260,52 +1253,7 @@ func CreateTag(ctx context.Context, branch, tag, repo string) {
 		fmt.Println(repo, tagCreateRes.Error.Message)
 	}
 }
-func GetFutureToggle(ctx context.Context, cluster, tenant string) (bool, LoggaErrore) {
 
-	var loggaErrore LoggaErrore
-	loggaErrore.Errore = 0
-
-	// cerco il token di Corefactory
-	Logga(ctx, "Getting token")
-	devopsToken, erro := GetCoreFactoryToken(ctx, tenant)
-	if erro.Errore < 0 {
-		Logga(ctx, erro.Log)
-	} else {
-		Logga(ctx, "Token OK")
-	}
-
-	/* ************************************************************************************************ */
-	// CLUSTER
-
-	Logga(ctx, "Getting CLUSTER")
-
-	argsCLUSTER := make(map[string]string)
-	argsCLUSTER["source"] = "devops-8"
-	argsCLUSTER["$select"] = "XKUBECLUSTER17"
-	argsCLUSTER["center_dett"] = "dettaglio"
-	argsCLUSTER["$filter"] = "equals(XKUBECLUSTER03,'" + cluster + "') "
-	restyCLUSTERRes := ApiCallGET(ctx, false, argsCLUSTER, "msdevops", "/core/KUBECLUSTER", devopsToken, "")
-	if restyCLUSTERRes.Errore < 0 {
-		Logga(ctx, restyCLUSTERRes.Log)
-		loggaErrore.Errore = restyCLUSTERRes.Errore
-		loggaErrore.Log = restyCLUSTERRes.Log
-		return false, loggaErrore
-	}
-
-	var sw bool
-	if len(restyCLUSTERRes.BodyJson) > 0 {
-		swStr := restyCLUSTERRes.BodyJson["XKUBECLUSTER17"].(string)
-		sw, _ = strconv.ParseBool(swStr)
-
-		Logga(ctx, "CLUSTER OK")
-	} else {
-		Logga(ctx, "CLUSTER MISSING")
-	}
-	Logga(ctx, "")
-	/* ************************************************************************************************ */
-
-	return sw, loggaErrore
-}
 func GetEnvironmentStatus(ctx context.Context, cluster, enviro, microserice, customer, tenant string) LoggaErrore {
 
 	var loggaErrore LoggaErrore

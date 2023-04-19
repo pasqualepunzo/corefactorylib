@@ -210,6 +210,8 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 			clu.ProfileInt = int32(profileNum)
 
 			clu.Domain = x["XKUBECLUSTER15"].(string)
+			clu.DomainStage = x["XKUBECLUSTER17"].(string)
+
 			clu.Token = x["XKUBECLUSTER20"].(string)
 			clu.MasterHost = x["XKUBECLUSTER09"].(string)
 			clu.MasterUser = x["XKUBECLUSTER10"].(string)
@@ -219,7 +221,6 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 			ambienteFloat := x["XKUBECLUSTER12"].(float64)
 			clu.Ambiente = int32(ambienteFloat)
 			clu.RefappID = x["XKUBECLUSTER22"].(string)
-			clu.SwMultiEnvironment = x["XKUBECLUSTER17"].(string)
 
 			clu.CloudNet = x["XKUBECLUSTER24"].(string)
 
@@ -293,7 +294,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 		ims.Ambiente = clus[ims.Cluster].Ambiente
 		ims.ClusterRefAppID = clus[ims.Cluster].RefappID
 		ims.ClusterRefAppID = clus[ims.Cluster].RefappID
-		ims.SwMultiEnvironment = clus[ims.Cluster].SwMultiEnvironment
+		//ims.SwMultiEnvironment = clus[ims.Cluster].DomainStage
 		ims.ApiHost = clus[ims.Cluster].ApiHost
 		ims.ApiToken = clus[ims.Cluster].ApiToken
 		ims.Autopilot = clus[ims.Cluster].Autopilot

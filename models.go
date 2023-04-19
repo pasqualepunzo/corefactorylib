@@ -362,23 +362,23 @@ type IstanzaMicroVersioni struct {
 }
 
 type ClusterSt struct {
-	ProjectID          string `json:"projectID"`
-	Owner              string `json:"owner"`
-	Profile            string `json:"profile"`
-	ProfileInt         int32  `json:"profileInt"`
-	Domain             string `json:"domain"`
-	Token              string `json:"token"`
-	MasterHost         string `json:"masterHost"`
-	MasterUser         string `json:"masterUser"`
-	MasterPasswd       string `json:"masterPasswd"`
-	Ambiente           int32  `json:"ambiente"`
-	RefappID           string `json:"refappID"`
-	SwMultiEnvironment string `json:"swMultiEnvironment"`
-	AccessToken        string `json:"accssToken"`
-	ApiHost            string `json:"apiHost"`
-	ApiToken           string `json:"apiToken"`
-	CloudNet           string `json:"cloudNet"`
-	Autopilot          string `json:"autopilot"`
+	ProjectID    string `json:"projectID"`
+	Owner        string `json:"owner"`
+	Profile      string `json:"profile"`
+	ProfileInt   int32  `json:"profileInt"`
+	Domain       string `json:"domain"`
+	DomainStage  string `json:"domainStage"`
+	Token        string `json:"token"`
+	MasterHost   string `json:"masterHost"`
+	MasterUser   string `json:"masterUser"`
+	MasterPasswd string `json:"masterPasswd"`
+	Ambiente     int32  `json:"ambiente"`
+	RefappID     string `json:"refappID"`
+	AccessToken  string `json:"accssToken"`
+	ApiHost      string `json:"apiHost"`
+	ApiToken     string `json:"apiToken"`
+	CloudNet     string `json:"cloudNet"`
+	Autopilot    string `json:"autopilot"`
 }
 type ClusterAccess struct {
 	Domain            string `json="domain"`
