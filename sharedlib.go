@@ -161,14 +161,44 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 		// se siamo in migrazione non applichiamo questo metodo ma abbiamo necessita di avere il cluster valorizzato
 		ims.Cluster = iresReq.ClusterDst
 	}
+
+	/* ************************************************************************************************ */
+	// KUBESTAGE
+	Logga(ctx, "Getting KUBESTAGE sharedlib")
+
+	argsStage := make(map[string]string)
+	argsStage["source"] = "devops-8"
+	argsStage["$select"] = "XKUBESTAGE08"
+	argsStage["center_dett"] = "dettaglio"
+	argsStage["$filter"] = "equals(XKUBESTAGE03,'" + ims.Cluster + "') "
+	argsStage["$filter"] += " and equals(XKUBESTAGE04,'" + enviro + "') "
+
+	//$filter=contains(XART20,'(kg)') or contains(XART20,'pizza')
+	restyStageRes := ApiCallGET(ctx, false, argsStage, "msdevops", "/devops/KUBESTAGE", devopsToken, "")
+	if restyStageRes.Errore < 0 {
+		Logga(ctx, restyStageRes.Log)
+	}
+
+	var swProdStage int
+	if len(restyStageRes.BodyJson) > 0 {
+		swProdStage = int(restyStageRes.BodyJson["XKUBESTAGE08"].(float64))
+		Logga(ctx, "KUBESTAGE: OK")
+	} else {
+		Logga(ctx, "KUBESTAGE: MISSING")
+	}
+
 	/* ************************************************************************************************ */
 	// KUBECLUSTER
 
+	// il 21 04 2023 mepo laszlo e frnc non si addoneno del motivo di una array bidimens
+	// e a puorc schiattano un filtro sul cluster lasciando tutto invariato
+	// ma ovviamente la matrice avra una sola KEY
 	Logga(ctx, "Getting KUBECLUSTER")
 
 	argsClu := make(map[string]string)
 	argsClu["source"] = "devops-8"
 	argsClu["center_dett"] = "allviews"
+	argsClu["$filter"] = " equals(XKUBECLUSTER03,'" + ims.Cluster + "')"
 
 	restyKubeCluRes := ApiCallGET(ctx, false, argsClu, "msdevops", "/devops/KUBECLUSTER", devopsTokenDst, "")
 	if restyKubeCluRes.Errore < 0 {
@@ -210,7 +240,9 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 			clu.ProfileInt = int32(profileNum)
 
 			clu.Domain = x["XKUBECLUSTER15"].(string)
-			clu.DomainStage = x["XKUBECLUSTER17"].(string)
+			if swProdStage == 0 && x["XKUBECLUSTER17"].(string) != "" {
+				clu.Domain = x["XKUBECLUSTER17"].(string)
+			}
 
 			clu.Token = x["XKUBECLUSTER20"].(string)
 			clu.MasterHost = x["XKUBECLUSTER09"].(string)
@@ -294,7 +326,6 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 		ims.Ambiente = clus[ims.Cluster].Ambiente
 		ims.ClusterRefAppID = clus[ims.Cluster].RefappID
 		ims.ClusterRefAppID = clus[ims.Cluster].RefappID
-		//ims.SwMultiEnvironment = clus[ims.Cluster].DomainStage
 		ims.ApiHost = clus[ims.Cluster].ApiHost
 		ims.ApiToken = clus[ims.Cluster].ApiToken
 		ims.Autopilot = clus[ims.Cluster].Autopilot
