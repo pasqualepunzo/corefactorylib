@@ -73,13 +73,13 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	// definite su un config
 	// devopsProfile, _ := os.LookupEnv("APP_ENV")
 	//if devopsProfile == "prod" {
-	ims.MasterHost = os.Getenv("hostData")
+	//ims.MasterHost = os.Getenv("hostData")
 	// } else {
 	// ims.MasterHost = os.Getenv("hostDataDev")
 	// }
-	ims.MasterName = os.Getenv("nameData")
-	ims.MasterUser = os.Getenv("userData")
-	ims.MasterPass = os.Getenv("passData")
+	// ims.MasterName = os.Getenv("nameData")
+	// ims.MasterUser = os.Getenv("userData")
+	// ims.MasterPass = os.Getenv("passData")
 
 	/* ************************************************************************************************ */
 	// KUBEIMICROSERV
@@ -245,9 +245,11 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 			}
 
 			clu.Token = x["XKUBECLUSTER20"].(string)
-			clu.MasterHost = x["XKUBECLUSTER09"].(string)
-			clu.MasterUser = x["XKUBECLUSTER10"].(string)
-			clu.MasterPasswd = x["XKUBECLUSTER11"].(string)
+
+			// TOLGO QUESTE PERCHE PRENDO DA AMBDOMAIN 2023 05 02
+			// clu.MasterHost = x["XKUBECLUSTER09"].(string)
+			// clu.MasterUser = x["XKUBECLUSTER10"].(string)
+			// clu.MasterPasswd = x["XKUBECLUSTER11"].(string)
 			clu.AccessToken = x["XKUBECLUSTER20"].(string)
 
 			ambienteFloat := x["XKUBECLUSTER12"].(float64)
@@ -282,7 +284,9 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 			if len(restyKubeCluEnvRes.BodyJson) > 0 {
 				clu.Domain = restyKubeCluEnvRes.BodyJson["XKUBECLUSTERENV08"].(string)
 				clu.RefappID = restyKubeCluEnvRes.BodyJson["XKUBECLUSTERENV09"].(string)
-				clu.MasterHost = restyKubeCluEnvRes.BodyJson["XKUBECLUSTERENV07"].(string)
+
+				// TOLGO QUESTE PERCHE PRENDO DA AMBDOMAIN 2023 05 02
+				// clu.MasterHost = restyKubeCluEnvRes.BodyJson["XKUBECLUSTERENV07"].(string)
 
 				Logga(ctx, "KUBECLUSTERENV OK")
 			}
@@ -358,8 +362,11 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	if len(restyAmbdomainRes.BodyJson) > 0 {
 		ims.CustomerSalt = restyAmbdomainRes.BodyJson["XAMBDOMAIN11"].(string)
 
+		// AGGIUNGO QUESTE PERCHE PRENDO DA AMBDOMAIN 2023 05 02
 		ims.MasterHostData = restyAmbdomainRes.BodyJson["XAMBDOMAIN07"].(string)
 		ims.MasterHostMeta = restyAmbdomainRes.BodyJson["XAMBDOMAIN07"].(string)
+		ims.MasterUser = restyAmbdomainRes.BodyJson["XAMBDOMAIN09"].(string)
+		ims.MasterPass = restyAmbdomainRes.BodyJson["XAMBDOMAIN10"].(string)
 		Logga(ctx, "AMBDOMAIN OK")
 	} else {
 		Logga(ctx, "AMBDOMAIN MISSING")
@@ -453,8 +460,9 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 			ims.MasterHostMeta = x["XAMB03"].(string)
 			ims.MasterHostData = x["XAMB07"].(string)
 
-			ims.MasterUser = clus[x["CLUSTER"].(string)].MasterUser
-			ims.MasterPass = clus[x["CLUSTER"].(string)].MasterPasswd
+			// TOLGO QUESTE PERCHE PRENDO DA AMBDOMAIN 2023 05 02
+			//ims.MasterUser = clus[x["CLUSTER"].(string)].MasterUser
+			//ims.MasterPass = clus[x["CLUSTER"].(string)].MasterPasswd
 
 			//fmt.Println(x)
 			var dbMetaConnMs DbMetaConnMs
