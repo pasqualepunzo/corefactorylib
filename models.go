@@ -241,7 +241,7 @@ type Service struct {
 type Endpoint struct {
 	MicroserviceSrc, DockerSrc, TypeSrvSrc, RouteSrc, RewriteSrc, NamespaceSrc, VersionSrc string
 	MicroserviceDst, DockerDst, TypeSrvDst, RouteDst, RewriteDst, NamespaceDst, VersionDst string
-	Domain, Market, Partner, Customer                                                      string
+	Domain, Market, Partner, Customer, ClusterDomain                                       string
 }
 
 type CallGetResponse struct {

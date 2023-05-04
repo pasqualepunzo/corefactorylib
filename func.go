@@ -439,39 +439,10 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 		//return ims, loggaErrore
 	}
 
-	profile := ""
-	clusterOwner := ""
 	clusterHost := ""
-	// swMultiEnviro := ""
-	var profileNum int
 	if len(restyKubeCluRes.BodyJson) > 0 {
 
 		clusterHost = restyKubeCluRes.BodyJson["XKUBECLUSTER15"].(string)
-		clusterOwner = restyKubeCluRes.BodyJson["XKUBECLUSTER06"].(string)
-
-		profileFloat := restyKubeCluRes.BodyJson["XKUBECLUSTER12"].(float64)
-		profileNum = int(profileFloat)
-
-		profile = strconv.Itoa(profileNum)
-
-		// swMultiEnviro = restyKubeCluRes.BodyJson["XKUBECLUSTER17"].(string)
-
-		/*
-			il 24 / 11 / 2021 modifico la variabile profile da stringa a numero e nessuno di noi si ricorda perche con la FAC-442 è stata cambiata da int a string
-			switch profileNum {
-			case 0:
-				profile = "dev"
-				break
-			case 1:
-				profile = "qa"
-				break
-			case 2:
-				profile = "prod"
-				break
-			}
-		*/
-		//profile = profile
-		//profileInt = int32(profileNum)
 
 		Logga(ctx, "KUBECLUSTER OK")
 	} else {
@@ -877,7 +848,124 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 					sqlEndpoint := ""
 
 					// per ogni servizio cerco gli endpoints
-					sqlEndpoint += "select * from ( "
+					sqlEndpoint += "select "
+					sqlEndpoint += "ifnull(aa.XKUBEENDPOINT05, '') as microservice_src, "
+					sqlEndpoint += "ifnull(cc.XKUBESERVICEDKR04, '') as docker_src, "
+					sqlEndpoint += "ifnull(aa.XKUBEENDPOINT10, '') as type_src, "
+					sqlEndpoint += "ifnull(aa.XKUBEENDPOINT09, '') as route_src, "
+					sqlEndpoint += "ifnull(aa.XKUBEENDPOINT11, '') as rewrite_src, "
+					sqlEndpoint += "ifnull(cc.XKUBESERVICEDKR06, '') as port_src, "
+					sqlEndpoint += "ifnull(aa.XKUBEENDPOINT12, '') as priority, "
+					sqlEndpoint += "(case when ifnull(bb_ext.XKUBEENDPOINT05, '') != '' THEN ifnull(bb_ext.XKUBEENDPOINT05, '') ELSE ifnull(bb.XKUBEENDPOINT05, '') END) as microservice_dst, "
+					sqlEndpoint += "(case when ifnull(bb_ext.XKUBESERVICEDKR03, '') != '' THEN ifnull(bb_ext.XKUBESERVICEDKR03, '') ELSE ifnull(bb.XKUBESERVICEDKR03, '') END) as docker_dst, "
+					sqlEndpoint += "(case when ifnull(bb_ext.XKUBEENDPOINT10, '') != '' THEN ifnull(bb_ext.XKUBEENDPOINT10, '') ELSE ifnull(bb.XKUBEENDPOINT10, '') END) as type_dst, "
+					sqlEndpoint += "(case when ifnull(bb_ext.XKUBEENDPOINT09, '') != '' THEN ifnull(bb_ext.XKUBEENDPOINT09, '') ELSE ifnull(bb.XKUBEENDPOINT09, '') END) as route_dst, "
+					sqlEndpoint += "(case when ifnull(bb_ext.XKUBEENDPOINT11, '') != '' THEN ifnull(bb_ext.XKUBEENDPOINT11, '') ELSE ifnull(bb.XKUBEENDPOINT11, '') END) as rewrite_dst, "
+					sqlEndpoint += "(case when ifnull(bb_ext.XKUBEMICROSERV04, '') != '' THEN ifnull(bb_ext.XKUBEMICROSERV04, '') ELSE ifnull(bb.XKUBEMICROSERV04, '') END) as namespace_dst, "
+					sqlEndpoint += "(case when ifnull(bb_ext.XDEPLOYLOG05, '') != '' THEN ifnull(bb_ext.XDEPLOYLOG05, '') ELSE ifnull(bb.XDEPLOYLOG05, '') END) as version_dst, "
+					sqlEndpoint += "(case when ifnull(bb_ext.XKUBECLUSTER15, '') != '' THEN ifnull(bb_ext.XKUBECLUSTER15, '') ELSE ifnull(bb.XKUBECLUSTER15, '') END) as domain, "
+					sqlEndpoint += "(case when ifnull(bb_ext.XKUBEENDPOINTOVR06, '') != '' THEN ifnull(bb_ext.XKUBEENDPOINTOVR06, '') ELSE ifnull(bb.XKUBEENDPOINTOVR06, '') END) as market, "
+					sqlEndpoint += "(case when ifnull(bb_ext.XKUBEENDPOINTOVR07, '') != '' THEN ifnull(bb_ext.XKUBEENDPOINTOVR07, '') ELSE ifnull(bb.XKUBEENDPOINTOVR07, '') END) as partner, "
+					sqlEndpoint += "(case when ifnull(bb_ext.XKUBEENDPOINTOVR08, '') != '' THEN ifnull(bb_ext.XKUBEENDPOINTOVR08, '') ELSE ifnull(bb.XKUBEENDPOINTOVR08, '') END) as customer, "
+					sqlEndpoint += "(case when ifnull(bb_ext.XDEPLOYLOG05_CURRENT,'') != '' THEN '1' ELSE '0' END) as use_current_cluster_domain "
+					sqlEndpoint += "from "
+					sqlEndpoint += "TB_ANAG_KUBEENDPOINT00 aa "
+					sqlEndpoint += "JOIN TB_ANAG_KUBESERVICEDKR00 cc on "
+					sqlEndpoint += "(cc.XKUBESERVICEDKR03 = aa.XKUBEENDPOINT06) "
+					sqlEndpoint += "left join ( "
+					sqlEndpoint += "select "
+					sqlEndpoint += "XKUBECLUSTER15, "
+					sqlEndpoint += "XKUBEENDPOINT03, "
+					sqlEndpoint += "XKUBEENDPOINT09, "
+					sqlEndpoint += "XKUBEENDPOINT10, "
+					sqlEndpoint += "XKUBEENDPOINT11, "
+					sqlEndpoint += "XKUBEENDPOINT05, "
+					sqlEndpoint += "XKUBEMICROSERV05, "
+					sqlEndpoint += "XKUBEMICROSERV04, "
+					sqlEndpoint += "XKUBEENDPOINTOVR03, "
+					sqlEndpoint += "XKUBESERVICEDKR04, "
+					sqlEndpoint += "XKUBESERVICEDKR03, "
+					sqlEndpoint += "XDEPLOYLOG05, "
+					sqlEndpoint += "'' as XDEPLOYLOG05_CURRENT, "
+					sqlEndpoint += "XKUBEENDPOINTOVR06, "
+					sqlEndpoint += "XKUBEENDPOINTOVR07, "
+					sqlEndpoint += "XKUBEENDPOINTOVR08 "
+					sqlEndpoint += "from "
+					sqlEndpoint += "TB_ANAG_KUBEENDPOINT00 a "
+					sqlEndpoint += "join TB_ANAG_KUBEENDPOINTOVR00 b on "
+					sqlEndpoint += "(a.XKUBEENDPOINT03 = b.XKUBEENDPOINTOVR04) "
+					sqlEndpoint += "join TB_ANAG_KUBEMICROSERV00 on "
+					sqlEndpoint += "(XKUBEMICROSERV05 = XKUBEENDPOINT05) "
+					sqlEndpoint += "join TB_ANAG_KUBESERVICEDKR00 on "
+					sqlEndpoint += "(XKUBESERVICEDKR03 = XKUBEENDPOINT06) "
+					sqlEndpoint += "JOIN TB_ANAG_KUBEIMICROSERV00 on "
+					sqlEndpoint += "(XKUBEENDPOINT05 = XKUBEIMICROSERV04 and XKUBEIMICROSERV05 = '" + cluster + "' ) "
+					sqlEndpoint += "JOIN TB_ANAG_KUBECLUSTER00 on "
+					sqlEndpoint += "(XKUBECLUSTER03 = XKUBEIMICROSERV05) "
+					sqlEndpoint += "JOIN TB_ANAG_DEPLOYLOG00 on "
+					sqlEndpoint += "(XDEPLOYLOG04 = XKUBEIMICROSERV03 "
+					sqlEndpoint += "and XDEPLOYLOG09 = 'prod' "
+					sqlEndpoint += "and XDEPLOYLOG03 = 'production' "
+					sqlEndpoint += "and XDEPLOYLOG06 = 1 "
+					sqlEndpoint += "and XDEPLOYLOG07 = 0) ) bb on "
+					sqlEndpoint += "(aa.XKUBEENDPOINT03 = bb.XKUBEENDPOINTOVR03 ) "
+					sqlEndpoint += "left join ( "
+					sqlEndpoint += "select "
+					sqlEndpoint += "XKUBECLUSTER15, "
+					sqlEndpoint += "XKUBEENDPOINT03, "
+					sqlEndpoint += "XKUBEENDPOINT09, "
+					sqlEndpoint += "XKUBEENDPOINT10, "
+					sqlEndpoint += "XKUBEENDPOINT11, "
+					sqlEndpoint += "XKUBEENDPOINT05, "
+					sqlEndpoint += "XKUBEMICROSERV05, "
+					sqlEndpoint += "XKUBEMICROSERV04, "
+					sqlEndpoint += "XKUBEENDPOINTOVR03, "
+					sqlEndpoint += "XKUBESERVICEDKR04, "
+					sqlEndpoint += "XKUBESERVICEDKR03, "
+					sqlEndpoint += "Q01_DEPLOYLOG.XDEPLOYLOG05, "
+					sqlEndpoint += "CURRENT_DEPLOYLOG.XDEPLOYLOG05 as XDEPLOYLOG05_CURRENT, "
+					sqlEndpoint += "XKUBEENDPOINTOVR06, "
+					sqlEndpoint += "XKUBEENDPOINTOVR07, "
+					sqlEndpoint += "XKUBEENDPOINTOVR08 "
+					sqlEndpoint += "from "
+					sqlEndpoint += "TB_ANAG_KUBEENDPOINT00 a_ext "
+					sqlEndpoint += "join TB_ANAG_KUBEENDPOINTOVR00 b_ext on "
+					sqlEndpoint += "(a_ext.XKUBEENDPOINT03 = b_ext.XKUBEENDPOINTOVR04) "
+					sqlEndpoint += "join devops_data.TB_ANAG_KUBEMICROSERV00 on "
+					sqlEndpoint += "(XKUBEMICROSERV05 = XKUBEENDPOINT05) "
+					sqlEndpoint += "join devops_data.TB_ANAG_KUBESERVICEDKR00 on "
+					sqlEndpoint += "(XKUBESERVICEDKR03 = XKUBEENDPOINT06) "
+					sqlEndpoint += "JOIN devops_data.TB_ANAG_KUBEIMICROSERV00 on "
+					sqlEndpoint += "(XKUBEENDPOINT05 = XKUBEIMICROSERV04 and XKUBEIMICROSERV05 = '" + os.Getenv("clusterKube8") + "' ) "
+					sqlEndpoint += "JOIN devops_data.TB_ANAG_KUBECLUSTER00 on "
+					sqlEndpoint += "(XKUBECLUSTER03 = XKUBEIMICROSERV05) "
+					sqlEndpoint += "JOIN devops_data.TB_ANAG_DEPLOYLOG00 Q01_DEPLOYLOG on "
+					sqlEndpoint += "(Q01_DEPLOYLOG.XDEPLOYLOG04 = XKUBEIMICROSERV03 "
+					sqlEndpoint += "and Q01_DEPLOYLOG.XDEPLOYLOG09 = 'prod' "
+					sqlEndpoint += "and Q01_DEPLOYLOG.XDEPLOYLOG03 = 'production' "
+					sqlEndpoint += "and Q01_DEPLOYLOG.XDEPLOYLOG06 = 1 "
+					sqlEndpoint += "and Q01_DEPLOYLOG.XDEPLOYLOG07 = 0)  "
+					sqlEndpoint += "LEFT JOIN TB_ANAG_DEPLOYLOG00 CURRENT_DEPLOYLOG on "
+					sqlEndpoint += "(CURRENT_DEPLOYLOG.XDEPLOYLOG04 = REPLACE(XKUBEIMICROSERV03, '" + os.Getenv("clusterKube8") + "', '" + cluster + "') "
+					sqlEndpoint += "and CURRENT_DEPLOYLOG.XDEPLOYLOG09 = 'prod' "
+					sqlEndpoint += "and CURRENT_DEPLOYLOG.XDEPLOYLOG03 = 'production' "
+					sqlEndpoint += "and CURRENT_DEPLOYLOG.XDEPLOYLOG06 = 1 "
+					sqlEndpoint += "and CURRENT_DEPLOYLOG.XDEPLOYLOG07 = 0)  "
+					sqlEndpoint += ") bb_ext on "
+					sqlEndpoint += "(aa.XKUBEENDPOINT03 = bb_ext.XKUBEENDPOINTOVR03 ) "
+					sqlEndpoint += "having "
+					sqlEndpoint += "1>0 "
+					sqlEndpoint += "and docker_src = '" + docker + "' "
+					sqlEndpoint += "and port_src = '" + port + "' "
+					sqlEndpoint += "order by "
+					sqlEndpoint += "length(priority), "
+					sqlEndpoint += "priority, "
+					sqlEndpoint += "route_src, "
+					sqlEndpoint += "customer desc , "
+					sqlEndpoint += "partner desc , "
+					sqlEndpoint += "market desc "
+
+					/*sqlEndpoint += "select * from ( "
 
 					sqlEndpoint += "select "
 					sqlEndpoint += "ifnull(aa.XKUBEENDPOINT05,'') as microservice_src, "
@@ -963,7 +1051,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 					sqlEndpoint += ") as tbl "
 					sqlEndpoint += "order by length(priority), priority, route_src, customer desc , partner desc , market desc, "
 					sqlEndpoint += "(case when domain = '" + clusterHost + "' then 0 else 1 end) asc "
-
+					*/
 					//fmt.Println(sqlEndpoint)
 					//	os.Exit(0)
 
@@ -1002,6 +1090,11 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 							endpoint.Market = x["market"].(string)
 							endpoint.Partner = x["partner"].(string)
 							endpoint.Customer = x["customer"].(string)
+							if x["use_current_cluster_domain"].(string) == "1" {
+								endpoint.ClusterDomain = clusterHost
+							} else {
+								endpoint.ClusterDomain = ""
+							}
 
 							endpoints = append(endpoints, endpoint)
 
@@ -1906,9 +1999,7 @@ func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, can
 	argsDeploy["$filter"] = "equals(XDEPLOYLOG04,'" + istanza + "') "
 	argsDeploy["$filter"] += " and (equals(XDEPLOYLOG03,'canary') OR equals(XDEPLOYLOG03,'production'))  "
 	argsDeploy["$filter"] += " and equals(XDEPLOYLOG06,'1') "
-	if ires.SwMultiEnvironment == "1" {
-		argsDeploy["$filter"] += " and equals(XDEPLOYLOG09,'" + enviro + "') "
-	}
+	argsDeploy["$filter"] += " and equals(XDEPLOYLOG09,'" + enviro + "') "
 
 	restyDeployRes := ApiCallGET(ctx, true, argsDeploy, "msdevops", "/devops/DEPLOYLOG", devopsToken, "")
 	if restyDeployRes.Errore < 0 {
