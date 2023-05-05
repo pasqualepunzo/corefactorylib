@@ -174,7 +174,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	argsStage["$filter"] += " and equals(XKUBESTAGE04,'" + enviro + "') "
 
 	//$filter=contains(XART20,'(kg)') or contains(XART20,'pizza')
-	restyStageRes := ApiCallGET(ctx, false, argsStage, "msdevops", "/devops/KUBESTAGE", devopsToken, "")
+	restyStageRes := ApiCallGET(ctx, false, argsStage, "msdevops", "/devops/KUBESTAGE", devopsTokenDst, "")
 	if restyStageRes.Errore < 0 {
 		Logga(ctx, restyStageRes.Log)
 	}
