@@ -68,12 +68,20 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	ims.PodName = iresReq.PodName
 	ims.RefappID = refAppID
 
+	devops := "devops"
+	auth := "auth"
+	if ims.Monolith == 1 {
+		devops = "devopsmono"
+		auth = "adpauth"
+	}
+
 	// qui in data 19 maggio 2021
 	// con davide e mauro si decide che le connessione MASTER vanno
 	// definite su un config
 	// devopsProfile, _ := os.LookupEnv("APP_ENV")
 	//if devopsProfile == "prod" {
-	//ims.MasterHost = os.Getenv("hostData")
+	//ims.MasterHost = os.Getenv("hostData").
+
 	// } else {
 	// ims.MasterHost = os.Getenv("hostDataDev")
 	// }
@@ -92,7 +100,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 		argsImicro["center_dett"] = "dettaglio"
 		argsImicro["$filter"] = "equals(XKUBEIMICROSERV03,'" + istanza + "') "
 
-		restyKubeImicroservRes := ApiCallGET(ctx, false, argsImicro, "msdevops", "/devops/KUBEIMICROSERV", devopsToken, "")
+		restyKubeImicroservRes := ApiCallGET(ctx, false, argsImicro, "ms"+devops, "/"+devops+"/KUBEIMICROSERV", devopsToken, "")
 		if restyKubeImicroservRes.Errore < 0 {
 			Logga(ctx, restyKubeImicroservRes.Log)
 			erro = errors.New(restyKubeImicroservRes.Log)
@@ -138,7 +146,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 
 				keyvalueslices = append(keyvalueslices, keyvalueslice)
 
-				resKubeims := ApiCallPOST(ctx, false, keyvalueslices, "msdevops", "/devops/KUBEIMICROSERV", devopsToken, "")
+				resKubeims := ApiCallPOST(ctx, false, keyvalueslices, "ms"+devops, "/"+devops+"/KUBEIMICROSERV", devopsToken, "")
 
 				if resKubeims.Errore < 0 {
 					Logga(ctx, "")
@@ -174,7 +182,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	argsStage["$filter"] += " and equals(XKUBESTAGE04,'" + enviro + "') "
 
 	//$filter=contains(XART20,'(kg)') or contains(XART20,'pizza')
-	restyStageRes := ApiCallGET(ctx, false, argsStage, "msdevops", "/devops/KUBESTAGE", devopsTokenDst, "")
+	restyStageRes := ApiCallGET(ctx, false, argsStage, "ms"+devops, "/"+devops+"/KUBESTAGE", devopsTokenDst, "")
 	if restyStageRes.Errore < 0 {
 		Logga(ctx, restyStageRes.Log)
 	}
@@ -200,7 +208,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	argsClu["center_dett"] = "allviews"
 	argsClu["$filter"] = " equals(XKUBECLUSTER03,'" + ims.Cluster + "')"
 
-	restyKubeCluRes := ApiCallGET(ctx, false, argsClu, "msdevops", "/devops/KUBECLUSTER", devopsTokenDst, "")
+	restyKubeCluRes := ApiCallGET(ctx, false, argsClu, "ms"+devops, "/"+devops+"/KUBECLUSTER", devopsTokenDst, "")
 	if restyKubeCluRes.Errore < 0 {
 		Logga(ctx, restyKubeCluRes.Log)
 
@@ -273,7 +281,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 			argsCluEnv["$filter"] += " and XKUBECLUSTERENV05 eq " + strconv.Itoa(int(ambienteFloat)) + " "
 			argsCluEnv["$filter"] += " and equals(XKUBECLUSTERENV06,'" + enviro + "') "
 
-			restyKubeCluEnvRes := ApiCallGET(ctx, false, argsCluEnv, "msdevops", "/devops/KUBECLUSTERENV", devopsToken, "")
+			restyKubeCluEnvRes := ApiCallGET(ctx, false, argsCluEnv, "ms"+devops, "/"+devops+"/KUBECLUSTERENV", devopsToken, "")
 			if restyKubeCluEnvRes.Errore < 0 {
 				Logga(ctx, restyKubeCluEnvRes.Log)
 
@@ -324,11 +332,12 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 		ims.Profile = clus[ims.Cluster].Profile
 		ims.ProfileInt = clus[ims.Cluster].ProfileInt
 		ims.ClusterDomain = clus[ims.Cluster].Domain
+		ims.ClusterDomainProd = clus[ims.Cluster].DomainProd
+		ims.ClusterDomainStage = clus[ims.Cluster].DomainStage
 		ims.Token = clus[ims.Cluster].Token
 		ims.MasterUser = clus[ims.Cluster].MasterUser
 		ims.MasterPass = clus[ims.Cluster].MasterPasswd
 		ims.Ambiente = clus[ims.Cluster].Ambiente
-		ims.ClusterRefAppID = clus[ims.Cluster].RefappID
 		ims.ClusterRefAppID = clus[ims.Cluster].RefappID
 		ims.ApiHost = clus[ims.Cluster].ApiHost
 		ims.ApiToken = clus[ims.Cluster].ApiToken
@@ -381,7 +390,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	argsMS["$select"] = "XKUBEMICROSERV09,XKUBEMICROSERV15"
 	argsMS["center_dett"] = "dettaglio"
 	argsMS["$filter"] = "equals(XKUBEMICROSERV05,'" + microservice + "') "
-	restyKubeMSRes := ApiCallGET(ctx, false, argsMS, "msdevops", "/devops/KUBEMICROSERV", devopsToken, "")
+	restyKubeMSRes := ApiCallGET(ctx, false, argsMS, "ms"+devops, "/"+devops+"/KUBEMICROSERV", devopsToken, "")
 	if restyKubeMSRes.Errore < 0 {
 		Logga(ctx, restyKubeMSRes.Log)
 
@@ -432,7 +441,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	argsAmb["env"] = strconv.Itoa(int(ims.ProfileInt))
 	//argsAmb["swMultiEnvironment"] = ims.SwMultiEnvironment
 
-	restyKubeAmbRes := ApiCallGET(ctx, true, argsAmb, "msauth", "/auth/getAmbDomainMs", devopsTokenDst, "")
+	restyKubeAmbRes := ApiCallGET(ctx, true, argsAmb, "msauth", "/"+auth+"/getAmbDomainMs", devopsTokenDst, "")
 	if restyKubeAmbRes.Errore < 0 {
 		Logga(ctx, restyKubeAmbRes.Log)
 
@@ -519,7 +528,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	argsDeploy["$filter"] += " and equals(XDEPLOYLOG09,'" + enviro + "') "
 	argsDeploy["$filter"] += " and equals(XDEPLOYLOG06,'1') "
 
-	restyDeployRes := ApiCallGET(ctx, false, argsDeploy, "msdevops", "/devops/DEPLOYLOG", devopsTokenDst, "")
+	restyDeployRes := ApiCallGET(ctx, false, argsDeploy, "ms"+devops, "/"+devops+"/DEPLOYLOG", devopsTokenDst, "")
 	if restyDeployRes.Errore < 0 {
 		Logga(ctx, restyDeployRes.Log)
 

@@ -308,6 +308,8 @@ type IstanzaMicro struct {
 	RefappID                            string `json:"refappID"`
 	PodName                             string `json:"podName"`
 	ClusterDomain                       string `json:"clusterDomain"`
+	ClusterDomainProd                   string `json:"clusterDomainProd"` // Francesco - oltre a ClusterDomain, mi porto anche ClusterDomainProd e ClusterDomainStage
+	ClusterDomainStage                  string `json:"clusterDomainStage"`
 	Token                               string `json:"token"`
 	ClusterRefAppID                     string `json:"clusterRefAppID"`
 	RefappCustomerID                    string `json:"refappCustomerID"`
@@ -368,6 +370,7 @@ type ClusterSt struct {
 	ProfileInt   int32  `json:"profileInt"`
 	Domain       string `json:"domain"`
 	DomainStage  string `json:"domainStage"`
+	DomainProd   string `json:"domainProd"`
 	Token        string `json:"token"`
 	MasterHost   string `json:"masterHost"`
 	MasterUser   string `json:"masterUser"`

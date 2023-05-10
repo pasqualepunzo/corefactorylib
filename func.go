@@ -373,6 +373,11 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 	Logga(ctx, "BUILDVERSION "+buildVersion)
 	Logga(ctx, "getMicroserviceDetail begin")
 
+	devops := "devops"
+	if strings.Contains(ims, "p2rpowerna-monolith") {
+		devops = "devopsmono"
+	}
+
 	versioneArr := strings.Split(buildVersion, ".")
 	versione := ""
 
@@ -397,7 +402,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 	argsImicro["center_dett"] = "dettaglio"
 	argsImicro["$filter"] = "equals(XKUBEIMICROSERV03,'" + ims + "') "
 
-	restyKubeImicroservRes := ApiCallGET(ctx, false, argsImicro, "msdevops", "/devops/KUBEIMICROSERV", devopsToken, "")
+	restyKubeImicroservRes := ApiCallGET(ctx, false, argsImicro, "ms"+devops, "/"+devops+"/KUBEIMICROSERV", devopsToken, "")
 	if restyKubeImicroservRes.Errore != 0 {
 		Logga(ctx, restyKubeImicroservRes.Log)
 		loggaErrore.Errore = restyKubeImicroservRes.Errore
@@ -431,7 +436,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 	argsClu["center_dett"] = "dettaglio"
 	argsClu["$filter"] = "equals(XKUBECLUSTER03,'" + cluster + "') "
 
-	restyKubeCluRes := ApiCallGET(ctx, false, argsClu, "msdevops", "/devops/KUBECLUSTER", devopsToken, "")
+	restyKubeCluRes := ApiCallGET(ctx, false, argsClu, "ms"+devops, "/"+devops+"/KUBECLUSTER", devopsToken, "")
 	if restyKubeCluRes.Errore < 0 {
 		Logga(ctx, restyKubeCluRes.Log)
 		loggaErrore.Errore = restyKubeCluRes.Errore
@@ -460,7 +465,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 	argsMS["$select"] = "XKUBEMICROSERV03,XKUBEMICROSERV04,XKUBEMICROSERV05,XKUBEMICROSERV08,XKUBEMICROSERV16,XKUBEMICROSERV17,XKUBEMICROSERV18"
 	argsMS["center_dett"] = "dettaglio"
 	argsMS["$filter"] = "equals(XKUBEMICROSERV05,'" + microservice + "') "
-	restyKubeMSRes := ApiCallGET(ctx, false, argsMS, "msdevops", "/devops/KUBEMICROSERV", devopsToken, "")
+	restyKubeMSRes := ApiCallGET(ctx, false, argsMS, "ms"+devops, "/"+devops+"/KUBEMICROSERV", devopsToken, "")
 	if restyKubeMSRes.Errore != 0 {
 		Logga(ctx, restyKubeMSRes.Log)
 		loggaErrore.Errore = restyKubeMSRes.Errore
@@ -495,7 +500,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 		argsHpa["center_dett"] = "dettaglio"
 		argsHpa["$filter"] = "equals(XKUBEMICROSERVHPA03,'" + hpaTmpl + "') "
 
-		restyKubeHpaRes := ApiCallGET(ctx, false, argsHpa, "msdevops", "/devops/KUBEMICROSERVHPA", devopsToken, "")
+		restyKubeHpaRes := ApiCallGET(ctx, false, argsHpa, "ms"+devops, "/"+devops+"/KUBEMICROSERVHPA", devopsToken, "")
 		if restyKubeHpaRes.Errore < 0 {
 			Logga(ctx, restyKubeHpaRes.Log)
 			loggaErrore.Errore = restyKubeHpaRes.Errore
@@ -531,7 +536,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 	argsDkr["center_dett"] = "visualizza"
 	argsDkr["$filter"] = "equals(XSELKUBEDKRLIST10,'" + microservices.Nome + "') "
 
-	restyDkrLstRes := ApiCallGET(ctx, false, argsDkr, "msdevops", "/core/custom/SELKUBEDKRLIST/values", devopsToken, "")
+	restyDkrLstRes := ApiCallGET(ctx, false, argsDkr, "ms"+devops, "/core/custom/SELKUBEDKRLIST/values", devopsToken, "")
 	if restyDkrLstRes.Errore != 0 {
 		Logga(ctx, restyDkrLstRes.Log)
 		loggaErrore.Errore = restyDkrLstRes.Errore
@@ -587,7 +592,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 			argsBld["$fullquery"] += " limit 1 "
 			fmt.Println(argsBld["$fullquery"])
 
-			restyKubeBldRes := ApiCallGET(ctx, false, argsBld, "msdevops", "/core/custom/KUBEDKRBUILD/values", devopsToken, "")
+			restyKubeBldRes := ApiCallGET(ctx, false, argsBld, "ms"+devops, "/core/custom/KUBEDKRBUILD/values", devopsToken, "")
 
 			//fmt.Println(restyKubeBldRes)
 			if restyKubeBldRes.Errore < 0 {
@@ -633,7 +638,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 				argsBld["$fullquery"] += " limit 1 "
 				fmt.Println(argsBld["$fullquery"])
 
-				restyKubeBldRes := ApiCallGET(ctx, false, argsBld, "msdevops", "/core/custom/KUBEDKRBUILD/values", devopsToken, "")
+				restyKubeBldRes := ApiCallGET(ctx, false, argsBld, "ms"+devops, "/core/custom/KUBEDKRBUILD/values", devopsToken, "")
 
 				//fmt.Println(restyKubeBldRes)
 				if restyKubeBldRes.Errore < 0 {
@@ -685,7 +690,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 			argsMnt["center_dett"] = "visualizza"
 			argsMnt["$filter"] = "equals(XKUBEDKRMOUNT03,'" + docker + "') "
 
-			restyKubeMntRes := ApiCallGET(ctx, false, argsMnt, "msdevops", "/devops/KUBEDKRMOUNT", devopsToken, "")
+			restyKubeMntRes := ApiCallGET(ctx, false, argsMnt, "ms"+devops, "/"+devops+"/KUBEDKRMOUNT", devopsToken, "")
 			if restyKubeMntRes.Errore != 0 {
 				Logga(ctx, restyKubeMntRes.Log)
 				loggaErrore.Errore = restyKubeMntRes.Errore
@@ -725,7 +730,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 			argsSrc["center_dett"] = "dettaglio"
 			argsSrc["$filter"] = "equals(XKUBEDKRRESOURCE03,'" + resourceTmpl + "') "
 
-			restyKubeSrcRes := ApiCallGET(ctx, false, argsSrc, "msdevops", "/devops/KUBEDKRRESOURCE", devopsToken, "")
+			restyKubeSrcRes := ApiCallGET(ctx, false, argsSrc, "ms"+devops, "/"+devops+"/KUBEDKRRESOURCE", devopsToken, "")
 			if restyKubeSrcRes.Errore < 0 {
 				Logga(ctx, restyKubeSrcRes.Log)
 				loggaErrore.Errore = restyKubeSrcRes.Errore
@@ -763,7 +768,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 			argsProbes["center_dett"] = "allviews"
 			argsProbes["$filter"] = "equals(XKUBEDKRPROBE03,'" + docker + "') "
 
-			restyKubePrbRes := ApiCallGET(ctx, false, argsProbes, "msdevops", "/devops/KUBEDKRPROBE", devopsToken, "")
+			restyKubePrbRes := ApiCallGET(ctx, false, argsProbes, "ms"+devops, "/"+devops+"/KUBEDKRPROBE", devopsToken, "")
 			if restyKubePrbRes.Errore < 0 {
 				Logga(ctx, restyKubePrbRes.Log)
 				loggaErrore.Errore = restyKubePrbRes.Errore
@@ -826,7 +831,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 			argsSrvDkr["center_dett"] = "visualizza"
 			argsSrvDkr["$filter"] = "equals(XKUBESERVICEDKR04,'" + docker + "') "
 
-			restyKubeSrvDkrRes := ApiCallGET(ctx, false, argsSrvDkr, "msdevops", "/devops/KUBESERVICEDKR", devopsToken, "")
+			restyKubeSrvDkrRes := ApiCallGET(ctx, false, argsSrvDkr, "ms"+devops, "/"+devops+"/KUBESERVICEDKR", devopsToken, "")
 			if restyKubeSrvDkrRes.Errore != 0 {
 				Logga(ctx, restyKubeSrvDkrRes.Log)
 				loggaErrore.Errore = restyKubeSrvDkrRes.Errore
@@ -1059,7 +1064,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 					argsEndpoint["source"] = "devops-8"
 					argsEndpoint["$fullquery"] = sqlEndpoint
 
-					restyKubeEndpointRes := ApiCallGET(ctx, false, argsEndpoint, "msdevops", "/core/custom/KUBEENDPOINT/values", devopsToken, "")
+					restyKubeEndpointRes := ApiCallGET(ctx, false, argsEndpoint, "ms"+devops, "/core/custom/KUBEENDPOINT/values", devopsToken, "")
 					if restyKubeEndpointRes.Errore < 0 {
 
 					}
