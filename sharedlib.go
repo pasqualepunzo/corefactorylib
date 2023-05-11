@@ -251,6 +251,9 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 			if swProdStage == 0 && x["XKUBECLUSTER17"].(string) != "" {
 				clu.Domain = x["XKUBECLUSTER17"].(string)
 			}
+			// a prescindere mi porto tutti i domini
+			clu.DomainProd = x["XKUBECLUSTER15"].(string)
+			clu.DomainStage = x["XKUBECLUSTER17"].(string)
 
 			clu.Token = x["XKUBECLUSTER20"].(string)
 
