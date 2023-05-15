@@ -278,6 +278,7 @@ func ApiCallGET(ctx context.Context, debug bool, args map[string]string, microse
 	return resStruct
 }
 func GetApiHost() string {
+
 	urlDevops := os.Getenv("apiDomain")
 	return "https://" + urlDevops
 }
@@ -286,9 +287,7 @@ func ApiCallLOGIN(ctx context.Context, debug bool, args map[string]interface{}, 
 	//debug = true
 
 	if dominio == "" {
-		dominio = GetApiHost()
-	} else {
-		dominio = "https://" + dominio
+		dominio = "https://" + os.Getenv("coreApiHost")
 	}
 
 	JobID := ""
