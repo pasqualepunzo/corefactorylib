@@ -278,17 +278,10 @@ func ApiCallGET(ctx context.Context, debug bool, args map[string]string, microse
 	return resStruct
 }
 func GetApiHost() string {
-
 	urlDevops := os.Getenv("apiDomain")
 	return "https://" + urlDevops
 }
 func ApiCallLOGIN(ctx context.Context, debug bool, args map[string]interface{}, microservice, routing, dominio string) (map[string]interface{}, LoggaErrore) {
-
-	//debug = true
-
-	if dominio == "" {
-		dominio = "https://" + os.Getenv("coreApiHost")
-	}
 
 	JobID := ""
 	if ctx.Value("JobID") != nil {
@@ -311,7 +304,7 @@ func ApiCallLOGIN(ctx context.Context, debug bool, args map[string]interface{}, 
 	Logga(ctx, string(jsonString))
 
 	Logga(ctx, "Microservice : "+microservice)
-	Logga(ctx, "Url : "+dominio+"/api/"+os.Getenv("coreApiVersion")+routing)
+	Logga(ctx, "Url : "+dominio+"/api/"+routing)
 
 	var LoggaErrore LoggaErrore
 	LoggaErrore.Errore = 0
@@ -333,7 +326,7 @@ func ApiCallLOGIN(ctx context.Context, debug bool, args map[string]interface{}, 
 		//SetHeader("canary-mode", "on").
 		SetHeader("microservice", microservice).
 		SetBody(args).
-		Post(dominio + "/api/" + os.Getenv("coreApiVersion") + routing)
+		Post(dominio + "/api/" + routing)
 
 	if err != nil { // HTTP ERRORE
 		LoggaErrore.Errore = -1
@@ -392,7 +385,7 @@ func ApiCallPUT(ctx context.Context, debug bool, args map[string]interface{}, mi
 	}
 	return res.Body(), LoggaErrore
 }
-func GetCoreFactoryToken(ctx context.Context, tenant string) (string, LoggaErrore) {
+func GetCoreFactoryToken(ctx context.Context, tenant, accessToken, loginApiDomain, coreApiVersion string) (string, LoggaErrore) {
 	/* ************************************************************************************************ */
 	// cerco il token di devops
 
@@ -411,12 +404,12 @@ func GetCoreFactoryToken(ctx context.Context, tenant string) (string, LoggaError
 	sha := hex.EncodeToString(h.Sum(nil))
 
 	argsAuth := make(map[string]interface{})
-	argsAuth["access_token"] = os.Getenv("loginAccessToken")
+	argsAuth["access_token"] = accessToken
 	argsAuth["refappCustomer"] = tenant
 	argsAuth["resource"] = urlDevopsStripped
 	argsAuth["uuid"] = "devops-" + sha
 
-	restyAuthResponse, restyAuthErr := ApiCallLOGIN(ctx, false, argsAuth, "msauth", "/auth/login", "")
+	restyAuthResponse, restyAuthErr := ApiCallLOGIN(ctx, false, argsAuth, "msauth", coreApiVersion+"/auth/login", loginApiDomain)
 	if restyAuthErr.Errore < 0 {
 		// QUI ERRORE
 		erro.Errore = -1

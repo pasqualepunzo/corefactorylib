@@ -292,14 +292,14 @@ func GetUserGroup(ctx context.Context, token, gruppo string) (map[string]string,
 
 	return gru, erro
 }
-func GetNextVersion(ctx context.Context, masterBranch, nomeDocker, tenant string) (string, LoggaErrore) {
+func GetNextVersion(ctx context.Context, masterBranch, nomeDocker, tenant, accessToken, loginApiDomain, coreApiVersion string) (string, LoggaErrore) {
 
 	var loggaErrore LoggaErrore
 	loggaErrore.Errore = 0
 
 	// cerco il token di Corefactory
 	Logga(ctx, "Getting token")
-	devopsToken, erro := GetCoreFactoryToken(ctx, tenant)
+	devopsToken, erro := GetCoreFactoryToken(ctx, tenant, accessToken, loginApiDomain, coreApiVersion)
 	if erro.Errore < 0 {
 		Logga(ctx, erro.Log)
 	} else {
@@ -1213,9 +1213,9 @@ func GetProfileInfo(ctx context.Context, token string) (map[string]interface{}, 
 
 	return info, erro
 }
-func GetBuildLastTag(ctx context.Context, team, docker, tipo, tenant string) (string, LoggaErrore) {
+func GetBuildLastTag(ctx context.Context, team, docker, tipo, tenant, accessToken, loginApiDomain, coreApiVersion string) (string, LoggaErrore) {
 
-	sprint, erro := GetCurrentBranchSprint(ctx, team, tipo, tenant)
+	sprint, erro := GetCurrentBranchSprint(ctx, team, tipo, tenant, accessToken, loginApiDomain, coreApiVersion)
 	if erro.Errore < 0 {
 		Logga(ctx, erro.Log)
 	}
@@ -1225,7 +1225,7 @@ func GetBuildLastTag(ctx context.Context, team, docker, tipo, tenant string) (st
 
 	// cerco il token di Corefactory
 	Logga(ctx, "Getting token")
-	devopsToken, erro := GetCoreFactoryToken(ctx, tenant)
+	devopsToken, erro := GetCoreFactoryToken(ctx, tenant, accessToken, loginApiDomain, coreApiVersion)
 	if erro.Errore < 0 {
 		Logga(ctx, erro.Log)
 	} else {
@@ -1267,14 +1267,14 @@ func GetBuildLastTag(ctx context.Context, team, docker, tipo, tenant string) (st
 
 	return tag, loggaErrore
 }
-func GetCurrentBranchSprint(ctx context.Context, team, tipo, tenant string) (string, LoggaErrore) {
+func GetCurrentBranchSprint(ctx context.Context, team, tipo, tenant, accessToken, loginApiDomain, coreApiVersion string) (string, LoggaErrore) {
 
 	var loggaErrore LoggaErrore
 	loggaErrore.Errore = 0
 
 	// cerco il token di Corefactory
 	Logga(ctx, "Getting token")
-	devopsToken, erro := GetCoreFactoryToken(ctx, tenant)
+	devopsToken, erro := GetCoreFactoryToken(ctx, tenant, accessToken, loginApiDomain, coreApiVersion)
 	if erro.Errore < 0 {
 		Logga(ctx, erro.Log)
 	} else {
@@ -1356,7 +1356,7 @@ func CreateTag(ctx context.Context, branch, tag, repo string) {
 	}
 }
 
-func GetEnvironmentStatus(ctx context.Context, cluster, enviro, microserice, customer, tenant string) LoggaErrore {
+func GetEnvironmentStatus(ctx context.Context, cluster, enviro, microserice, customer, tenant, accessToken, loginApiDomain, coreApiVersion string) LoggaErrore {
 
 	var loggaErrore LoggaErrore
 	loggaErrore.Errore = 0
@@ -1364,7 +1364,7 @@ func GetEnvironmentStatus(ctx context.Context, cluster, enviro, microserice, cus
 	status := ""
 
 	// cerco il token di Corefactory
-	devopsToken, erro := GetCoreFactoryToken(ctx, tenant)
+	devopsToken, erro := GetCoreFactoryToken(ctx, tenant, accessToken, loginApiDomain, coreApiVersion)
 	if erro.Errore < 0 {
 		Logga(ctx, erro.Log)
 	}
@@ -1410,13 +1410,13 @@ func GetEnvironmentStatus(ctx context.Context, cluster, enviro, microserice, cus
 
 	return loggaErrore
 }
-func SetEnvironmentStatus(ctx context.Context, cluster, enviro, microserice, customer, user, toggle, tenant string) LoggaErrore {
+func SetEnvironmentStatus(ctx context.Context, cluster, enviro, microserice, customer, user, toggle, tenant, accessToken, loginApiDomain, coreApiVersion string) LoggaErrore {
 
 	var loggaErrore LoggaErrore
 	loggaErrore.Errore = 0
 
 	// cerco il token di Corefactory
-	devopsToken, erro := GetCoreFactoryToken(ctx, tenant)
+	devopsToken, erro := GetCoreFactoryToken(ctx, tenant, accessToken, loginApiDomain, coreApiVersion)
 	if erro.Errore < 0 {
 		Logga(ctx, erro.Log)
 		loggaErrore.Errore = erro.Errore
@@ -1640,13 +1640,13 @@ func GetAccessCluster(ctx context.Context, cluster, devopsToken string) ClusterA
 
 	return cluAcc
 }
-func GetJsonDatabases(ctx context.Context, stage, developer string, market int32, arrConn MasterConn, tenant string) (map[string]interface{}, LoggaErrore) {
+func GetJsonDatabases(ctx context.Context, stage, developer string, market int32, arrConn MasterConn, tenant, accessToken, loginApiDomain, coreApiVersion string) (map[string]interface{}, LoggaErrore) {
 	Logga(ctx, "Getting Json Db")
 
 	var erro LoggaErrore
 	erro.Errore = 0
 
-	devopsToken, erro := GetCoreFactoryToken(ctx, tenant)
+	devopsToken, erro := GetCoreFactoryToken(ctx, tenant, accessToken, loginApiDomain, coreApiVersion)
 	if erro.Errore < 0 {
 		Logga(ctx, erro.Log)
 	} else {
@@ -1738,99 +1738,7 @@ func GetCustomerToken(ctx context.Context, accessToken, refappCustomer, resource
 		return "", erro
 	}
 }
-func GetArrRepo(ctx context.Context, team, customSettings, tenant string) map[int]Repos {
 
-	// cerco il token di Corefactory
-	devopsToken, erro := GetCoreFactoryToken(ctx, tenant)
-	if erro.Errore < 0 {
-		Logga(ctx, erro.Log)
-	}
-
-	/* ************************************************************************************************ */
-	// KUBEMONOLITHREPO
-	Logga(ctx, "Getting KUBEMONOLITHREPO")
-	args := make(map[string]string)
-	args["source"] = "devops-9"
-	args["center_dett"] = "visualizza"
-	args["$select"] = "XKUBEMONOLITHREPO04,XKUBEMONOLITHREPO05,XKUBEMONOLITHREPO06"
-	args["$filter"] = "equals(XKUBEMONOLITHREPO03,'" + team + "')"
-	args["$order"] += "XKUBEMONOLITHREPO05"
-
-	restyKUBEMONOLITHREPORes := ApiCallGET(ctx, false, args, "msdevops", "/devops/KUBEMONOLITHREPO", devopsToken, "")
-	if restyKUBEMONOLITHREPORes.Errore < 0 {
-		Logga(ctx, restyKUBEMONOLITHREPORes.Log)
-	}
-
-	i := 0
-	arrRepo := make(map[int]Repos)
-	var repo Repos
-	if len(restyKUBEMONOLITHREPORes.BodyArray) > 0 {
-		for _, x := range restyKUBEMONOLITHREPORes.BodyArray {
-
-			repo.Nome = x["XKUBEMONOLITHREPO04"].(string)
-			repo.Repo = x["XKUBEMONOLITHREPO05"].(string)
-			repo.Sw = int(x["XKUBEMONOLITHREPO06"].(float64))
-
-			arrRepo[i] = repo
-			i++
-
-		}
-		Logga(ctx, "KUBEMONOLITHREPO OK")
-	} else {
-		Logga(ctx, "KUBEMONOLITHREPO MISSING")
-	}
-
-	/* ************************************************************************************************ */
-
-	// se alla func non passo un custom setting
-	// vuol dire che li voglio tutti
-	fmt.Println(customSettings)
-	if customSettings == "" {
-
-		// qui ottengo i CS del team
-
-		/* ************************************************************************************************ */
-		// KUBEMONOLITHCS
-		Logga(ctx, "Getting KUBEMONOLITHCS")
-		args := make(map[string]string)
-		args["source"] = "devops-9"
-		args["center_dett"] = "visualizza"
-		args["$select"] = "XKUBEMONOLITHCS06"
-		args["$filter"] = "equals(XKUBEMONOLITHCS03,'" + team + "')"
-		args["$filter"] += " and equals(XKUBEMONOLITHCS07,'1')"
-
-		restyKUBEMONOLITHCSRes := ApiCallGET(ctx, false, args, "msdevops", "/devops/KUBEMONOLITHCS", devopsToken, "")
-		if restyKUBEMONOLITHCSRes.Errore < 0 {
-			Logga(ctx, restyKUBEMONOLITHCSRes.Log)
-		}
-
-		if len(restyKUBEMONOLITHCSRes.BodyArray) > 0 {
-			for _, x := range restyKUBEMONOLITHCSRes.BodyArray {
-
-				repo.Nome = x["XKUBEMONOLITHCS06"].(string)
-				repo.Repo = x["XKUBEMONOLITHCS06"].(string)
-				repo.Tipo = "CS"
-				arrRepo[i] = repo
-				i++
-
-			}
-			Logga(ctx, "KUBEMONOLITHCS OK")
-		} else {
-			Logga(ctx, "KUBEMONOLITHCS MISSING")
-		}
-
-		/* ************************************************************************************************ */
-
-	} else {
-		fmt.Println("customSettings: " + customSettings)
-		repo.Nome = "customSettings"
-		repo.Repo = customSettings
-		arrRepo[i] = repo
-
-	}
-
-	return arrRepo
-}
 func GetCfToolEnv(ctx context.Context, token, dominio, tenant string) (TenantEnv, error) {
 	Logga(ctx, "Getting KUBECFTOOLENV")
 
