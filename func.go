@@ -277,7 +277,7 @@ func GetUserGroup(ctx context.Context, token, gruppo, dominio, coreApiVersion st
 	args["source"] = "users-3"
 	args["$select"] = "XGRU05,XGRU06"
 
-	gruRes := ApiCallGET(ctx, false, args, "msusers", coreApiVersion+"/users/GRU/equals(XGRU03,'"+gruppo+"')", token, dominio, coreApiVersion)
+	gruRes := ApiCallGET(ctx, false, args, "msusers", "/users/GRU/equals(XGRU03,'"+gruppo+"')", token, dominio, coreApiVersion)
 
 	gru := make(map[string]string)
 
@@ -1192,7 +1192,7 @@ func GetProfileInfo(ctx context.Context, token, dominio, coreApiVersion string) 
 	info := make(map[string]interface{})
 
 	args := make(map[string]string)
-	infoRes := ApiCallGET(ctx, false, args, "mscore", coreApiVersion+"/core/getProfileInfo", token, dominio, coreApiVersion)
+	infoRes := ApiCallGET(ctx, false, args, "mscore", "/core/getProfileInfo", token, dominio, coreApiVersion)
 
 	if len(infoRes.BodyJson) > 0 {
 		restyProfileInfoResponse := ProfileInfo{}

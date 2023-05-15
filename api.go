@@ -40,6 +40,9 @@ func (cliLogger *RestyClientLogger) Errorf(format string, v ...interface{}) {
 func ApiCallPOST(ctx context.Context, debug bool, args []map[string]interface{}, microservice, routing, token, dominio, coreApiVersion string) CallGetResponse {
 
 	Logga(ctx, "apiCallPOST")
+	if !strings.Contains(dominio, "http") {
+		dominio = "https://" + dominio
+	}
 
 	type restyPOSTStruct []struct {
 		Code   int         `json:"code"`
@@ -142,6 +145,9 @@ func ApiCallPOST(ctx context.Context, debug bool, args []map[string]interface{},
 func ApiCallGET(ctx context.Context, debug bool, args map[string]string, microservice, routing, token, dominio, coreApiVersion string) CallGetResponse {
 
 	Logga(ctx, "apiCallGET")
+	if !strings.Contains(dominio, "http") {
+		dominio = "https://" + dominio
+	}
 
 	JobID := ""
 	if ctx.Value("JobID") != nil {
@@ -273,6 +279,10 @@ func ApiCallGET(ctx context.Context, debug bool, args map[string]string, microse
 
 func ApiCallLOGIN(ctx context.Context, debug bool, args map[string]interface{}, microservice, routing, dominio string) (map[string]interface{}, LoggaErrore) {
 
+	if !strings.Contains(dominio, "http") {
+		dominio = "https://" + dominio
+	}
+
 	JobID := ""
 	if ctx.Value("JobID") != nil {
 		JobID = ctx.Value("JobID").(string)
@@ -340,6 +350,9 @@ func ApiCallLOGIN(ctx context.Context, debug bool, args map[string]interface{}, 
 	return callResponse, LoggaErrore
 }
 func ApiCallPUT(ctx context.Context, debug bool, args map[string]interface{}, microservice, routing, token, dominio, coreApiVersion string) ([]byte, LoggaErrore) {
+	if !strings.Contains(dominio, "http") {
+		dominio = "https://" + dominio
+	}
 
 	var LoggaErrore LoggaErrore
 	LoggaErrore.Errore = 0
@@ -415,6 +428,10 @@ func ApiCallDELETE(ctx context.Context, debug bool, args map[string]string, micr
 	JobID := ""
 	if ctx.Value("JobID") != nil {
 		JobID = ctx.Value("JobID").(string)
+	}
+
+	if !strings.Contains(dominio, "http") {
+		dominio = "https://" + dominio
 	}
 
 	args["JobID"] = JobID
