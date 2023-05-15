@@ -1449,7 +1449,7 @@ func SetEnvironmentStatus(ctx context.Context, cluster, enviro, microserice, cus
 
 	keyvalueslices = append(keyvalueslices, keyvalueslice)
 
-	res := ApiCallPOST(ctx, false, keyvalueslices, "msdevops", "/devops/KUBEENVSTATUS", devopsToken, "")
+	res := ApiCallPOST(ctx, false, keyvalueslices, "msdevops", "/devops/KUBEENVSTATUS", devopsToken, loginApiDomain, coreApiVersion)
 
 	if res.Errore < 0 {
 		Logga(ctx, res.Log)

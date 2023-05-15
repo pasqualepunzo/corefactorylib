@@ -146,7 +146,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 
 				keyvalueslices = append(keyvalueslices, keyvalueslice)
 
-				resKubeims := ApiCallPOST(ctx, false, keyvalueslices, "ms"+devops, "/"+devops+"/KUBEIMICROSERV", devopsToken, "")
+				resKubeims := ApiCallPOST(ctx, false, keyvalueslices, "ms"+devops, "/"+devops+"/KUBEIMICROSERV", devopsToken, dominio, coreApiVersion)
 
 				if resKubeims.Errore < 0 {
 					Logga(ctx, "")
@@ -564,7 +564,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	//os.Exit(0)
 	return ims, erro
 }
-func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMicroservizio string, istanza IstanzaMicro, micros Microservice, utente, enviro, devopsToken string) LoggaErrore {
+func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMicroservizio string, istanza IstanzaMicro, micros Microservice, utente, enviro, devopsToken, dominio, coreApiVersion string) LoggaErrore {
 
 	var LoggaErrore LoggaErrore
 	LoggaErrore.Errore = 0
@@ -603,7 +603,7 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 
 				filter := "equals(XDEPLOYLOG04,'" + istanza.Istanza + "') and equals(XDEPLOYLOG03,'canary') and XDEPLOYLOG06 eq 1"
 
-				_, erro := ApiCallPUT(ctx, false, keyvalueslice, "msdevops", "/devops/DEPLOYLOG/"+filter, devopsToken, "")
+				_, erro := ApiCallPUT(ctx, false, keyvalueslice, "msdevops", "/devops/DEPLOYLOG/"+filter, devopsToken, dominio, coreApiVersion)
 
 				if erro.Errore < 0 {
 					return erro
@@ -631,7 +631,7 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 
 				filter := "equals(XDEPLOYLOG04,'" + istanza.Istanza + "') and equals(XDEPLOYLOG03,'production') and XDEPLOYLOG06 eq 1"
 
-				_, erro := ApiCallPUT(ctx, false, keyvalueslice, "msdevops", "/devops/DEPLOYLOG/"+filter, devopsToken, "")
+				_, erro := ApiCallPUT(ctx, false, keyvalueslice, "msdevops", "/devops/DEPLOYLOG/"+filter, devopsToken, dominio, coreApiVersion)
 				if erro.Errore < 0 {
 					return erro
 				}
@@ -646,7 +646,7 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 
 				filter := "equals(XDEPLOYLOG04,'" + istanza.Istanza + "') and equals(XDEPLOYLOG03,'canary')"
 
-				_, erro := ApiCallPUT(ctx, false, keyvalueslice, "msdevops", "/devops/DEPLOYLOG/"+filter, devopsToken, "")
+				_, erro := ApiCallPUT(ctx, false, keyvalueslice, "msdevops", "/devops/DEPLOYLOG/"+filter, devopsToken, dominio, coreApiVersion)
 				if erro.Errore < 0 {
 					return erro
 				}
@@ -713,7 +713,7 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 	keyvalueslice["XDEPLOYLOG09"] = enviro
 	keyvalueslices = append(keyvalueslices, keyvalueslice)
 
-	resPOST := ApiCallPOST(ctx, false, keyvalueslices, "msdevops", "/devops/DEPLOYLOG", devopsToken, "")
+	resPOST := ApiCallPOST(ctx, false, keyvalueslices, "msdevops", "/devops/DEPLOYLOG", devopsToken, dominio, coreApiVersion)
 	if resPOST.Errore < 0 {
 		LoggaErrore.Log = resPOST.Log
 		return LoggaErrore
@@ -881,7 +881,7 @@ func CloudBuils(ctx context.Context, docker, verPad, dirRepo, bArgs string, swMo
 
 	return sha256, errBuild
 }
-func UpdateDockerVersion(ctx context.Context, docker, ver, user, devMaster, sha, team, newTagName, releaseNote, parentBranch, cs, merged, tenant, devopsToken string) error {
+func UpdateDockerVersion(ctx context.Context, docker, ver, user, devMaster, sha, team, newTagName, releaseNote, parentBranch, cs, merged, tenant, devopsToken, dominio, coreApiVersion string) error {
 
 	var erro error
 	Logga(ctx, "Insert TB_ANAG_KUBEDKRBUILD00 ")
@@ -905,7 +905,7 @@ func UpdateDockerVersion(ctx context.Context, docker, ver, user, devMaster, sha,
 	keyvalueslices = append(keyvalueslices, keyvalueslice)
 
 	Logga(ctx, "beore ApiCallPOST")
-	res := ApiCallPOST(ctx, false, keyvalueslices, "msdevops", "/devops/KUBEDKRBUILD", devopsToken, "")
+	res := ApiCallPOST(ctx, false, keyvalueslices, "msdevops", "/devops/KUBEDKRBUILD", devopsToken, dominio, coreApiVersion)
 	Logga(ctx, "after ApiCallPOST")
 	if res.Errore != 0 {
 		Logga(ctx, res.Log)
