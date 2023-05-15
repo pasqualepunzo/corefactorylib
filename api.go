@@ -7,7 +7,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"math/rand"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -38,7 +37,7 @@ func (cliLogger *RestyClientLogger) Errorf(format string, v ...interface{}) {
 	}
 }
 
-func ApiCallPOST(ctx context.Context, debug bool, args []map[string]interface{}, microservice, routing, token, dominio string) CallGetResponse {
+func ApiCallPOST(ctx context.Context, debug bool, args []map[string]interface{}, microservice, routing, token, dominio, coreApiVersion string) CallGetResponse {
 
 	Logga(ctx, "apiCallPOST")
 
@@ -57,7 +56,7 @@ func ApiCallPOST(ctx context.Context, debug bool, args []map[string]interface{},
 
 	var resStruct CallGetResponse
 
-	Logga(ctx, dominio+"/api/"+os.Getenv("coreApiVersion")+routing+" - "+microservice)
+	Logga(ctx, dominio+"/api/"+coreApiVersion+routing+" - "+microservice)
 
 	var LoggaErrore LoggaErrore
 	LoggaErrore.Errore = 0
@@ -106,7 +105,7 @@ func ApiCallPOST(ctx context.Context, debug bool, args []map[string]interface{},
 		SetHeader("microservice", microservice).
 		SetAuthToken(token).
 		SetBody(args).
-		Post(dominio + "/api/" + os.Getenv("coreApiVersion") + routing)
+		Post(dominio + "/api/" + coreApiVersion + routing)
 
 	// fmt.Println(res)
 	// LogJson(res)
@@ -340,7 +339,7 @@ func ApiCallLOGIN(ctx context.Context, debug bool, args map[string]interface{}, 
 	}
 	return callResponse, LoggaErrore
 }
-func ApiCallPUT(ctx context.Context, debug bool, args map[string]interface{}, microservice, routing, token, dominio string) ([]byte, LoggaErrore) {
+func ApiCallPUT(ctx context.Context, debug bool, args map[string]interface{}, microservice, routing, token, dominio, coreApiVersion string) ([]byte, LoggaErrore) {
 
 	var LoggaErrore LoggaErrore
 	LoggaErrore.Errore = 0
@@ -358,7 +357,7 @@ func ApiCallPUT(ctx context.Context, debug bool, args map[string]interface{}, mi
 		SetHeader("microservice", microservice).
 		SetAuthToken(token).
 		SetBody(args).
-		Put(dominio + "/api/" + os.Getenv("coreApiVersion") + routing)
+		Put(dominio + "/api/" + coreApiVersion + routing)
 
 	if res.StatusCode() != 200 {
 		LoggaErrore.Errore = -1
