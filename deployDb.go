@@ -821,7 +821,7 @@ func RenameDatabases(ctx context.Context, dbMetaName DbMetaConnMs, masterDb Mast
 		fmt.Println(err)
 	}
 }
-func GetMasterConn(ctx context.Context, gruppoDeveloper, cluster, devopsToken, devopsTokenDst, enviro string) (MasterConn, LoggaErrore) {
+func GetMasterConn(ctx context.Context, gruppoDeveloper, cluster, devopsToken, devopsTokenDst, enviro, dominio, coreApiVersion string) (MasterConn, LoggaErrore) {
 
 	Logga(ctx, "getMasterConn")
 	Logga(ctx, "Cluster: "+cluster)
@@ -844,7 +844,7 @@ func GetMasterConn(ctx context.Context, gruppoDeveloper, cluster, devopsToken, d
 	*/
 	if cluster == "" {
 		// ottengo lo stage
-		gruppo, erro := GetUserGroup(ctx, devopsToken, gruppoDeveloper)
+		gruppo, erro := GetUserGroup(ctx, devopsToken, gruppoDeveloper, dominio, coreApiVersion)
 		if erro != nil {
 			Logga(ctx, "getUserGroup")
 			Logga(ctx, erro.Error())

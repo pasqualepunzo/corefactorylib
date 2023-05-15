@@ -266,7 +266,7 @@ func StrPad(input string, padLength int, padString string, padType string) strin
 
 	return output
 }
-func GetUserGroup(ctx context.Context, token, gruppo string) (map[string]string, error) {
+func GetUserGroup(ctx context.Context, token, gruppo, dominio, coreApiVersion string) (map[string]string, error) {
 
 	Logga(ctx, "Getting GRU")
 
@@ -277,7 +277,7 @@ func GetUserGroup(ctx context.Context, token, gruppo string) (map[string]string,
 	args["source"] = "users-3"
 	args["$select"] = "XGRU05,XGRU06"
 
-	gruRes := ApiCallGET(ctx, false, args, "msusers", "/users/GRU/equals(XGRU03,'"+gruppo+"')", token, "")
+	gruRes := ApiCallGET(ctx, false, args, "msusers", coreApiVersion+"/users/GRU/equals(XGRU03,'"+gruppo+"')", token, dominio)
 
 	gru := make(map[string]string)
 
@@ -1184,7 +1184,7 @@ func GetTenant(ctx context.Context, token string) ([]Tenant, error) {
 	}
 	return tenants, erro
 }
-func GetProfileInfo(ctx context.Context, token string) (map[string]interface{}, error) {
+func GetProfileInfo(ctx context.Context, token, dominio, coreApiVersion string) (map[string]interface{}, error) {
 
 	Logga(ctx, "Getting getProfileInfo")
 
@@ -1192,7 +1192,7 @@ func GetProfileInfo(ctx context.Context, token string) (map[string]interface{}, 
 	info := make(map[string]interface{})
 
 	args := make(map[string]string)
-	infoRes := ApiCallGET(ctx, false, args, "mscore", "/core/getProfileInfo", token, "")
+	infoRes := ApiCallGET(ctx, false, args, "mscore", coreApiVersion+"/core/getProfileInfo", token, dominio)
 
 	if len(infoRes.BodyJson) > 0 {
 		restyProfileInfoResponse := ProfileInfo{}
@@ -1654,7 +1654,7 @@ func GetJsonDatabases(ctx context.Context, stage, developer string, market int32
 	}
 
 	clusterDett := GetAccessCluster(ctx, stage, devopsToken)
-	clusterToken, erro := GetCustomerToken(ctx, clusterDett.AccessToken, clusterDett.ReffappCustomerID, clusterDett.Domain, clusterDett.Domain)
+	clusterToken, erro := GetCustomerToken(ctx, clusterDett.AccessToken, clusterDett.ReffappCustomerID, clusterDett.Domain, clusterDett.Domain, coreApiVersion)
 
 	dominio := GetApiHost()
 
@@ -1700,7 +1700,7 @@ func GetJsonDatabases(ctx context.Context, stage, developer string, market int32
 	}
 	return callResponse, erro
 }
-func GetCustomerToken(ctx context.Context, accessToken, refappCustomer, resource, dominio string) (string, LoggaErrore) {
+func GetCustomerToken(ctx context.Context, accessToken, refappCustomer, resource, dominio, coreApiVersion string) (string, LoggaErrore) {
 
 	Logga(ctx, "getCustomerToken")
 	Logga(ctx, "Customer Token "+dominio)
@@ -1723,7 +1723,7 @@ func GetCustomerToken(ctx context.Context, accessToken, refappCustomer, resource
 	argsAuth["resource"] = resource
 	argsAuth["uuid"] = "devops-" + sha
 
-	restyAuthResponse, restyAuthErr := ApiCallLOGIN(ctx, false, argsAuth, "msauth", "/auth/login", dominio)
+	restyAuthResponse, restyAuthErr := ApiCallLOGIN(ctx, false, argsAuth, "msauth", coreApiVersion+"/auth/login", dominio)
 	if restyAuthErr.Errore < 0 {
 		// QUI ERRORE
 		erro.Errore = -1
