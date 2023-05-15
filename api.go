@@ -411,7 +411,7 @@ func GetCoreFactoryToken(ctx context.Context, tenant, accessToken, loginApiDomai
 	}
 
 }
-func ApiCallDELETE(ctx context.Context, debug bool, args map[string]string, microservice, routing, token, dominio string) CallGetResponse {
+func ApiCallDELETE(ctx context.Context, debug bool, args map[string]string, microservice, routing, token, dominio, coreApiVersion string) CallGetResponse {
 
 	JobID := ""
 	if ctx.Value("JobID") != nil {
@@ -427,7 +427,7 @@ func ApiCallDELETE(ctx context.Context, debug bool, args map[string]string, micr
 
 	var resStruct CallGetResponse
 
-	Logga(ctx, dominio+"/api/"+os.Getenv("coreApiVersion")+routing+" - "+microservice)
+	Logga(ctx, dominio+"/api/"+coreApiVersion+routing+" - "+microservice)
 
 	//fmt.Println("apiCallDELETE", debug)
 	client := resty.New()
@@ -443,7 +443,7 @@ func ApiCallDELETE(ctx context.Context, debug bool, args map[string]string, micr
 		SetHeader("microservice", microservice).
 		SetAuthToken(token).
 		SetQueryParams(args).
-		Delete(dominio + "/api/" + os.Getenv("coreApiVersion") + routing)
+		Delete(dominio + "/api/" + coreApiVersion + routing)
 
 	if err != nil { // HTTP ERRORE
 		resStruct.Errore = -1
