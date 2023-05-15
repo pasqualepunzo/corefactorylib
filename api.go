@@ -278,16 +278,7 @@ func ApiCallGET(ctx context.Context, debug bool, args map[string]string, microse
 	return resStruct
 }
 func GetApiHost() string {
-	// devopsProfile, _ := os.LookupEnv("APP_ENV")
-	// urlDevops := ""
-	// if devopsProfile == "prod" {
-	urlDevops := os.Getenv("cfDomain")
-	// fmt.Println("dominoi..." + urlDevops)
-	// os.Exit(0)
-	// } else {
-	// urlDevops = os.Getenv("cfDomainDev")
-	// }
-
+	urlDevops := os.Getenv("apiDomain")
 	return "https://" + urlDevops
 }
 func ApiCallLOGIN(ctx context.Context, debug bool, args map[string]interface{}, microservice, routing, dominio string) (map[string]interface{}, LoggaErrore) {
@@ -421,7 +412,7 @@ func GetCoreFactoryToken(ctx context.Context, tenant string) (string, LoggaError
 	sha := hex.EncodeToString(h.Sum(nil))
 
 	argsAuth := make(map[string]interface{})
-	argsAuth["access_token"] = os.Getenv("cfToken")
+	argsAuth["access_token"] = os.Getenv("loginAccessToken")
 	argsAuth["refappCustomer"] = tenant
 	argsAuth["resource"] = urlDevopsStripped
 	argsAuth["uuid"] = "devops-" + sha
