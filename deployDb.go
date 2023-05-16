@@ -821,7 +821,7 @@ func RenameDatabases(ctx context.Context, dbMetaName DbMetaConnMs, masterDb Mast
 		fmt.Println(err)
 	}
 }
-func GetMasterConn(ctx context.Context, gruppoDeveloper, cluster, devopsToken, devopsTokenDst, enviro, dominio, coreApiVersion string, monolith int) (MasterConn, LoggaErrore) {
+func GetMasterConn(ctx context.Context, gruppoDeveloper, cluster, devopsToken, devopsTokenDst, enviro, dominio, coreApiVersion string, monolith int32) (MasterConn, LoggaErrore) {
 
 	Logga(ctx, "getMasterConn")
 	Logga(ctx, "Cluster: "+cluster)
