@@ -592,7 +592,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 			argsBld["$fullquery"] += " limit 1 "
 			fmt.Println(argsBld["$fullquery"])
 
-			restyKubeBldRes := ApiCallGET(ctx, false, argsBld, "ms"+devops, "/core/custom/KUBEDKRBUILD/values", devopsToken, dominio, coreApiVersion)
+			restyKubeBldRes := ApiCallGET(ctx, false, argsBld, "ms"+devops, "/"+devops+"/custom/KUBEDKRBUILD/values", devopsToken, dominio, coreApiVersion)
 
 			//fmt.Println(restyKubeBldRes)
 			if restyKubeBldRes.Errore < 0 {
@@ -1765,6 +1765,11 @@ func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, can
 	// DEPLOYLOG
 	Logga(ctx, "Getting DEPLOYLOG - deleteObsoleteMonolith")
 
+	devops := "devops"
+	if ires.Monolith == 1 {
+		devops = "devopsmono"
+	}
+
 	argsDeploy := make(map[string]string)
 	argsDeploy["source"] = "devops-8"
 	argsDeploy["$select"] = "XDEPLOYLOG03,XDEPLOYLOG05"
@@ -1774,7 +1779,7 @@ func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, can
 	argsDeploy["$filter"] += " and equals(XDEPLOYLOG06,'1') "
 	argsDeploy["$filter"] += " and equals(XDEPLOYLOG09,'" + enviro + "') "
 
-	restyDeployRes := ApiCallGET(ctx, true, argsDeploy, "msdevops", "/devops/DEPLOYLOG", devopsToken, dominio, coreApiVersion)
+	restyDeployRes := ApiCallGET(ctx, true, argsDeploy, "ms"+devops, "/"+devops+"/DEPLOYLOG", devopsToken, dominio, coreApiVersion)
 	if restyDeployRes.Errore < 0 {
 		Logga(ctx, restyDeployRes.Log)
 		erro = errors.New(restyDeployRes.Log)

@@ -577,6 +577,11 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 		Logga(ctx, ccc.TipoVersione+" "+ccc.Versione)
 	}
 
+	devops := "devops"
+	if istanza.Monolith == 1 {
+		devops = "devopsmono"
+	}
+
 	//var clusterContext = "gke_" + istanza.ProjectID + "_europe-west1-d_" + istanza.Cluster
 
 	// logica:
@@ -603,7 +608,7 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 
 				filter := "equals(XDEPLOYLOG04,'" + istanza.Istanza + "') and equals(XDEPLOYLOG03,'canary') and XDEPLOYLOG06 eq 1"
 
-				_, erro := ApiCallPUT(ctx, false, keyvalueslice, "msdevops", "/devops/DEPLOYLOG/"+filter, devopsToken, dominio, coreApiVersion)
+				_, erro := ApiCallPUT(ctx, false, keyvalueslice, "ms"+devops, "/"+devops+"/DEPLOYLOG/"+filter, devopsToken, dominio, coreApiVersion)
 
 				if erro.Errore < 0 {
 					return erro
@@ -631,7 +636,7 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 
 				filter := "equals(XDEPLOYLOG04,'" + istanza.Istanza + "') and equals(XDEPLOYLOG03,'production') and XDEPLOYLOG06 eq 1"
 
-				_, erro := ApiCallPUT(ctx, false, keyvalueslice, "msdevops", "/devops/DEPLOYLOG/"+filter, devopsToken, dominio, coreApiVersion)
+				_, erro := ApiCallPUT(ctx, false, keyvalueslice, "ms"+devops, "/"+devops+"/DEPLOYLOG/"+filter, devopsToken, dominio, coreApiVersion)
 				if erro.Errore < 0 {
 					return erro
 				}
@@ -646,7 +651,7 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 
 				filter := "equals(XDEPLOYLOG04,'" + istanza.Istanza + "') and equals(XDEPLOYLOG03,'canary')"
 
-				_, erro := ApiCallPUT(ctx, false, keyvalueslice, "msdevops", "/devops/DEPLOYLOG/"+filter, devopsToken, dominio, coreApiVersion)
+				_, erro := ApiCallPUT(ctx, false, keyvalueslice, "ms"+devops, "/"+devops+"/DEPLOYLOG/"+filter, devopsToken, dominio, coreApiVersion)
 				if erro.Errore < 0 {
 					return erro
 				}
@@ -713,7 +718,7 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 	keyvalueslice["XDEPLOYLOG09"] = enviro
 	keyvalueslices = append(keyvalueslices, keyvalueslice)
 
-	resPOST := ApiCallPOST(ctx, false, keyvalueslices, "msdevops", "/devops/DEPLOYLOG", devopsToken, dominio, coreApiVersion)
+	resPOST := ApiCallPOST(ctx, false, keyvalueslices, "ms"+devops, "/"+devops+"/DEPLOYLOG", devopsToken, dominio, coreApiVersion)
 	if resPOST.Errore < 0 {
 		LoggaErrore.Log = resPOST.Log
 		return LoggaErrore

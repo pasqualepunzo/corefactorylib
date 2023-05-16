@@ -92,17 +92,6 @@ func GetYamlHpa(ires IstanzaMicro, micros Microservice, versione string) string 
 
 	versioneApp := versione
 
-	namespace := ""
-	if ires.Microservice == "msrefappmonolith" {
-		if ires.SwMultiEnvironment == "1" {
-			namespace = micros.Namespace
-		} else {
-			namespace = "monolith"
-		}
-	} else {
-		namespace = micros.Namespace
-	}
-
 	// oggi porcata domani sarebbe opportuno aplicare un flag in kubemicroserv
 	switch micros.Nome {
 	case "mscorequery", "mscorewrite", "mscoreservice":
@@ -121,7 +110,7 @@ func GetYamlHpa(ires IstanzaMicro, micros Microservice, versione string) string 
 	yamlHpa += "kind: HorizontalPodAutoscaler\n"
 	yamlHpa += "metadata:\n"
 	yamlHpa += "  name: " + app + "\n"
-	yamlHpa += "  namespace: " + namespace + "\n"
+	yamlHpa += "  namespace: " + micros.Namespace + "\n"
 	yamlHpa += "spec:\n"
 	yamlHpa += "  scaleTargetRef:\n"
 	yamlHpa += "    apiVersion: apps/v1\n"
