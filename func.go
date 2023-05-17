@@ -1192,7 +1192,7 @@ func GetProfileInfo(ctx context.Context, token, dominio, coreApiVersion string) 
 	info := make(map[string]interface{})
 
 	args := make(map[string]string)
-	infoRes := ApiCallGET(ctx, false, args, "mscore", "/core/getProfileInfo", token, dominio, coreApiVersion)
+	infoRes := ApiCallGET(ctx, false, args, "msauth", "/auth/getProfileInfo", token, dominio, coreApiVersion)
 
 	if len(infoRes.BodyJson) > 0 {
 		restyProfileInfoResponse := ProfileInfo{}
