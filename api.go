@@ -277,7 +277,7 @@ func ApiCallGET(ctx context.Context, debug bool, args map[string]string, microse
 	return resStruct
 }
 
-func ApiCallLOGIN(ctx context.Context, debug bool, args map[string]interface{}, microservice, routing, dominio string) (map[string]interface{}, LoggaErrore) {
+func ApiCallLOGIN(ctx context.Context, debug bool, args map[string]interface{}, microservice, routing, dominio, coreApiVersion string) (map[string]interface{}, LoggaErrore) {
 
 	if !strings.Contains(dominio, "http") {
 		dominio = "https://" + dominio
@@ -304,7 +304,7 @@ func ApiCallLOGIN(ctx context.Context, debug bool, args map[string]interface{}, 
 	Logga(ctx, string(jsonString))
 
 	Logga(ctx, "Microservice : "+microservice)
-	Logga(ctx, "Url : "+dominio+"/api/"+routing)
+	Logga(ctx, "Url : "+dominio+"/api/"+coreApiVersion+routing)
 
 	var LoggaErrore LoggaErrore
 	LoggaErrore.Errore = 0
@@ -326,7 +326,7 @@ func ApiCallLOGIN(ctx context.Context, debug bool, args map[string]interface{}, 
 		//SetHeader("canary-mode", "on").
 		SetHeader("microservice", microservice).
 		SetBody(args).
-		Post(dominio + "/api/" + routing)
+		Post(dominio + "/api/" + coreApiVersion + routing)
 
 	if err != nil { // HTTP ERRORE
 		LoggaErrore.Errore = -1
@@ -406,7 +406,7 @@ func GetCoreFactoryToken(ctx context.Context, tenant, accessToken, loginApiDomai
 	argsAuth["resource"] = urlDevopsStripped
 	argsAuth["uuid"] = "devops-" + sha
 
-	restyAuthResponse, restyAuthErr := ApiCallLOGIN(ctx, false, argsAuth, "msauth", coreApiVersion+"/auth/login", loginApiDomain)
+	restyAuthResponse, restyAuthErr := ApiCallLOGIN(ctx, false, argsAuth, "msauth", coreApiVersion+"/auth/login", loginApiDomain, coreApiVersion)
 	if restyAuthErr.Errore < 0 {
 		// QUI ERRORE
 		erro.Errore = -1

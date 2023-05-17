@@ -1583,7 +1583,7 @@ func GetCustomerToken(ctx context.Context, accessToken, refappCustomer, resource
 	argsAuth["resource"] = resource
 	argsAuth["uuid"] = "devops-" + sha
 
-	restyAuthResponse, restyAuthErr := ApiCallLOGIN(ctx, false, argsAuth, "msauth", coreApiVersion+"/auth/login", dominio)
+	restyAuthResponse, restyAuthErr := ApiCallLOGIN(ctx, false, argsAuth, "msauth", coreApiVersion+"/auth/login", dominio, coreApiVersion)
 	if restyAuthErr.Errore < 0 {
 		// QUI ERRORE
 		erro.Errore = -1
