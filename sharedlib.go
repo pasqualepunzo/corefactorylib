@@ -805,7 +805,8 @@ func CloudBuils(ctx context.Context, docker, verPad, dirRepo, bArgs string, swMo
 	command = "gcloud builds list --filter \"tags='" + dockerName + "-" + verPad + "'\" --format=\"json\""
 	Logga(ctx, command)
 
-	TelegramSendMessage(os.Getenv("telegramBotToken"), os.Getenv("telegramCftoolDevopsChatID"), "JobID:"+ctx.Value("JobId").(string)+" "+docker+" Build Started")
+	jId, _ := ctx.Value("JobId").(string)
+	TelegramSendMessage(cftoolenv.TelegramKey, cftoolenv.TelegramID, "JobID:"+jId+" "+docker+" Build Started")
 
 	type logStruct struct {
 		ID      string `json:"id"`
@@ -845,13 +846,13 @@ func CloudBuils(ctx context.Context, docker, verPad, dirRepo, bArgs string, swMo
 
 		if i == 0 {
 
-			TelegramSendMessage(os.Getenv("telegramBotToken"), os.Getenv("telegramCftoolDevopsChatID"), "JobID:"+ctx.Value("JobId").(string)+" "+docker+" Build ID: "+logRes[0].ID)
-			TelegramSendMessage(os.Getenv("telegramBotToken"), os.Getenv("telegramCftoolDevopsChatID"), "JobID:"+ctx.Value("JobId").(string)+" "+docker+" Build LOG at : "+logRes[0].LogUrl)
+			TelegramSendMessage(cftoolenv.TelegramKey, cftoolenv.TelegramID, "JobID:"+jId+" "+docker+" Build ID: "+logRes[0].ID)
+			TelegramSendMessage(cftoolenv.TelegramKey, cftoolenv.TelegramID, "JobID:"+jId+" "+docker+" Build LOG at : "+logRes[0].LogUrl)
 
-			JobID := ctx.Value("JobID").(string)
+			JobID := jId
 			telegramText := "JobID: " + JobID
 			telegramText += " " + dockerName + " - " + logRes[0].LogUrl
-			erroTelegram := TelegramSendMessage(os.Getenv("telegramBotToken"), os.Getenv("telegramCftoolDevopsChatID"), telegramText)
+			erroTelegram := TelegramSendMessage(cftoolenv.TelegramKey, cftoolenv.TelegramID, telegramText)
 
 			if erroTelegram.Errore < 0 {
 
@@ -864,7 +865,7 @@ func CloudBuils(ctx context.Context, docker, verPad, dirRepo, bArgs string, swMo
 			}
 		}
 
-		TelegramSendMessage(os.Getenv("telegramBotToken"), os.Getenv("telegramCftoolDevopsChatID"), "JobID:"+ctx.Value("JobId").(string)+" "+docker+" Build Status : "+logRes[0].Status)
+		TelegramSendMessage(cftoolenv.TelegramKey, cftoolenv.TelegramID, "JobID:"+jId+" "+docker+" Build Status : "+logRes[0].Status)
 
 		if logRes[0].Status == "SUCCESS" {
 			sha256 = logRes[0].Results.Images[0].Digest
@@ -876,7 +877,7 @@ func CloudBuils(ctx context.Context, docker, verPad, dirRepo, bArgs string, swMo
 			logRes[0].Status == "TIMEOUT" ||
 			logRes[0].Status == "FAILED" {
 
-			TelegramSendMessage(os.Getenv("telegramBotToken"), os.Getenv("telegramCftoolDevopsChatID"), "JobID:"+ctx.Value("JobId").(string)+" "+docker+" Build FAILED")
+			TelegramSendMessage(cftoolenv.TelegramKey, cftoolenv.TelegramID, "JobID:"+jId+" "+docker+" Build FAILED")
 
 			os.Exit(1)
 		}
@@ -885,7 +886,7 @@ func CloudBuils(ctx context.Context, docker, verPad, dirRepo, bArgs string, swMo
 		i++
 	}
 
-	TelegramSendMessage(os.Getenv("telegramBotToken"), os.Getenv("telegramCftoolDevopsChatID"), "JobID:"+ctx.Value("JobId").(string)+" "+docker+" Build Process Finished")
+	TelegramSendMessage(cftoolenv.TelegramKey, cftoolenv.TelegramID, "JobID:"+jId+" "+docker+" Build Process Finished")
 
 	return sha256, errBuild
 }
