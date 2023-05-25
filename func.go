@@ -1310,14 +1310,14 @@ func GetCurrentBranchSprint(ctx context.Context, team, tipo, tenant, accessToken
 
 	return sprintBranch, loggaErrore
 }
-func CreateTag(ctx context.Context, branch, tag, repo string) {
+func CreateTag(ctx context.Context, branch, tag, repo, gitUser, gitToken, gitHost, gitProject string) {
 
 	// OTTENGO L' HASH del branch vivo
 	clientBranch := resty.New()
 	respBranch, errBranch := clientBranch.R().
 		EnableTrace().
-		SetBasicAuth(os.Getenv("bitbucketUser"), os.Getenv("bitbucketToken")).
-		Get(os.Getenv("bitbucketHost") + "/repositories/" + os.Getenv("bitbucketProject") + "/" + repo + "/refs/branches/" + branch)
+		SetBasicAuth(gitUser, gitToken).
+		Get(gitHost + "/repositories/" + gitProject + "/" + repo + "/refs/branches/" + branch)
 
 	if errBranch != nil {
 		Logga(ctx, errBranch.Error())
@@ -1337,9 +1337,9 @@ func CreateTag(ctx context.Context, branch, tag, repo string) {
 	client.Debug = false
 	restyResponse, errTag := client.R().
 		SetHeader("Content-Type", "application/json").
-		SetBasicAuth(os.Getenv("bitbucketUser"), os.Getenv("bitbucketToken")).
+		SetBasicAuth(gitUser, gitToken).
 		SetBody(body).
-		Post(os.Getenv("bitbucketHost") + "/repositories/" + os.Getenv("bitbucketProject") + "/" + repo + "/refs/tags")
+		Post(gitHost + "/repositories/" + gitProject + "/" + repo + "/refs/tags")
 
 	if errTag != nil {
 		Logga(ctx, errTag.Error())
