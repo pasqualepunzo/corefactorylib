@@ -497,7 +497,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 		Logga(ctx, "Getting KUBEMICROSERVHPA")
 		argsHpa := make(map[string]string)
 		argsHpa["source"] = "devops-8"
-		argsHpa["$select"] = "XKUBEMICROSERVHPA04,XKUBEMICROSERVHPA05,XKUBEMICROSERVHPA06,XKUBEMICROSERVHPA07,XKUBEMICROSERVHPA08,XKUBEMICROSERVHPA09"
+		argsHpa["$select"] = "XKUBEMICROSERVHPA04,XKUBEMICROSERVHPA05,XKUBEMICROSERVHPA06,XKUBEMICROSERVHPA07,XKUBEMICROSERVHPA08,XKUBEMICROSERVHPA09,XKUBEMICROSERVHPA10"
 		argsHpa["center_dett"] = "dettaglio"
 		argsHpa["$filter"] = "equals(XKUBEMICROSERVHPA03,'" + hpaTmpl + "') "
 
@@ -510,14 +510,29 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 		}
 
 		if len(restyKubeHpaRes.BodyJson) > 0 {
-			var hpa Hpa
-			hpa.MinReplicas = strconv.FormatFloat(restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA04"].(float64), 'f', 0, 64)
-			hpa.MaxReplicas = strconv.FormatFloat(restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA05"].(float64), 'f', 0, 64)
-			hpa.CpuTipoTarget = restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA06"].(string)
-			hpa.CpuTarget = restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA07"].(string)
-			hpa.MemTipoTarget = restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA08"].(string)
-			hpa.MemTarget = restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA09"].(string)
-			microservices.Hpa = hpa
+
+			// In XKUBEMICROSERVHPA10 salviamo la mappa per personalizzare l'HPA in ogni environment
+			hpaString, _ := restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA10"].(string)
+
+			checkHpaEnviro := false
+			var hpaEnviro Hpa
+			if hpaString != "" {
+				hpaEnviro, checkHpaEnviro = hpaMap[enviro]
+			}
+
+			// Se esiste la personalizzazione per environment, prendo quella, altrimenti il default delle altri colonne
+			if checkHpaEnviro {
+				microservices.Hpa = hpaEnviro
+			} else {
+				var hpa Hpa
+				hpa.MinReplicas = strconv.FormatFloat(restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA04"].(float64), 'f', 0, 64)
+				hpa.MaxReplicas = strconv.FormatFloat(restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA05"].(float64), 'f', 0, 64)
+				hpa.CpuTipoTarget = restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA06"].(string)
+				hpa.CpuTarget = restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA07"].(string)
+				hpa.MemTipoTarget = restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA08"].(string)
+				hpa.MemTarget = restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA09"].(string)
+				microservices.Hpa = hpa
+			}
 			Logga(ctx, "KUBEMICROSERVHPA OK")
 		} else {
 			Logga(ctx, "   !!!   KUBEMICROSERVHPA MISSING")
