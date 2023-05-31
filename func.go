@@ -517,6 +517,10 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 			checkHpaEnviro := false
 			var hpaEnviro Hpa
 			if hpaString != "" {
+
+				var hpaMap map[string]Hpa
+				json.Unmarshal([]byte(hpaString), &hpaMap)
+
 				hpaEnviro, checkHpaEnviro = hpaMap[enviro]
 			}
 
