@@ -390,7 +390,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 
 	argsMS := make(map[string]string)
 	argsMS["source"] = "devops-8"
-	argsMS["$select"] = "XKUBEMICROSERV09,XKUBEMICROSERV15"
+	argsMS["$select"] = "XKUBEMICROSERV09,XKUBEMICROSERV15,XKUBEMICROSERV18"
 	argsMS["center_dett"] = "dettaglio"
 	argsMS["$filter"] = "equals(XKUBEMICROSERV05,'" + microservice + "') "
 	restyKubeMSRes := ApiCallGET(ctx, false, argsMS, "ms"+devops, "/"+devops+"/KUBEMICROSERV", devopsToken, dominio, coreApiVersion)
@@ -401,6 +401,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 		return ims, erro
 	}
 
+	microservicePublic := 0
 	if len(restyKubeMSRes.BodyJson) > 0 {
 		var swCoreBool bool
 		swCoreFloat := restyKubeMSRes.BodyJson["XKUBEMICROSERV09"].(float64)
@@ -412,6 +413,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 		ims.SwCore = swCoreBool
 
 		swDb := int(restyKubeMSRes.BodyJson["XKUBEMICROSERV15"].(float64))
+		microservicePublic = int(restyKubeMSRes.BodyJson["XKUBEMICROSERV18"].(float64))
 
 		ims.SwDb = swDb
 		Logga(ctx, "KUBEMICROSERV OK")
@@ -442,6 +444,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	}
 	argsAmb["monolith"] = strconv.Itoa(int(ims.Monolith))
 	argsAmb["env"] = strconv.Itoa(int(ims.ProfileInt))
+	argsAmb["public"] = strconv.Itoa(microservicePublic)
 	//argsAmb["swMultiEnvironment"] = ims.SwMultiEnvironment
 
 	restyKubeAmbRes := ApiCallGET(ctx, true, argsAmb, "msauth", "/"+auth+"/getAmbDomainMs", devopsTokenDst, dominio, coreApiVersion)
