@@ -157,7 +157,7 @@ type Microservice struct {
 	Namespace        string `json:"namespace"`
 	VersMicroservice string `json:"versMs"`
 	Virtualservice   string `json:"virtualService"`
-	Replicas         string `json:"replicas"`
+	Public           int    `json:"public"`
 	Hpa              Hpa
 	Pod              []Pod
 }
