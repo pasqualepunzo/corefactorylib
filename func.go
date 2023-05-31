@@ -477,7 +477,8 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 	if len(restyKubeMSRes.BodyJson) > 0 {
 		microservices.Nome = restyKubeMSRes.BodyJson["XKUBEMICROSERV05"].(string)
 		microservices.Descrizione = restyKubeMSRes.BodyJson["XKUBEMICROSERV03"].(string)
-		microservices.Replicas = restyKubeMSRes.BodyJson["XKUBEMICROSERV18"].(string)
+		// Francesco: abbiamo deciso di non utilizzare più Replicas, ma far 'comandare' l'HPA
+		//microservices.Replicas = restyKubeMSRes.BodyJson["XKUBEMICROSERV18"].(float64)
 		microservices.Namespace = restyKubeMSRes.BodyJson["XKUBEMICROSERV04_COD"].(string)
 		microservices.Virtualservice = strconv.FormatFloat(restyKubeMSRes.BodyJson["XKUBEMICROSERV08"].(float64), 'f', 0, 64)
 		hpaTmpl = restyKubeMSRes.BodyJson["XKUBEMICROSERV16_COD"].(string)
