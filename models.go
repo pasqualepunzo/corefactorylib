@@ -212,12 +212,12 @@ type Resource struct {
 }
 
 type Hpa struct {
-	MinReplicas   string
-	MaxReplicas   string
-	CpuTipoTarget string
-	CpuTarget     string
-	MemTipoTarget string
-	MemTarget     string
+	MinReplicas   string `json:"min"`
+	MaxReplicas   string `json:"max"`
+	CpuTipoTarget string `json:"cpuTipoTarget"`
+	CpuTarget     string `json:"cpuTarget"`
+	MemTipoTarget string `json:"memTipoTarget"`
+	MemTarget     string `json:"memTarget"`
 }
 
 type Branch struct {
