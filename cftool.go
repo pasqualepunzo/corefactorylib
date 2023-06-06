@@ -163,7 +163,7 @@ func ChooseActionOnDb() string {
 	actionDbRes := actionDbs[numResultActionDb].Value
 	return actionDbRes
 }
-func CheckIssue(resultIssue, userLogin, atlassianHost, atlassianUser, atlassianToken string, loginRes LoginRes) string {
+func CheckIssue(resultIssue, userLogin string, loginRes LoginRes) string {
 
 	// cerco la issue su jira per vedere se esiste
 	client := resty.New()
@@ -171,8 +171,8 @@ func CheckIssue(resultIssue, userLogin, atlassianHost, atlassianUser, atlassianT
 	resp, _ := client.R().
 		EnableTrace().
 		SetHeader("Accept", "application/json").
-		SetBasicAuth(atlassianUser, atlassianToken).
-		Get(atlassianHost + "/rest/api/latest/issue/" + resultIssue)
+		SetBasicAuth(loginRes.AtlassianUser, loginRes.AtlassianToken).
+		Get(loginRes.AtlassianHost + "/rest/api/latest/issue/" + resultIssue)
 
 	var issue JiraIssue
 	err := json.Unmarshal(resp.Body(), &issue)

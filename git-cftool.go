@@ -11,7 +11,7 @@ import (
 	"github.com/briandowns/spinner"
 )
 
-func CloneRepo(dirRepo, newBranchName, userGit, passGit, projectGit, hostGit, actionGit string, repo RepoListStruct) {
+func CloneRepo(loginRes LoginRes, dirRepo, newBranchName, actionGit string, repo RepoListStruct) {
 	err := os.RemoveAll(dirRepo)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -22,8 +22,8 @@ func CloneRepo(dirRepo, newBranchName, userGit, passGit, projectGit, hostGit, ac
 	err = os.MkdirAll(dirRepo, 0755)
 
 	fmt.Println(" + Cloning: " + repo.Repo)
-	GitCloneCfTool(dirRepo, repo.Repo, userGit, passGit, projectGit, hostGit, actionGit)
-	fmt.Println("\n + Checking out: " + repo.Repo + " to " + newBranchName)
+	GitCloneCfTool(loginRes, dirRepo, repo.Repo, actionGit)
+	fmt.Println(" + Checking out: " + repo.Repo + " to " + newBranchName)
 	GitCheckout(dirRepo, newBranchName)
 
 	writeStIgnore(dirRepo)
@@ -70,7 +70,7 @@ func writeStIgnore(dirRepo string) {
 	}
 }
 
-func GitCloneCfTool(dir, repo, userGit, passGit, projectGit, hostGit, actionBitbucket string) {
+func GitCloneCfTool(loginRes LoginRes, dir, repo, actionBitbucket string) {
 
 	//fmt.Println(dir)
 	var cmd *exec.Cmd
@@ -85,24 +85,26 @@ func GitCloneCfTool(dir, repo, userGit, passGit, projectGit, hostGit, actionBitb
 
 	if runtime.GOOS == "windows" {
 		if actionBitbucket == "ssh" {
-			aaa := "cd " + dir + " && git config --global core.autocrlf false && " + " git clone git@" + hostGit + ":" + projectGit + "/" + repo + " . "
+			aaa := "cd " + dir + " && git config --global core.autocrlf false && " + " git clone git@" + loginRes.UrlGit + ":" + loginRes.ProjectGit + "/" + repo + " . "
 			//fmt.Println(aaa)
 
 			cmd = exec.Command("cmd", "/C", aaa)
 		} else {
-			aaa := "cd " + dir + " && git config --global core.autocrlf false && " + " git clone https://" + userGit + ":" + passGit + "@" + hostGit + "/" + projectGit + "/" + repo + " . "
+			aaa := "cd " + dir + " && git config --global core.autocrlf false && " + " git clone https://" + loginRes.UserGit + ":" + loginRes.TokenGit + "@" + loginRes.UrlGit + "/" + loginRes.ProjectGit + "/" + repo + " . "
 			//fmt.Println(aaa)
 			cmd = exec.Command("cmd", "/C", aaa)
 		}
 	} else {
 		if actionBitbucket == "ssh" {
-			comando = "cd " + dir + " && git clone git@" + hostGit + ":" + projectGit + "/" + repo + " . "
+			comando = "cd " + dir + " && git clone git@" + loginRes.UrlGit + ":" + loginRes.ProjectGit + "/" + repo + " . "
 		} else {
-			comando = "cd " + dir + " && git clone https://" + userGit + ":" + passGit + "@" + hostGit + "/" + projectGit + "/" + repo + " . "
+			comando = "cd " + dir + " && git clone https://" + loginRes.UserGit + ":" + loginRes.TokenGit + "@" + loginRes.UrlGit + "/" + loginRes.ProjectGit + "/" + repo + " . "
 		}
 		//fmt.Println(comando)
 		cmd = exec.Command("bash", "-c", comando)
 	}
+
+	//fmt.Println(comando)
 
 	err := cmd.Run()
 	if err != nil {
