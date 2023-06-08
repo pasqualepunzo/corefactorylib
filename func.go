@@ -1488,10 +1488,15 @@ func SetEnvironmentStatus(ctx context.Context, cluster, enviro, microserice, cus
 	return loggaErrore
 }
 
-func GetAccessCluster(ctx context.Context, cluster, devopsToken, loginApiDomain, coreApiVersion string) ClusterAccess {
+func GetAccessCluster(ctx context.Context, cluster, devopsToken, loginApiDomain, coreApiVersion string, monolith bool) ClusterAccess {
 	/* ************************************************************************************************ */
 	// KUBECLUSTER
 	Logga(ctx, "Getting KUBECLUSTER")
+
+	devops := "devops"
+	if monolith {
+		devops = "devopsmono"
+	}
 
 	argsClu := make(map[string]string)
 	argsClu["source"] = "devops-8"
@@ -1499,7 +1504,7 @@ func GetAccessCluster(ctx context.Context, cluster, devopsToken, loginApiDomain,
 	argsClu["center_dett"] = "dettaglio"
 	argsClu["$filter"] = "equals(XKUBECLUSTER03,'" + cluster + "') "
 
-	restyKubeCluRes := ApiCallGET(ctx, false, argsClu, "msdevops", "/devops/KUBECLUSTER", devopsToken, loginApiDomain, coreApiVersion)
+	restyKubeCluRes := ApiCallGET(ctx, false, argsClu, "ms"+devops, "/"+devops+"/KUBECLUSTER", devopsToken, loginApiDomain, coreApiVersion)
 	if restyKubeCluRes.Errore < 0 {
 		Logga(ctx, restyKubeCluRes.Log)
 	}
@@ -1520,11 +1525,17 @@ func GetAccessCluster(ctx context.Context, cluster, devopsToken, loginApiDomain,
 
 	return cluAcc
 }
-func GetJsonDatabases(ctx context.Context, stage, developer string, market int32, arrConn MasterConn, tenant, accessToken, loginApiDomain, coreApiVersion string) (map[string]interface{}, LoggaErrore) {
+func GetJsonDatabases(ctx context.Context, stage, developer string, market int32, arrConn MasterConn, tenant, accessToken, loginApiDomain, coreApiVersion string, monolith bool) (map[string]interface{}, LoggaErrore) {
 	Logga(ctx, "Getting Json Db")
 
 	var erro LoggaErrore
 	erro.Errore = 0
+	callResponse := map[string]interface{}{}
+
+	if monolith {
+		callResponse["monolith"] = "true"
+		return callResponse, erro
+	}
 
 	devopsToken, erro := GetCoreFactoryToken(ctx, tenant, accessToken, loginApiDomain, coreApiVersion)
 	if erro.Errore < 0 {
@@ -1533,7 +1544,7 @@ func GetJsonDatabases(ctx context.Context, stage, developer string, market int32
 		Logga(ctx, "Token OK")
 	}
 
-	clusterDett := GetAccessCluster(ctx, stage, devopsToken, loginApiDomain, coreApiVersion)
+	clusterDett := GetAccessCluster(ctx, stage, devopsToken, loginApiDomain, coreApiVersion, monolith)
 	clusterToken, erro := GetCustomerToken(ctx, clusterDett.AccessToken, clusterDett.ReffappCustomerID, clusterDett.Domain, clusterDett.Domain, coreApiVersion)
 
 	dominio := loginApiDomain
@@ -1551,7 +1562,7 @@ func GetJsonDatabases(ctx context.Context, stage, developer string, market int32
 	keyvalueslice["platformUrl"] = "developer." + arrConn.Domain
 
 	client := resty.New()
-	client.Debug = false
+	client.Debug = true
 	client.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 	res, err := client.R().
 		SetHeader("Content-Type", "application/json").
@@ -1561,7 +1572,6 @@ func GetJsonDatabases(ctx context.Context, stage, developer string, market int32
 		SetBody(keyvalueslice).
 		Post(dominio + "/api/" + os.Getenv("coreApiVersion") + "/appman/getDeveloperMsList")
 
-	callResponse := map[string]interface{}{}
 	if err != nil { // HTTP ERRORE
 		erro.Errore = -1
 		erro.Log = err.Error()
@@ -1578,6 +1588,7 @@ func GetJsonDatabases(ctx context.Context, stage, developer string, market int32
 			}
 		}
 	}
+
 	return callResponse, erro
 }
 func GetCustomerToken(ctx context.Context, accessToken, refappCustomer, resource, dominio, coreApiVersion string) (string, LoggaErrore) {
@@ -1619,10 +1630,15 @@ func GetCustomerToken(ctx context.Context, accessToken, refappCustomer, resource
 	}
 }
 
-func GetCfToolEnv(ctx context.Context, token, dominio, tenant, coreApiVersion string) (TenantEnv, error) {
+func GetCfToolEnv(ctx context.Context, token, dominio, tenant, coreApiVersion string, monolith bool) (TenantEnv, error) {
+
 	Logga(ctx, "Getting KUBECFTOOLENV")
 
 	var erro error
+	devops := "devops"
+	if monolith {
+		devops = "devopsmono"
+	}
 
 	args := make(map[string]string)
 	args["center_dett"] = "dettaglio"
@@ -1630,7 +1646,7 @@ func GetCfToolEnv(ctx context.Context, token, dominio, tenant, coreApiVersion st
 	args["$filter"] = "equals(XKUBECFTOOLENV03,'" + dominio + "') "
 	args["$filter"] += " and equals(XKUBECFTOOLENV19,'" + tenant + "') "
 
-	envRes := ApiCallGET(ctx, false, args, "msdevops", "/devops/KUBECFTOOLENV", token, dominio, coreApiVersion)
+	envRes := ApiCallGET(ctx, false, args, "ms"+devops, "/"+devops+"/KUBECFTOOLENV", token, dominio, coreApiVersion)
 
 	var tntEnv TenantEnv
 
