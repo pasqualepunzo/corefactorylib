@@ -106,7 +106,7 @@ func GetYamlHpa(ires IstanzaMicro, micros Microservice, versione string) string 
 		app = micros.Nome + "-v" + versioneApp
 	}
 
-	yamlHpa := "apiVersion: autoscaling/v2beta2\n"
+	yamlHpa := "apiVersion: autoscaling/v2\n"
 	yamlHpa += "kind: HorizontalPodAutoscaler\n"
 	yamlHpa += "metadata:\n"
 	yamlHpa += "  name: " + app + "\n"
