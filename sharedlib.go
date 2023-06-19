@@ -349,6 +349,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 		ims.ApiToken = clus[ims.Cluster].ApiToken
 		ims.Autopilot = clus[ims.Cluster].Autopilot
 		ims.CloudNet = clus[ims.Cluster].CloudNet
+		ims.DepEnv = clus[ims.Cluster].DepEnv
 
 		Logga(ctx, "KUBECLUSTER OK")
 	} else {

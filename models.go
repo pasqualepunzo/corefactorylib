@@ -334,6 +334,7 @@ type IstanzaMicro struct {
 	ApiToken                            string                 `json:"apiToken"`
 	Autopilot                           string                 `json:"autopilot"`
 	CloudNet                            string                 `json:"cloudNet"`
+	DepEnv                              string                 `json:"depEnv"`
 }
 
 type AttributiMS struct {
