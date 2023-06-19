@@ -176,7 +176,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 
 	argsStage := make(map[string]string)
 	argsStage["source"] = "devops-8"
-	argsStage["$select"] = "XKUBESTAGE08"
+	argsStage["$select"] = "XKUBESTAGE08,XKUBESTAGE09"
 	argsStage["center_dett"] = "dettaglio"
 	argsStage["$filter"] = "equals(XKUBESTAGE03,'" + ims.Cluster + "') "
 	argsStage["$filter"] += " and equals(XKUBESTAGE04,'" + enviro + "') "
@@ -188,7 +188,9 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	}
 
 	var swProdStage int
+	var depEnv string
 	if len(restyStageRes.BodyJson) > 0 {
+		depEnv, _ = restyStageRes.BodyJson["XKUBESTAGE09"].(string)
 		swProdStage = int(restyStageRes.BodyJson["XKUBESTAGE08"].(float64))
 		Logga(ctx, "KUBESTAGE: OK")
 	} else {
@@ -246,6 +248,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 			}
 			clu.Profile = profile
 			clu.ProfileInt = int32(profileNum)
+			clu.DepEnv = depEnv
 
 			clu.Domain = x["XKUBECLUSTER15"].(string)
 			if swProdStage == 0 && x["XKUBECLUSTER17"].(string) != "" {

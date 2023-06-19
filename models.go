@@ -382,6 +382,7 @@ type ClusterSt struct {
 	ApiToken     string `json:"apiToken"`
 	CloudNet     string `json:"cloudNet"`
 	Autopilot    string `json:"autopilot"`
+	DepEnv       string `json:"depEnv"`
 }
 type ClusterAccess struct {
 	Domain            string `json="domain"`
