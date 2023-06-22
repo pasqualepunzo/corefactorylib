@@ -358,7 +358,7 @@ func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, 
 	// **************************************************************************
 	// da qui in poi si applica cio che e stato calcolato
 
-	for k, _ := range missingTbls {
+	for k := range missingTbls {
 		sqlCompare := "CREATE TABLE " + dbDataDst + "." + k + " like " + dbDataSrc + "." + k
 
 		// popolo un array con tutte le query da fare
@@ -767,8 +767,9 @@ func RenameDatabases(ctx context.Context, dbMetaName DbMetaConnMs, masterDb Mast
 		fmt.Println(query + "  ok")
 	}
 
+	mysqldumpParameters := "--complete-insert=true --extended-insert=false --skip-comments"
 	// dump metadato
-	queryCommand := "mysqldump -u" + masterDb.User + " -p" + masterDb.Pass + " -h" + dbMetaName.MetaHost + " " + dbMetaName.MetaName + " > /tmp/" + dbMetaName.MetaName + ".sql"
+	queryCommand := "mysqldump -u" + masterDb.User + " -p" + masterDb.Pass + " -h" + dbMetaName.MetaHost + " " + mysqldumpParameters + " " + dbMetaName.MetaName + " > /tmp/" + dbMetaName.MetaName + ".sql"
 	fmt.Println(queryCommand)
 	cmd := exec.Command("bash", "-c", queryCommand)
 	_, err = cmd.CombinedOutput()
@@ -777,7 +778,7 @@ func RenameDatabases(ctx context.Context, dbMetaName DbMetaConnMs, masterDb Mast
 	}
 
 	//dump canarino
-	queryCommand = "mysqldump -u" + masterDb.User + " -p" + masterDb.Pass + " -h" + dbMetaName.MetaHost + " " + dbMetaName.MetaName + "_canary > /tmp/" + dbMetaName.MetaName + "_canary.sql"
+	queryCommand = "mysqldump -u" + masterDb.User + " -p" + masterDb.Pass + " -h" + dbMetaName.MetaHost + " " + mysqldumpParameters + " " + dbMetaName.MetaName + "_canary > /tmp/" + dbMetaName.MetaName + "_canary.sql"
 	fmt.Println(queryCommand)
 	cmd = exec.Command("bash", "-c", queryCommand)
 	_, err = cmd.CombinedOutput()
