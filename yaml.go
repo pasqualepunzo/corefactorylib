@@ -92,13 +92,6 @@ func GetYamlHpa(ires IstanzaMicro, micros Microservice, versione string) string 
 
 	versioneApp := versione
 
-	// oggi porcata domani sarebbe opportuno aplicare un flag in kubemicroserv
-	switch micros.Nome {
-	case "mscorequery", "mscorewrite", "mscoreservice":
-		versioneApp = "latest"
-		break
-	}
-
 	app := ""
 	if ires.Microservice == "msrefappmonolith" {
 		app = ires.PodName + "-v" + versione
