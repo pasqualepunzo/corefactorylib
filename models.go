@@ -524,3 +524,34 @@ type mtmTags struct {
 	Sha          string `json:"sha"`
 	GitRepo      string `json:"gitRepo"`
 }
+type CBuild struct {
+	Source struct {
+		StorageSource struct {
+			Bucket string `json:"bucket"`
+			Object string `json:"object"`
+		} `json:"storageSource"`
+	} `json:"source"`
+	Steps []struct {
+		Name string   `json:"name"`
+		Args []string `json:"args"`
+	} `json:"steps"`
+	Images []string `json:"images"`
+}
+type BuildStep struct {
+	Name string   `json:"name"`
+	Args []string `json:"args"`
+}
+type BuildRes struct {
+	Name     string `json:"name"`
+	Metadata struct {
+		Type  string `json:"@type"`
+		Build struct {
+			ID     string `json:"id"`
+			Status string `json:"status"`
+		} `json:"build"`
+	} `json:"metadata"`
+}
+type BuildStatus struct {
+	ID     string `json:"id"`
+	Status string `json:"status"`
+}
