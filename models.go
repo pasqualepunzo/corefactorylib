@@ -535,7 +535,10 @@ type CBuild struct {
 		Name string   `json:"name"`
 		Args []string `json:"args"`
 	} `json:"steps"`
-	Images []string `json:"images"`
+	Images  []string `json:"images"`
+	Options struct {
+		MachineType string `json:"machineType"`
+	} `json:"options"`
 }
 type BuildStep struct {
 	Name string   `json:"name"`

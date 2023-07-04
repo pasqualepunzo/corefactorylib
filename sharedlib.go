@@ -766,7 +766,7 @@ func UploadFileBucket(bucket, object, filename string) error {
 	// conditions and data corruptions. The request to upload is aborted if the
 	// object's generation number does not match your precondition.
 	// For an object that does not yet exist, set the DoesNotExist precondition.
-	o = o.If(storage.Conditions{DoesNotExist: true})
+	// o = o.If(storage.Conditions{DoesNotExist: true})
 	// If the live object already exists in your bucket, set instead a
 	// generation-match precondition using the live object's generation number.
 	// attrs, err := o.Attrs(ctx)
@@ -829,6 +829,7 @@ func CloudBuils(ctx context.Context, docker, verPad, dirRepo string, bArgs []str
 	var step2 BuildStep
 	cb.Source.StorageSource.Bucket = nomeBucket
 	cb.Source.StorageSource.Object = "buildTgz/" + tarFileName
+	cb.Options.MachineType = "E2_HIGHCPU_8"
 
 	var img []string
 	img = append(img, cftoolenv.CoreGkeUrl+"/"+cftoolenv.CoreGkeProject+"/"+dockerName+":"+verPad)
