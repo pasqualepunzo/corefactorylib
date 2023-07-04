@@ -880,17 +880,13 @@ func CloudBuils(ctx context.Context, docker, verPad, dirRepo string, bArgs []str
 	json.Unmarshal([]byte(restyResB.Body()), &bres)
 	return bres, errBuild
 }
-func GetBuildStatus(ID string, cftoolenv TenantEnv) (BuildStatus, error) {
-	// ottengo un token
-	gkeToken, errToken := GetGkeToken()
-	if errToken != nil {
-	}
+func GetBuildStatus(ID string, cftoolenv TenantEnv, token string) (BuildStatus, error) {
 
 	cli := resty.New()
 	cli.Debug = true
 	cli.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 	restyRes, err := cli.R().
-		SetAuthToken(gkeToken).
+		SetAuthToken(token).
 		Get("https://cloudbuild.googleapis.com/v1/projects/" + cftoolenv.CoreGkeProject + "/builds/" + ID)
 	if err != nil {
 
