@@ -740,168 +740,6 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 	//os.Exit(0)
 	return LoggaErrore
 }
-
-// func CloudBuils(ctx context.Context, docker, verPad, dirRepo,        string, swMonolith bool, cftoolenv TenantEnv) (string, error) {
-
-// 	Logga(ctx, "")
-// 	Logga(ctx, "CLOUD BUILD for "+docker)
-// 	Logga(ctx, "")
-
-// 	var errBuild error
-
-// 	dir := ""
-// 	dockerName := ""
-// 	if swMonolith == true {
-// 		dockerName = docker + "-monolith"
-// 		dir = dirRepo
-// 	} else {
-// 		dir = dirRepo + "/" + docker
-// 		dockerName = docker
-// 	}
-
-// 	SwitchProject(cftoolenv.CoreGkeProject)
-
-// 	fileCloudBuild := dir + "/cloudBuild.yaml"
-
-// 	fmt.Println(fileCloudBuild)
-
-// 	cloudBuild := "steps:\n"
-// 	cloudBuild += "- name: 'gcr.io/cloud-builders/docker'\n"
-// 	cloudBuild += "  args: ['build', "
-// 	if swMonolith == true {
-// 		cloudBuild += "'--build-arg', 'CLIENTE=" + docker + "', "
-// 	} else {
-// 		cloudBuild += bArgs
-// 	}
-
-// 	cloudBuild += "'-t', '" + cftoolenv.CoreGkeUrl + "/" + cftoolenv.CoreGkeProject + "/" + dockerName + ":" + verPad + "', '.']\n"
-// 	cloudBuild += "- name: 'gcr.io/cloud-builders/docker'\n"
-// 	cloudBuild += "  args: ['push', '" + cftoolenv.CoreGkeUrl + "/" + cftoolenv.CoreGkeProject + "/" + dockerName + ":" + verPad + "']\n"
-// 	cloudBuild += "images: ['" + cftoolenv.CoreGkeUrl + "/" + cftoolenv.CoreGkeProject + "/" + dockerName + ":" + verPad + "']\n"
-// 	cloudBuild += "tags:\n"
-// 	cloudBuild += "- '" + dockerName + "-" + verPad + "'\n"
-// 	cloudBuild += "options:\n"
-// 	cloudBuild += "  machineType: 'E2_HIGHCPU_8'\n"
-// 	//cloudBuild += "  logStreamingOption: 'STREAM_ON'\n"
-
-// 	Logga(ctx, cloudBuild)
-
-// 	f, errF := os.Create(fileCloudBuild)
-// 	if errF != nil {
-// 		Logga(ctx, errF.Error())
-// 		errBuild = errors.New(errF.Error())
-// 		return "", errBuild
-// 	}
-// 	_, errF = f.WriteString(cloudBuild)
-// 	if errF != nil {
-// 		Logga(ctx, errF.Error())
-// 		f.Close()
-// 		errBuild = errors.New(errF.Error())
-// 		return "", errBuild
-// 	}
-
-// 	// RUN THE BUILD
-// 	// fmt.Println("MI VOTTO IN CLUODBUID")
-// 	// command := "gcloud builds submit --async --config " + fileCloudBuild + " " + dir
-// 	// Logga(ctx, command)
-// 	// res := ExecCommand(command, false)
-// 	// if !res {
-// 	// 	Logga(ctx, command+" ERROR")
-// 	// 	errBuild = errors.New(errF.Error())
-// 	// 	return "", errBuild
-// 	// }
-
-// 	type cBuild struct {
-// 		Source struct {
-// 			StorageSource struct {
-// 				Bucket string `json:"bucket"`
-// 				Object string `json:"object"`
-// 			} `json:"storageSource"`
-// 		} `json:"source"`
-// 		Steps []struct {
-// 			Name string   `json:"name"`
-// 			Args []string `json:"args"`
-// 		} `json:"steps"`
-// 		Images []string `json:"images"`
-// 	}
-// 	type step struct {
-// 		Name string   `json:"name"`
-// 		Args []string `json:"args"`
-// 	}
-
-// 	var cb cBuild
-// 	var step1 step
-// 	var step2 step
-// 	cb.Source.StorageSource.Bucket = "q01io-325908_cloudbuild"
-// 	cb.Source.StorageSource.Object = "nometar.tar.gz"
-
-// 	var args1 []string
-// 	args1 = append(args1, "build")
-// 	args1 = append(args1, "-t")
-// 	args1 = append(args1, cftoolenv.CoreGkeUrl+"/"+cftoolenv.CoreGkeProject+"/"+dockerName+":"+verPad)
-
-// 	step1.Name = "gcr.io/cloud-builders/docker"
-// 	step1.Args = args1
-
-// 	var args2 []string
-// 	args2 = append(args2, "push")
-// 	args2 = append(args2, cftoolenv.CoreGkeUrl+"/"+cftoolenv.CoreGkeProject+"/"+dockerName+":"+verPad)
-
-// 	step2.Name = "gcr.io/cloud-builders/docker"
-// 	step2.Args = args2
-
-// 	cb.Steps = append(cb.Steps, step1)
-// 	cb.Steps = append(cb.Steps, step2)
-
-// 	// curl -X POST -T request.json -H "Authorization: Bearer $(gcloud config config-helper \
-// 	// 	--format='value(credential.access_token)')" \
-// 	// 	https://cloudbuild.googleapis.com/v1/projects/PROJECT_ID/locations/REGION/builds
-
-// 	ccc := "gcloud config config-helper --format='value(credential.access_token)'"
-// 	cmd := exec.Command("bash", "-c", ccc)
-// 	stdout, err := cmd.Output()
-// 	fmt.Println(string(stdout), err)
-
-// 	cliB := resty.New()
-// 	cliB.Debug = true
-// 	cliB.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
-// 	restyResB, errApiB := cliB.R().
-// 		SetHeader("content-type", "application/json").
-// 		SetHeader("accept", "application/json").
-// 		SetAuthToken("ya29.c.b0Aaekm1Iy3dtxanmI7lNW-Umn-FUtq2KCNS0QYof8ipvMHmVpLbUN0GzDQghEZdk5wMcKsyNQG9cy8SPlWOx9wgczSG_OQxRGfOeaY3kiulPXqexsHtpZvW0S1rXuUDygKjGK3437gB_CyJL0Wn3cyVHb4Mfwgnj2Q-gkwTPRXJoZaAy5vFGWOQ_roy3vLsvNJX8OM8FdNrkbMBmBs3AA5oC1296gAPQmPYVrxgn-cNclLpK_-PO0bIilytjNxjxKUzNns_yOYLYvoRyfY7yOdAsoSL81RQ62MOckExwwoSehaDY1kLmXvItSR0oIwlo30NsMjfI0DvcrY9b8NmOuBwN351KYpFdu7uFeMeeIxIve2l1o98yrqfq5QBclzbBdc3ue8lp--ilXhjkz0sw8yooun-xMf4vub7FSaQSUb-eXk-JqZQkUeaaZS5oowI45ie5emIjt__9stsWq-5lnVcpIV7OsYMglsRoBJIjZQeaaSjm-i8ioz61cld7i229nxVOR3r7wFUValUJvpus1cbSj91d7XBaI9czzr0-J1VjFbg80k5uW1ybBf1SpgW7f7MiUdXwQf82p4XnzvWoMq1-o6lw4dU2eSJMtbhe9o3d8aJ9MBnO5Qvlgcx-dftbRXUBY81ogRuY-bjJnjdRlopxoIJ-Otyy8U4S30ilOxJ5zmzr1nmteQaWmXbYssUg7imJvYJ3Skor2x69dyVmFBwXad3l2ja8l0in14YyrWY8WOpYo0mF-6hxIaRu-tYscxlyys2wbYOFIxJxpOtS5nqpUuVgxq9Umhk-j0wJr7YUOeSfvs9yUY2xIo6BvxFU-bYyaOfwOMfa-0Brbguawj_mQ1ZMmolqOYuMpedBa0I7g0Ica6Oqh6snU7Z0UIBBozd7V9jqSSU81wmORxMxOUBWsaM2_jB-abe7rcSuZ4x9gsaRr8o0VeQ157pFdiWXBsUhBetSVZ_oX_jerFs-J97whQmJyum7Mqgm26v9UFtieMMgYxv1lYa6").
-// 		SetBody(cb).
-// 		Post("https://cloudbuild.googleapis.com/v1/projects/" + cftoolenv.CoreGkeProject + "/locations/europe-west1/builds")
-// 	fmt.Println(restyResB, errApiB)
-
-// 	fmt.Println("MI VOTTO IN RESTY")
-// 	cli := resty.New()
-// 	cli.Debug = true
-// 	cli.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
-// 	restyRes, errApi := cli.R().
-// 		SetHeader("content-type", "application/json").
-// 		SetHeader("accept", "application/json").
-// 		SetAuthToken("ya29.c.b0Aaekm1Iy3dtxanmI7lNW-Umn-FUtq2KCNS0QYof8ipvMHmVpLbUN0GzDQghEZdk5wMcKsyNQG9cy8SPlWOx9wgczSG_OQxRGfOeaY3kiulPXqexsHtpZvW0S1rXuUDygKjGK3437gB_CyJL0Wn3cyVHb4Mfwgnj2Q-gkwTPRXJoZaAy5vFGWOQ_roy3vLsvNJX8OM8FdNrkbMBmBs3AA5oC1296gAPQmPYVrxgn-cNclLpK_-PO0bIilytjNxjxKUzNns_yOYLYvoRyfY7yOdAsoSL81RQ62MOckExwwoSehaDY1kLmXvItSR0oIwlo30NsMjfI0DvcrY9b8NmOuBwN351KYpFdu7uFeMeeIxIve2l1o98yrqfq5QBclzbBdc3ue8lp--ilXhjkz0sw8yooun-xMf4vub7FSaQSUb-eXk-JqZQkUeaaZS5oowI45ie5emIjt__9stsWq-5lnVcpIV7OsYMglsRoBJIjZQeaaSjm-i8ioz61cld7i229nxVOR3r7wFUValUJvpus1cbSj91d7XBaI9czzr0-J1VjFbg80k5uW1ybBf1SpgW7f7MiUdXwQf82p4XnzvWoMq1-o6lw4dU2eSJMtbhe9o3d8aJ9MBnO5Qvlgcx-dftbRXUBY81ogRuY-bjJnjdRlopxoIJ-Otyy8U4S30ilOxJ5zmzr1nmteQaWmXbYssUg7imJvYJ3Skor2x69dyVmFBwXad3l2ja8l0in14YyrWY8WOpYo0mF-6hxIaRu-tYscxlyys2wbYOFIxJxpOtS5nqpUuVgxq9Umhk-j0wJr7YUOeSfvs9yUY2xIo6BvxFU-bYyaOfwOMfa-0Brbguawj_mQ1ZMmolqOYuMpedBa0I7g0Ica6Oqh6snU7Z0UIBBozd7V9jqSSU81wmORxMxOUBWsaM2_jB-abe7rcSuZ4x9gsaRr8o0VeQ157pFdiWXBsUhBetSVZ_oX_jerFs-J97whQmJyum7Mqgm26v9UFtieMMgYxv1lYa6").
-// 		SetQueryParam("filter", "tags="+dockerName+"-"+verPad).
-// 		Get("https://cloudbuild.googleapis.com/v1/projects/" + cftoolenv.CoreGkeProject + "/builds")
-
-// 	fmt.Println(restyRes, errApi)
-
-// 	jId, _ := ctx.Value("JobId").(string)
-// 	fmt.Println("W")
-// 	fmt.Println("W")
-// 	fmt.Println("W")
-// 	fmt.Println("W")
-// 	fmt.Println("W")
-// 	fmt.Println("W")
-// 	fmt.Println("SONO IN CLOUDBUILD E OTTENGO l'ID " + jId)
-// 	fmt.Println("W")
-// 	fmt.Println("W")
-// 	fmt.Println("W")
-// 	fmt.Println("W")
-// 	fmt.Println("W")
-
-//		return jId, errBuild
-//	}
 func UploadFileBucket(bucket, object, filename string) error {
 	// bucket := "bucket-name"
 	// object := "object-name"
@@ -928,14 +766,14 @@ func UploadFileBucket(bucket, object, filename string) error {
 	// conditions and data corruptions. The request to upload is aborted if the
 	// object's generation number does not match your precondition.
 	// For an object that does not yet exist, set the DoesNotExist precondition.
-	//o = o.If(storage.Conditions{DoesNotExist: true})
+	o = o.If(storage.Conditions{DoesNotExist: true})
 	// If the live object already exists in your bucket, set instead a
 	// generation-match precondition using the live object's generation number.
-	attrs, err := o.Attrs(ctx)
-	if err != nil {
-		return err
-	}
-	o = o.If(storage.Conditions{GenerationMatch: attrs.Generation})
+	// attrs, err := o.Attrs(ctx)
+	// if err != nil {
+	// 	return err
+	// }
+	// o = o.If(storage.Conditions{GenerationMatch: attrs.Generation})
 
 	// Upload an object with storage.Writer.
 	wc := o.NewWriter(ctx)
@@ -957,7 +795,7 @@ func GetGkeToken() (string, error) {
 	gkeToken := strings.TrimSuffix(string(stdout), "\n")
 	return gkeToken, err
 }
-func CloudBuils(ctx context.Context, docker, verPad, dirRepo string, bArgs []string, swMonolith bool, cftoolenv TenantEnv) (string, error) {
+func CloudBuils(ctx context.Context, docker, verPad, dirRepo string, bArgs []string, swMonolith bool, cftoolenv TenantEnv) (BuildRes, error) {
 
 	Logga(ctx, "")
 	Logga(ctx, "CLOUD BUILD for "+docker)
@@ -1029,10 +867,18 @@ func CloudBuils(ctx context.Context, docker, verPad, dirRepo string, bArgs []str
 	if errApiB != nil {
 
 	}
-	var bres BuildRes
-	json.Unmarshal([]byte(restyResB.Body()), &bres)
 
-	return bres.Metadata.Build.ID, errBuild
+	var bres BuildRes
+	if restyResB.StatusCode() != 200 {
+		var brerr BuildError
+		json.Unmarshal([]byte(restyResB.Body()), &brerr)
+		errBuild = errors.New(brerr.Error.Message)
+		return bres, errBuild
+	}
+
+	// code 200
+	json.Unmarshal([]byte(restyResB.Body()), &bres)
+	return bres, errBuild
 }
 func GetBuildStatus(ID string, cftoolenv TenantEnv) (string, error) {
 	// ottengo un token
