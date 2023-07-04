@@ -553,8 +553,13 @@ type BuildRes struct {
 	} `json:"metadata"`
 }
 type BuildStatus struct {
-	ID     string `json:"id"`
-	Status string `json:"status"`
+	ID      string `json:"id"`
+	Status  string `json:"status"`
+	Results struct {
+		Images []struct {
+			Digest string `json:"digest"`
+		} `json:"images"`
+	} `json:"results"`
 }
 type BuildError struct {
 	Error struct {
