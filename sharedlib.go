@@ -880,7 +880,7 @@ func CloudBuils(ctx context.Context, docker, verPad, dirRepo string, bArgs []str
 	json.Unmarshal([]byte(restyResB.Body()), &bres)
 	return bres, errBuild
 }
-func GetBuildStatus(ID string, cftoolenv TenantEnv) (string, error) {
+func GetBuildStatus(ID string, cftoolenv TenantEnv) (BuildStatus, error) {
 	// ottengo un token
 	gkeToken, errToken := GetGkeToken()
 	if errToken != nil {
@@ -898,7 +898,7 @@ func GetBuildStatus(ID string, cftoolenv TenantEnv) (string, error) {
 	var bStatus BuildStatus
 	json.Unmarshal([]byte(restyRes.Body()), &bStatus)
 
-	return bStatus.Status, err
+	return bStatus, err
 }
 func UpdateDockerVersion(ctx context.Context, docker, ver, user, devMaster, sha, team, newTagName, releaseNote, parentBranch, cs, merged, tenant, devopsToken, dominio, coreApiVersion string) error {
 
