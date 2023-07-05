@@ -556,8 +556,14 @@ type BuildRes struct {
 	} `json:"metadata"`
 }
 type BuildStatus struct {
-	ID      string `json:"id"`
-	Status  string `json:"status"`
+	ID     string `json:"id"`
+	Status string `json:"status"`
+	Source struct {
+		StorageSource struct {
+			Bucket string `json:"bucket"`
+			Object string `json:"object"`
+		} `json:"storageSource"`
+	} `json:"source"`
 	Results struct {
 		Images []struct {
 			Digest string `json:"digest"`
