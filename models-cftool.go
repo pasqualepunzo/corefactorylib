@@ -102,6 +102,7 @@ type TenantEnv struct {
 	UserGit         string `json:"userGit"`
 	TokenGit        string `json:"tokenGit"`
 	ProjectGit      string `json:"projectGit"`
+	TypeGit         string `json:"typeGit"`
 	CoreGkeProject  string `json:"coreGkeProject"`
 	CoreGkeUrl      string `json:"coreGkeUrl"`
 	CoreApiDominio  string `json:"coreApiDominio"`
