@@ -15,13 +15,12 @@ func GitAdd(dir string) {
 }
 
 func GitNewbranch(dir, tag string) {
-	comando := "cd " + dir + " && git checkout -b " + tag
+	comando := "cd " + dir + " && git  checkout -q -b " + tag
 	ExecCommand(comando, true)
 }
 
 func GitCheckout(dir, tag string) {
-
-	comando := "cd " + dir + " && git checkout " + tag
+	comando := "cd " + dir + " && git checkout -q " + tag
 	ExecCommand(comando, true)
 }
 
