@@ -577,3 +577,35 @@ type BuildError struct {
 		Status  string `json:"status"`
 	} `json:"error"`
 }
+type BuildArgs struct {
+	JobID        string `json:"JobID"`
+	Microservice string `json:"microservice"`
+	Branch       string `json:"branch"`
+	User         string `json:"user"`
+	Team         string `json:"team"`
+	Enviro       string `json:"enviro"`
+	Email        string `json:"email"`
+	Docker       string `json:"docker"`
+	Tenant       string `json:"tenant"`
+	SprintBranch string `json:"sprintBranch"`
+
+	TelegramKey     string `json:"telegramKey"`
+	TelegramID      string `json:"TelegramID"`
+	CoreApiVersion  string `json:"coreApiVersion"`
+	CoreApiPort     string `json:"coreApiPort"`
+	CoreAccessToken string `json:"coreAccessToken"`
+	AtlassianHost   string `json:"atlassianHost"`
+	AtlassianUser   string `json:"atlassianUser"`
+	AtlassianToken  string `json:"atlassianToken"`
+	ApiHostGit      string `json:"apiHostGit"`
+	UrlGit          string `json:"urlGit"`
+	UserGit         string `json:"userGit"`
+	TokenGit        string `json:"tokenGit"`
+	ProjectGit      string `json:"projectGit"`
+	TypeGit         string `json:"typeGit"`
+	CoreGkeProject  string `json:"coreGkeProject"`
+	CoreGkeUrl      string `json:"coreGkeUrl"`
+	CoreApiDominio  string `json:"coreApiDominio"`
+
+	Dominio string `json:"dominio"`
+}

@@ -1330,50 +1330,81 @@ func GetCurrentBranchSprint(ctx context.Context, team, tipo, tenant, accessToken
 
 	return sprintBranch, loggaErrore
 }
-func CreateTag(ctx context.Context, branch, tag, repo, gitUser, gitToken, gitHost, gitProject string) {
+func CreateTag(ctx context.Context, buildArgs BuildArgs, tag, repo string) error {
 
 	// OTTENGO L' HASH del branch vivo
 	clientBranch := resty.New()
-	respBranch, errBranch := clientBranch.R().
-		EnableTrace().
-		SetBasicAuth(gitUser, gitToken).
-		Get(gitHost + "/repositories/" + gitProject + "/" + repo + "/refs/branches/" + branch)
+	clientBranch.Debug = true
+	var respBranch, restyResponse *resty.Response
+	var errBranch, errTag error
+	if buildArgs.TypeGit == "bitbucket" {
+		respBranch, errBranch = clientBranch.R().
+			EnableTrace().
+			SetBasicAuth(buildArgs.UserGit, buildArgs.TokenGit).
+			Get(buildArgs.ApiHostGit + "/repositories/" + buildArgs.ProjectGit + "/" + repo + "/refs/branches/" + buildArgs.SprintBranch)
+	} else {
+
+		respBranch, errBranch = clientBranch.R().
+			EnableTrace().
+			SetHeader("Accept", "application/json").
+			SetHeader("Accept", "application/vnd.github+json").
+			SetBasicAuth(buildArgs.UserGit, buildArgs.TokenGit).
+			Get(buildArgs.ApiHostGit + "/repos/" + buildArgs.UserGit + "/" + repo + "/git/refs/heads/" + buildArgs.SprintBranch)
+	}
 
 	if errBranch != nil {
 		Logga(ctx, errBranch.Error())
+		return errBranch
 	}
 
-	var branchRes BranchResStruct
-	err := json.Unmarshal(respBranch.Body(), &branchRes)
-	if err != nil {
-		fmt.Println(err.Error())
+	body := ""
+	if respBranch.StatusCode() != 200 {
+
+	} else {
+		if buildArgs.TypeGit == "bitbucket" {
+			var branchRes BranchResStruct
+			json.Unmarshal(respBranch.Body(), &branchRes)
+			// STACCO IL TAG
+			body = `{"name": "` + tag + `","target": {  "hash": "` + branchRes.Target.Hash + `"}}`
+			client := resty.New()
+			client.Debug = false
+			restyResponse, errTag = client.R().
+				SetHeader("Content-Type", "application/json").
+				SetBasicAuth(buildArgs.UserGit, buildArgs.TokenGit).
+				SetBody(body).
+				Post(buildArgs.ApiHostGit + "/repositories/" + buildArgs.ProjectGit + "/" + repo + "/refs/tags")
+		} else {
+			type ResFrom struct {
+				Object struct {
+					Sha string `json:"sha"`
+				} `json:"object"`
+			}
+			var branchRes ResFrom
+			json.Unmarshal(respBranch.Body(), &branchRes)
+
+			body = `{"tag":"` + tag + `","message":"","object":"` + branchRes.Object.Sha + `","type":"commit"}`
+
+			client := resty.New()
+			client.Debug = true
+			restyResponse, errTag = client.R().
+				SetHeader("Content-Type", "application/json").
+				SetHeader("Accept", "application/vnd.github+json").
+				SetBasicAuth(buildArgs.UserGit, buildArgs.TokenGit).
+				SetBody(body).
+				Post(buildArgs.ApiHostGit + "/repos/" + buildArgs.UserGit + "/" + repo + "/git/tags")
+		}
 	}
-	//fmt.Println(branchRes.Target.Hash)
-
-	// STACCO IL TAG
-	body := `{"name": "` + tag + `","target": {  "hash": "` + branchRes.Target.Hash + `"}}`
-
-	client := resty.New()
-	client.Debug = false
-	restyResponse, errTag := client.R().
-		SetHeader("Content-Type", "application/json").
-		SetBasicAuth(gitUser, gitToken).
-		SetBody(body).
-		Post(gitHost + "/repositories/" + gitProject + "/" + repo + "/refs/tags")
 
 	if errTag != nil {
 		Logga(ctx, errTag.Error())
+		return errTag
 	}
-	//fmt.Println(restyResponse)
-
-	var tagCreateRes TagCreateResStruct
-	err = json.Unmarshal(restyResponse.Body(), &tagCreateRes)
-	if err != nil {
-		fmt.Println(err.Error())
+	if restyResponse.StatusCode() == 201 {
+		fmt.Println("Tag created")
+	} else {
+		fmt.Println("Error CODE: " + strconv.Itoa(restyResponse.StatusCode()))
 	}
-	if tagCreateRes.Type == "error" {
-		fmt.Println(repo, tagCreateRes.Error.Message)
-	}
+	return nil
 }
 
 func GetEnvironmentStatus(ctx context.Context, cluster, enviro, microserice, customer, tenant, accessToken, loginApiDomain, coreApiVersion string) LoggaErrore {
