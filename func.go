@@ -1403,7 +1403,7 @@ func CreateTag(ctx context.Context, buildArgs BuildArgs, tag, repo string) error
 		Logga(ctx, errTag.Error())
 		return errTag
 	}
-	if restyResponse.StatusCode() == 201 {
+	if restyResponse.StatusCode() == 201 || restyResponse.StatusCode() == 200 {
 		fmt.Println("Tag created")
 	} else {
 		fmt.Println("Error CODE: " + strconv.Itoa(restyResponse.StatusCode()))
