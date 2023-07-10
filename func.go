@@ -1332,18 +1332,21 @@ func GetCurrentBranchSprint(ctx context.Context, team, tipo, tenant, accessToken
 }
 func CreateTag(ctx context.Context, buildArgs BuildArgs, tag, repo string) error {
 
+	Logga(ctx, "Create tag: "+tag)
+	Logga(ctx, "git repo: "+buildArgs.TypeGit)
+
 	// OTTENGO L' HASH del branch vivo
 	clientBranch := resty.New()
 	clientBranch.Debug = true
 	var respBranch, restyResponse *resty.Response
 	var errBranch, errTag error
-	if buildArgs.TypeGit == "bitbucket" {
+	switch buildArgs.TypeGit {
+	case "", "bitbucket":
 		respBranch, errBranch = clientBranch.R().
 			EnableTrace().
 			SetBasicAuth(buildArgs.UserGit, buildArgs.TokenGit).
 			Get(buildArgs.ApiHostGit + "/repositories/" + buildArgs.ProjectGit + "/" + repo + "/refs/branches/" + buildArgs.SprintBranch)
-	} else {
-
+	case "gitub":
 		respBranch, errBranch = clientBranch.R().
 			EnableTrace().
 			SetHeader("Accept", "application/json").
@@ -1361,7 +1364,8 @@ func CreateTag(ctx context.Context, buildArgs BuildArgs, tag, repo string) error
 	if respBranch.StatusCode() != 200 {
 
 	} else {
-		if buildArgs.TypeGit == "bitbucket" {
+		switch buildArgs.TypeGit {
+		case "", "bitbucket":
 			var branchRes BranchResStruct
 			json.Unmarshal(respBranch.Body(), &branchRes)
 			// STACCO IL TAG
@@ -1373,7 +1377,7 @@ func CreateTag(ctx context.Context, buildArgs BuildArgs, tag, repo string) error
 				SetBasicAuth(buildArgs.UserGit, buildArgs.TokenGit).
 				SetBody(body).
 				Post(buildArgs.ApiHostGit + "/repositories/" + buildArgs.ProjectGit + "/" + repo + "/refs/tags")
-		} else {
+		case "github":
 			type ResFrom struct {
 				Object struct {
 					Sha string `json:"sha"`
