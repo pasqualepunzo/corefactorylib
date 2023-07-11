@@ -832,7 +832,7 @@ func CloudBuils(ctx context.Context, docker, verPad, dirRepo string, bArgs []str
 	cb.Options.MachineType = "E2_HIGHCPU_8"
 
 	var img []string
-	img = append(img, cftoolenv.CoreGkeUrl+"/q01io-325908/"+dockerName+":"+verPad)
+	img = append(img, cftoolenv.CoreGkeUrl+"/"+cftoolenv.CoreGkeProject+"/"+dockerName+":"+verPad)
 	cb.Images = img
 
 	var args1 []string
@@ -841,7 +841,7 @@ func CloudBuils(ctx context.Context, docker, verPad, dirRepo string, bArgs []str
 		args1 = append(args1, ar)
 	}
 	args1 = append(args1, "-t")
-	args1 = append(args1, cftoolenv.CoreGkeUrl+"/q01io-325908/"+dockerName+":"+verPad)
+	args1 = append(args1, cftoolenv.CoreGkeUrl+"/"+cftoolenv.CoreGkeProject+"/"+dockerName+":"+verPad)
 	args1 = append(args1, ".")
 
 	step1.Name = "gcr.io/cloud-builders/docker"
@@ -849,7 +849,7 @@ func CloudBuils(ctx context.Context, docker, verPad, dirRepo string, bArgs []str
 
 	var args2 []string
 	args2 = append(args2, "push")
-	args2 = append(args2, cftoolenv.CoreGkeUrl+"/q01io-325908/"+dockerName+":"+verPad)
+	args2 = append(args2, cftoolenv.CoreGkeUrl+"/"+cftoolenv.CoreGkeProject+"/"+dockerName+":"+verPad)
 
 	step2.Name = "gcr.io/cloud-builders/docker"
 	step2.Args = args2
