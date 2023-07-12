@@ -81,16 +81,23 @@ func GitCloneCfTool(loginRes LoginRes, dir, repo, actionBitbucket string) {
 	s.Prefix = "Waiting: "
 
 	//fmt.Print("Cloning " + repo + " ")
-	var comando string
+	var comando, aaa string
 
 	if runtime.GOOS == "windows" {
 		if actionBitbucket == "ssh" {
-			aaa := "cd " + dir + " && git config --global core.autocrlf false && " + " git clone git@" + loginRes.UrlGit + ":" + loginRes.ProjectGit + "/" + repo + " . "
+			aaa = "cd " + dir + " && git config --global core.autocrlf false && " + " git clone git@" + loginRes.UrlGit + ":" + loginRes.ProjectGit + "/" + repo + " . "
 			//fmt.Println(aaa)
 
 			cmd = exec.Command("cmd", "/C", aaa)
 		} else {
-			aaa := "cd " + dir + " && git config --global core.autocrlf false && " + " git clone https://" + loginRes.UserGit + ":" + loginRes.TokenGit + "@" + loginRes.UrlGit + "/" + loginRes.ProjectGit + "/" + repo + " . "
+
+			switch loginRes.TypeGit {
+			case "bitbucket", "":
+				aaa = "cd " + dir + " && git config --global core.autocrlf false && " + " git clone https://" + loginRes.UserGit + ":" + loginRes.TokenGit + "@" + loginRes.UrlGit + "/" + loginRes.ProjectGit + "/" + repo + " . "
+			case "github":
+				aaa = "cd " + dir + " && git config --global core.autocrlf false && " + " git clone https://" + loginRes.UserGit + ":" + loginRes.TokenGit + "@" + loginRes.UrlGit + "/" + loginRes.UserGit + "/" + repo + " . "
+			}
+
 			//fmt.Println(aaa)
 			cmd = exec.Command("cmd", "/C", aaa)
 		}
@@ -98,7 +105,13 @@ func GitCloneCfTool(loginRes LoginRes, dir, repo, actionBitbucket string) {
 		if actionBitbucket == "ssh" {
 			comando = "cd " + dir + " && git clone git@" + loginRes.UrlGit + ":" + loginRes.ProjectGit + "/" + repo + " . "
 		} else {
-			comando = "cd " + dir + " && git clone https://" + loginRes.UserGit + ":" + loginRes.TokenGit + "@" + loginRes.UrlGit + "/" + loginRes.ProjectGit + "/" + repo + " . "
+			// github                    git clone https://github.com/pasqualepunzo/btcpayserver.git . git clone https://username:password@github.com/username/repository.git
+			switch loginRes.TypeGit {
+			case "bitbucket", "":
+				comando = "cd " + dir + " && git clone https://" + loginRes.UserGit + ":" + loginRes.TokenGit + "@" + loginRes.UrlGit + "/" + loginRes.ProjectGit + "/" + repo + " . "
+			case "github":
+				comando = "cd " + dir + " && git clone https://" + loginRes.UserGit + ":" + loginRes.TokenGit + "@" + loginRes.UrlGit + "/" + loginRes.UserGit + "/" + repo + " . "
+			}
 		}
 		//fmt.Println(comando)
 		cmd = exec.Command("bash", "-c", comando)
