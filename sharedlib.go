@@ -804,18 +804,8 @@ func CloudBuils(ctx context.Context, docker, verPad, dirRepo string, bArgs []str
 	var errBuild error
 	fmt.Println(dirRepo + "-" + docker + "-" + verPad)
 
-	//dir := ""
-	dockerName := ""
-	nomeBucket := ""
-	if swMonolith == true {
-		dockerName = docker + "-monolith"
-		nomeBucket = "q01io-325908_cloudbuild"
-		//dir = dirRepo
-	} else {
-		//dir = dirRepo + "/" + docker
-		dockerName = docker
-		nomeBucket = "q01io-325908_cloudbuild"
-	}
+	nomeBucket := "q01io-325908_cloudbuild"
+
 	tarFileName := docker + "_" + verPad + ".tar.gz"
 
 	// ottengo un token
@@ -832,7 +822,7 @@ func CloudBuils(ctx context.Context, docker, verPad, dirRepo string, bArgs []str
 	cb.Options.MachineType = "E2_HIGHCPU_8"
 
 	var img []string
-	img = append(img, cftoolenv.CoreGkeUrl+"/"+cftoolenv.CoreGkeProject+"/"+dockerName+":"+verPad)
+	img = append(img, cftoolenv.CoreGkeUrl+"/"+cftoolenv.CoreGkeProject+"/"+docker+":"+verPad)
 	cb.Images = img
 
 	var args1 []string
@@ -841,7 +831,7 @@ func CloudBuils(ctx context.Context, docker, verPad, dirRepo string, bArgs []str
 		args1 = append(args1, ar)
 	}
 	args1 = append(args1, "-t")
-	args1 = append(args1, cftoolenv.CoreGkeUrl+"/"+cftoolenv.CoreGkeProject+"/"+dockerName+":"+verPad)
+	args1 = append(args1, cftoolenv.CoreGkeUrl+"/"+cftoolenv.CoreGkeProject+"/"+docker+":"+verPad)
 	args1 = append(args1, ".")
 
 	step1.Name = "gcr.io/cloud-builders/docker"
@@ -849,7 +839,7 @@ func CloudBuils(ctx context.Context, docker, verPad, dirRepo string, bArgs []str
 
 	var args2 []string
 	args2 = append(args2, "push")
-	args2 = append(args2, cftoolenv.CoreGkeUrl+"/"+cftoolenv.CoreGkeProject+"/"+dockerName+":"+verPad)
+	args2 = append(args2, cftoolenv.CoreGkeUrl+"/"+cftoolenv.CoreGkeProject+"/"+docker+":"+verPad)
 
 	step2.Name = "gcr.io/cloud-builders/docker"
 	step2.Args = args2
