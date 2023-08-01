@@ -579,6 +579,7 @@ type BuildError struct {
 }
 type BuildArgs struct {
 	JobID        string `json:"JobID"`
+	Cluster      string `json:"cluster"`
 	Microservice string `json:"microservice"`
 	Branch       string `json:"branch"`
 	User         string `json:"user"`
