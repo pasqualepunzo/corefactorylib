@@ -590,6 +590,12 @@ type BuildArgs struct {
 	Tenant       string `json:"tenant"`
 	SprintBranch string `json:"sprintBranch"`
 
+	CustomSettings   string `json:"customSettings"`
+	AppID            string `json:"appID"`
+	RefappID         string `json:"refappID"`
+	RefappCustomerID string `json:"refappCustomerID"`
+	CustomerDomain   string `json:"customerDomain"`
+
 	TelegramKey     string `json:"telegramKey"`
 	TelegramID      string `json:"TelegramID"`
 	CoreApiVersion  string `json:"coreApiVersion"`
