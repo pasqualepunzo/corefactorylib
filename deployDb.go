@@ -463,9 +463,10 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 	fmt.Println("For each table compare indexes between TB_INDEX and on information_schema on " + dbData)
 	fmt.Println()
 
-	sqlSel := " SELECT DISTINCT(table_name) as tableName "
-	sqlSel += " FROM information_schema.columns where 1>0 "
+	sqlSel := " SELECT table_name as tableName "
+	sqlSel += " FROM information_schema.tables where 1>0 "
 	sqlSel += " and table_schema = '" + dbData + "' "
+	sqlSel += " AND TABLE_TYPE = 'BASE TABLE'  AND table_name like 'TB_ANAG_%00' "
 	sqlSel += " ORDER BY table_name"
 	//fmt.Println(sqlSel)
 	selDB, err := db.Query(sqlSel)
