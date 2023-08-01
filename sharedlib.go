@@ -1118,7 +1118,7 @@ func GitMergeApi(ctx context.Context, src, dst, repo, tipo string, bitbucketEnv 
 
 	return mergeRes.Log, mergeRes.Error
 }
-func CreaDirAndCloneDocker(ctx context.Context, dkr dockerStruct, dirToCreate, branch string, buildArgs BuildArgs) {
+func CreaDirAndCloneDocker(ctx context.Context, dkr DockerStruct, dirToCreate, branch string, buildArgs BuildArgs) {
 
 	Logga(ctx, "Work on: "+dkr.docker)
 	Logga(ctx, "Repo git: "+dkr.gitRepo)
