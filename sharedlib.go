@@ -1120,16 +1120,16 @@ func GitMergeApi(ctx context.Context, src, dst, repo, tipo string, bitbucketEnv 
 }
 func CreaDirAndCloneDocker(ctx context.Context, dkr DockerStruct, dirToCreate, branch string, buildArgs BuildArgs) {
 
-	Logga(ctx, "Work on: "+dkr.docker)
-	Logga(ctx, "Repo git: "+dkr.gitRepo)
+	Logga(ctx, "Work on: "+dkr.Docker)
+	Logga(ctx, "Repo git: "+dkr.GitRepo)
 	Logga(ctx, "Repo git branch: "+branch)
 
 	// REPO TEMPLATE DOCKER
 	repoDocker := "https://" + buildArgs.UserGit + ":" + buildArgs.TokenGit + "@" + buildArgs.UrlGit + "/" + buildArgs.ProjectGit + "/docker-tmpl.git"
 	// REPO TU BUILD
-	repoproject := "https://" + buildArgs.UserGit + ":" + buildArgs.TokenGit + "@" + buildArgs.UrlGit + "/" + buildArgs.ProjectGit + "/" + dkr.gitRepo + ".git"
+	repoproject := "https://" + buildArgs.UserGit + ":" + buildArgs.TokenGit + "@" + buildArgs.UrlGit + "/" + buildArgs.ProjectGit + "/" + dkr.GitRepo + ".git"
 
-	dir := dirToCreate + "/" + dkr.docker
+	dir := dirToCreate + "/" + dkr.Docker
 	dirSrc := dir + "/src"
 
 	// creo la dir del docker
@@ -1140,7 +1140,7 @@ func CreaDirAndCloneDocker(ctx context.Context, dkr DockerStruct, dirToCreate, b
 
 	// mi porto a terra i dockerfile e tutto cio che mi serve per creare il docker
 	GitClone(dir, repoDocker)
-	GitCheckout(dir, dkr.dockerfile)
+	GitCheckout(dir, dkr.Dockerfile)
 
 	// remove .git
 	err = os.RemoveAll(dir + "/.git")

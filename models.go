@@ -617,5 +617,5 @@ type BuildArgs struct {
 	Dominio string `json:"dominio"`
 }
 type DockerStruct struct {
-	microservizio, docker, gitRepo, branch, version, tag, dockerfile, namespace, tipoGitRepo, dockerArgs string
+	Microservizio, Docker, GitRepo, Branch, Version, Tag, Dockerfile, Namespace, TipoGitRepo, DockerArgs string
 }
