@@ -1118,3 +1118,49 @@ func GitMergeApi(ctx context.Context, src, dst, repo, tipo string, bitbucketEnv 
 
 	return mergeRes.Log, mergeRes.Error
 }
+func CreaDirAndCloneDocker(ctx context.Context, dkr dockerStruct, dirToCreate, branch string, buildArgs BuildArgs) {
+
+	Logga(ctx, "Work on: "+dkr.docker)
+	Logga(ctx, "Repo git: "+dkr.gitRepo)
+	Logga(ctx, "Repo git branch: "+branch)
+
+	// REPO TEMPLATE DOCKER
+	repoDocker := "https://" + buildArgs.UserGit + ":" + buildArgs.TokenGit + "@" + buildArgs.UrlGit + "/" + buildArgs.ProjectGit + "/docker-tmpl.git"
+	// REPO TU BUILD
+	repoproject := "https://" + buildArgs.UserGit + ":" + buildArgs.TokenGit + "@" + buildArgs.UrlGit + "/" + buildArgs.ProjectGit + "/" + dkr.gitRepo + ".git"
+
+	dir := dirToCreate + "/" + dkr.docker
+	dirSrc := dir + "/src"
+
+	// creo la dir del docker
+	err := os.MkdirAll(dir, 0755)
+	if err != nil {
+		Logga(ctx, err.Error(), "error")
+	}
+
+	// mi porto a terra i dockerfile e tutto cio che mi serve per creare il docker
+	GitClone(dir, repoDocker)
+	GitCheckout(dir, dkr.dockerfile)
+
+	// remove .git
+	err = os.RemoveAll(dir + "/.git")
+	if err != nil {
+		Logga(ctx, err.Error(), "error")
+	}
+
+	// creo la dir src
+	err = os.MkdirAll(dirSrc, 0755)
+	if err != nil {
+		Logga(ctx, err.Error(), "error")
+	}
+
+	// mi porto a terra i file del progetto e mi porto al branch dichiarato
+	GitClone(dirSrc, repoproject)
+	GitCheckout(dirSrc, branch)
+
+	// remove .git
+	err = os.RemoveAll(dirSrc + "/.git")
+	if err != nil {
+		Logga(ctx, err.Error(), "error")
+	}
+}
