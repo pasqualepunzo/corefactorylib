@@ -70,7 +70,7 @@ func ApiCallPOST(ctx context.Context, debug bool, args []map[string]interface{},
 	restyLogger := RestyClientLogger{}
 	client.SetLogger(&restyLogger)
 
-	client.Debug = true
+	client.Debug = debug
 	// Set retry count to non zero to enable retries
 	client.SetRetryCount(2)
 	// You can override initial retry wait time.
@@ -189,7 +189,7 @@ func ApiCallGET(ctx context.Context, debug bool, args map[string]string, microse
 	restyLogger := RestyClientLogger{}
 	client.SetLogger(&restyLogger)
 
-	client.Debug = true
+	client.Debug = debug
 
 	// client.Debug = true
 	client.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
@@ -318,7 +318,7 @@ func ApiCallLOGIN(ctx context.Context, debug bool, args map[string]interface{}, 
 	client.SetLogger(&restyLogger)
 
 	//client.Debug = debug
-	client.Debug = true
+	client.Debug = debug
 	client.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 	res, err := client.R().
 		SetHeader("Content-Type", "application/json").
@@ -361,7 +361,7 @@ func ApiCallPUT(ctx context.Context, debug bool, args map[string]interface{}, mi
 	// Set logrus as Logger
 	restyLogger := RestyClientLogger{}
 	client.SetLogger(&restyLogger)
-	client.Debug = true
+	client.Debug = debug
 	client.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 	res, err := client.R().
 		SetHeader("Content-Type", "application/json").
@@ -450,7 +450,7 @@ func ApiCallDELETE(ctx context.Context, debug bool, args map[string]string, micr
 	// Set logrus as Logger
 	restyLogger := RestyClientLogger{}
 	client.SetLogger(&restyLogger)
-	client.Debug = true
+	client.Debug = debug
 	client.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 	res, err := client.R().
 		SetHeader("Content-Type", "application/json").
