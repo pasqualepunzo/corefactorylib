@@ -2082,3 +2082,35 @@ func GetOverrideTenantEnv(ctx context.Context, bearerToken, team string, tntEnv 
 	}
 	return tntEnv, erro
 }
+func GetApiHostAndToken(ctx context.Context, enviro, cluster, token, loginApiHost, coreApiVersion, swmono string) (string, string, error) {
+	var erro error
+
+	args := make(map[string]string)
+	args["source"] = "devops-8"
+	args["$select"] = "XKUBECLUSTER16,XKUBECLUSTER18"
+	args["center_dett"] = "dettaglio"
+	args["$filter"] = "equals(XKUBECLUSTER03,'" + cluster + "') "
+
+	var endpointRes CallGetResponse
+	if swmono == "monolilth" {
+		endpointRes = ApiCallGET(ctx, false, args, "msdevopsmono", "/devopsmono/KUBECLUSTER", token, loginApiHost, coreApiVersion)
+	} else {
+		endpointRes = ApiCallGET(ctx, false, args, "msdevops", "/devops/KUBECLUSTER", token, loginApiHost, coreApiVersion)
+	}
+
+	if endpointRes.Errore != 0 {
+		erro := errors.New(endpointRes.Log)
+		return "", "", erro
+	}
+
+	apiHost, apiToken := "", ""
+	if len(endpointRes.BodyJson) > 0 {
+		apiHost = endpointRes.BodyJson["XKUBECLUSTER16"].(string)
+		apiToken = endpointRes.BodyJson["XKUBECLUSTER18"].(string)
+	} else {
+		erro := errors.New("nohost")
+		return "", "", erro
+	}
+
+	return apiHost, apiToken, erro
+}
