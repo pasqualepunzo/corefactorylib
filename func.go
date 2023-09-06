@@ -2092,7 +2092,7 @@ func GetApiHostAndToken(ctx context.Context, enviro, cluster, token, loginApiHos
 	args["$filter"] = "equals(XKUBECLUSTER03,'" + cluster + "') "
 
 	var endpointRes CallGetResponse
-	if swmono == "monolilth" {
+	if swmono == "mono" {
 		endpointRes = ApiCallGET(ctx, false, args, "msdevopsmono", "/devopsmono/KUBECLUSTER", token, loginApiHost, coreApiVersion)
 	} else {
 		endpointRes = ApiCallGET(ctx, false, args, "msdevops", "/devops/KUBECLUSTER", token, loginApiHost, coreApiVersion)
