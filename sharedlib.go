@@ -574,7 +574,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	//os.Exit(0)
 	return ims, erro
 }
-func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMicroservizio string, istanza IstanzaMicro, micros Microservice, utente, enviro, devopsToken, dominio, coreApiVersion string) LoggaErrore {
+func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMicroservizio string, istanza IstanzaMicro, micros Microservice, utente, enviro, devopsToken, dominio, coreApiVersion, microfrontendJson string) LoggaErrore {
 
 	var LoggaErrore LoggaErrore
 	LoggaErrore.Errore = 0
@@ -726,6 +726,7 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 	keyvalueslice["XDEPLOYLOG07"] = 0
 	keyvalueslice["XDEPLOYLOG08"] = string(detailJson)
 	keyvalueslice["XDEPLOYLOG09"] = enviro
+	keyvalueslice["XDEPLOYLOG10"] = microfrontendJson
 	keyvalueslices = append(keyvalueslices, keyvalueslice)
 
 	resPOST := ApiCallPOST(ctx, false, keyvalueslices, "ms"+devops, "/"+devops+"/DEPLOYLOG", devopsToken, dominio, coreApiVersion)
