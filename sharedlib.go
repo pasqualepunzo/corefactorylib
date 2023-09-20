@@ -523,10 +523,28 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	}
 	// os.Exit(0)
 	Logga(ctx, "")
+
 	/* ************************************************************************************************ */
 	// DEPLOYLOG
-	Logga(ctx, "Getting DEPLOYLOG")
+	var erroIstanzaVersioni error
+	ims.IstanzaMicroVersioni, erroIstanzaVersioni = GetIstanzaVersioni(ctx, iresReq, istanza, enviro, devops, devopsTokenDst, dominio, coreApiVersion)
+	if erroIstanzaVersioni != nil {
+		Logga(ctx, erroIstanzaVersioni.Error())
+		return ims, erroIstanzaVersioni
+	}
+	// DEPLOYLOG
+	/* ************************************************************************************************ */
 
+	//Logga(ctx, ims)
+	Logga(ctx, "getIstanceDetail end")
+	Logga(ctx, " - - - - - - - - - - - - - - - - - - - ")
+	Logga(ctx, "")
+	//os.Exit(0)
+	return ims, erro
+}
+func GetIstanzaVersioni(ctx context.Context, iresReq IresRequest, istanza, enviro, devops, devopsTokenDst, dominio, coreApiVersion string) ([]IstanzaMicroVersioni, error) {
+	Logga(ctx, "Getting DEPLOYLOG")
+	var erro error
 	var istanzaMicroVersioni []IstanzaMicroVersioni
 
 	argsDeploy := make(map[string]string)
@@ -544,9 +562,8 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	restyDeployRes := ApiCallGET(ctx, false, argsDeploy, "ms"+devops, "/"+devops+"/DEPLOYLOG", devopsTokenDst, dominio, coreApiVersion)
 	if restyDeployRes.Errore < 0 {
 		Logga(ctx, restyDeployRes.Log)
-
 		erro = errors.New(restyDeployRes.Log)
-		return ims, erro
+		return istanzaMicroVersioni, erro
 	}
 
 	if len(restyDeployRes.BodyArray) > 0 {
@@ -563,16 +580,8 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 		Logga(ctx, "DEPLOYLOG MISSING")
 	}
 	Logga(ctx, "")
-	/* ************************************************************************************************ */
 
-	ims.IstanzaMicroVersioni = istanzaMicroVersioni
-
-	//Logga(ctx, ims)
-	Logga(ctx, "getIstanceDetail end")
-	Logga(ctx, " - - - - - - - - - - - - - - - - - - - ")
-	Logga(ctx, "")
-	//os.Exit(0)
-	return ims, erro
+	return istanzaMicroVersioni, erro
 }
 func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMicroservizio string, istanza IstanzaMicro, micros Microservice, utente, enviro, devopsToken, dominio, coreApiVersion, microfrontendJson string) LoggaErrore {
 
