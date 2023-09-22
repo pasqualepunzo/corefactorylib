@@ -359,7 +359,7 @@ func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, 
 	// da qui in poi si applica cio che e stato calcolato
 
 	for k := range missingTbls {
-		sqlCompare := "CREATE TABLE " + dbDataDst + "." + k + " like " + dbDataSrc + "." + k
+		sqlCompare := "CREATE TABLE IF NOT EXISTS " + dbDataDst + "." + k + " like " + dbDataSrc + "." + k
 
 		// popolo un array con tutte le query da fare
 		allCompareSql = append(allCompareSql, sqlCompare)
@@ -379,21 +379,57 @@ func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, 
 	// os.Exit(0)
 
 	var sqlCompare string
+	var columnExists bool
+	columnExists = false
 	for _, vv := range diffTbls {
+
+		// poiche la madonna di mysql non contempla add column if not exist sono costretto a tirare le madonne ...
+		var COLUMN_NAME string
+		sqlCheck := "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS "
+		sqlCheck += "WHERE TABLE_SCHEMA='" + dbDataName.DataName + "' "
+		sqlCheck += "AND TABLE_NAME='" + vv.Tbl + "' "
+		sqlCheck += "AND COLUMN_NAME='" + vv.Column_name + "' "
+		sqlCheckRes, errcheck := db.Query(sqlCheck)
+		if errcheck != nil {
+			loggaErrore.Log = err.Error() + " - " + sqlCheck
+			loggaErrore.Errore = -1
+			return loggaErrore, allCompareSql
+		}
+
+		for selDB.Next() {
+			err = sqlCheckRes.Scan(&COLUMN_NAME)
+			if err != nil {
+				loggaErrore.Log = err.Error()
+				loggaErrore.Errore = -1
+				return loggaErrore, allCompareSql
+			}
+			if COLUMN_NAME == vv.Column_name {
+				columnExists = true
+			}
+		}
 
 		// !!! questo blocco è clone del seguente !!!
 		xxx := strings.Split(vv.Columns, ":")
 		if vv.Tipo == "CHANGE" {
-			if xxx[1] != "" {
-				sqlCompare = "ALTER TABLE " + dbDataName.DataName + "." + vv.Tbl + " CHANGE " + vv.Column_name + " " + vv.Column_name + " " + xxx[0] + " DEFAULT " + xxx[1]
+			if columnExists {
+				if xxx[1] != "" {
+					sqlCompare = "ALTER TABLE " + dbDataName.DataName + "." + vv.Tbl + " CHANGE " + vv.Column_name + " " + vv.Column_name + " " + xxx[0] + " DEFAULT " + xxx[1]
+				} else {
+					sqlCompare = "ALTER TABLE " + dbDataName.DataName + "." + vv.Tbl + " CHANGE " + vv.Column_name + " " + vv.Column_name + " " + xxx[0]
+				}
 			} else {
-				sqlCompare = "ALTER TABLE " + dbDataName.DataName + "." + vv.Tbl + " CHANGE " + vv.Column_name + " " + vv.Column_name + " " + xxx[0]
+				fmt.Println("Cannot change " + vv.Column_name + " column missing")
 			}
+
 		} else {
-			if xxx[1] != "" {
-				sqlCompare = "ALTER TABLE " + dbDataName.DataName + "." + vv.Tbl + " ADD " + vv.Column_name + " " + xxx[0] + " DEFAULT " + xxx[1]
+			if !columnExists {
+				if xxx[1] != "" {
+					sqlCompare = "ALTER TABLE " + dbDataName.DataName + "." + vv.Tbl + " ADD " + vv.Column_name + " " + xxx[0] + " DEFAULT " + xxx[1]
+				} else {
+					sqlCompare = "ALTER TABLE " + dbDataName.DataName + "." + vv.Tbl + " ADD " + vv.Column_name + " " + xxx[0]
+				}
 			} else {
-				sqlCompare = "ALTER TABLE " + dbDataName.DataName + "." + vv.Tbl + " ADD " + vv.Column_name + " " + xxx[0]
+				fmt.Println("Cannot add " + vv.Column_name + " column exists")
 			}
 		}
 		//	fmt.Println(sqlCompare)
@@ -422,7 +458,7 @@ func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, 
 			loggaErrore.Errore = -1
 
 		} else {
-			Logga(ctx, "DROP DATABASE "+dbDataSrc+"  ok")
+			Logga(ctx, "DROP DATABASE IF EXISTS "+dbDataSrc+"  ok")
 		}
 		//_, err = db.Exec("DROP DATABASE " + dbDataDst)
 		if err != nil {
@@ -433,13 +469,13 @@ func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, 
 			Logga(ctx, "DROP DATABASE "+dbDataSrc+"  ok")
 		}
 	} else {
-		_, err = db.Exec("DROP DATABASE " + dbDataSrc)
+		_, err = db.Exec("DROP DATABASE IF EXISTS " + dbDataSrc)
 		if err != nil {
 			loggaErrore.Log += err.Error() + "\n"
 			loggaErrore.Errore = -1
 
 		} else {
-			Logga(ctx, "DROP DATABASE "+dbDataSrc+"  ok")
+			Logga(ctx, "DROP DATABASE IF EXISTS "+dbDataSrc+"  ok")
 		}
 	}
 
@@ -641,24 +677,53 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 			}
 
 			for _, v := range iddi {
-				//fmt.Println(iddi[v])
-				nomeIndiceArr := strings.Split(iddi[v], ".")
-				dropIdx := "DROP INDEX " + nomeIndiceArr[1] + " on " + dbDataName.DataName + "." + nomeIndiceArr[0]
-				//fmt.Println("CUSTOM PERFORM DROP OLD INDEX:" + dropIdx)
 
-				allCompareIdx = append(allCompareIdx, dropIdx)
-				_, err = db2.Exec(dropIdx)
-				if err != nil {
-					loggaErrore.Log = err.Error() + " - " + dropIdx
+				nomeIndiceArr := strings.Split(iddi[v], ".")
+
+				// cerco se esiste l'indice
+				sqlCheck := "SHOW INDEX FROM " + dbDataName.DataName + "." + nomeIndiceArr[0] + "' WHERE KEY_NAME = '" + nomeIndiceArr[1] + "'"
+				sqlCheckRes, errcheck := db.Query(sqlCheck)
+				if errcheck != nil {
+					loggaErrore.Log = err.Error() + " - " + sqlCheck
 					loggaErrore.Errore = -1
-					//return loggaErrore, allCompareIdx
-				} else {
-					//	fmt.Println(dropIdx + "  ok")
+					return loggaErrore, allCompareIdx
 				}
 
+				indexExists := false
+				var Key_name string
+				for selDB.Next() {
+					err = sqlCheckRes.Scan(&Key_name)
+					if err != nil {
+						loggaErrore.Log = err.Error()
+						loggaErrore.Errore = -1
+						return loggaErrore, allCompareIdx
+					}
+					fmt.Printf("++++++++++++++++++")
+					fmt.Printf("Key_name: " + Key_name)
+					if Key_name != "" {
+						indexExists = true
+					}
+				}
+
+				//fmt.Println(iddi[v])
+				dropIdx := "DROP INDEX  " + nomeIndiceArr[1] + " on " + dbDataName.DataName + "." + nomeIndiceArr[0]
+
+				if indexExists {
+					allCompareIdx = append(allCompareIdx, dropIdx+" - OK")
+					_, err = db2.Exec(dropIdx)
+					if err != nil {
+						loggaErrore.Log = err.Error() + " - " + dropIdx
+						loggaErrore.Errore = -1
+						//return loggaErrore, allCompareIdx
+					} else {
+						//	fmt.Println(dropIdx + "  ok")
+					}
+				} else {
+					allCompareIdx = append(allCompareIdx, dropIdx+" - KO")
+					fmt.Println("INDEX " + nomeIndiceArr[1] + " NON DROPPATO PERCHE MANCA")
+				}
 			}
 		}
-
 	}
 
 	fmt.Println("Creating new indexes and editing the different ones")
@@ -695,9 +760,13 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 			}
 			var NAME_IDX, UNIQUE_IDX, COLUMN_NAME string
 
-			dropIdx := "DROP INDEX "
+			dropIdx := "DROP INDEX  "
 			createIdx := "CREATE "
 			idx := 0
+
+			var culumnExists bool
+			culumnExists = true
+			var columnMissing []string
 			for selDB2.Next() {
 				err = selDB2.Scan(&NAME_IDX, &UNIQUE_IDX, &COLUMN_NAME)
 				if err != nil {
@@ -705,6 +774,33 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 					loggaErrore.Errore = -1
 					return loggaErrore, allCompareIdx
 				}
+
+				// poiche la madonna di mysql non contempla add column if not exist sono costretto a tirare le madonne ...
+				var COLUMN_NAME_IDX string
+				sqlCheck := "SELECT COLUMN_NAME as COLUMN_NAME_IDX FROM INFORMATION_SCHEMA.COLUMNS "
+				sqlCheck += "WHERE TABLE_SCHEMA='" + dbData + "' "
+				sqlCheck += "AND TABLE_NAME='" + tableName + "' "
+				sqlCheck += "AND COLUMN_NAME='" + COLUMN_NAME + "' "
+				sqlCheckRes, errcheck := db.Query(sqlCheck)
+				if errcheck != nil {
+					loggaErrore.Log = err.Error() + " - " + sqlCheck
+					loggaErrore.Errore = -1
+					return loggaErrore, allCompareIdx
+				}
+
+				for selDB.Next() {
+					err = sqlCheckRes.Scan(&COLUMN_NAME_IDX)
+					if err != nil {
+						loggaErrore.Log = err.Error()
+						loggaErrore.Errore = -1
+						return loggaErrore, allCompareIdx
+					}
+					if COLUMN_NAME_IDX == "" {
+						culumnExists = false
+						columnMissing = append(columnMissing, COLUMN_NAME)
+					}
+				}
+				// -------------------------
 				if idx == 0 {
 					if UNIQUE_IDX == "1" {
 						createIdx += " UNIQUE "
@@ -720,27 +816,40 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 			//fmt.Println(dropIdx)
 			//fmt.Println(createIdx)
 
-			allCompareIdx = append(allCompareIdx, dropIdx)
-			//fmt.Println("CUSTOM PERFORM DROP INDEX:" + dropIdx)
-			_, err = db2.Exec(dropIdx)
-			if err != nil {
-				loggaErrore.Log = err.Error() + " - " + dropIdx
-				loggaErrore.Errore = -1
-				//return loggaErrore, allCompareIdx
+			if culumnExists {
+				allCompareIdx = append(allCompareIdx, dropIdx+" - OK")
+				//fmt.Println("CUSTOM PERFORM DROP INDEX:" + dropIdx)
+				_, err = db2.Exec(dropIdx)
+				if err != nil {
+					loggaErrore.Log = err.Error() + " - " + dropIdx
+					loggaErrore.Errore = -1
+					//return loggaErrore, allCompareIdx
+				} else {
+					//	fmt.Println(dropIdx + "  ok")
+				}
+
+				allCompareIdx = append(allCompareIdx, createIdx+" - OK")
+				//fmt.Println("CUSTOM PERFORM CREATE INDEX:" + createIdx)
+				_, err = db2.Exec(createIdx)
+				if err != nil {
+
+					loggaErrore.Log = err.Error() + " - " + createIdx
+					loggaErrore.Errore = -1
+					return loggaErrore, allCompareIdx
+				} else {
+					//	fmt.Println(createIdx + "  ok")
+				}
 			} else {
-				//	fmt.Println(dropIdx + "  ok")
-			}
-
-			allCompareIdx = append(allCompareIdx, createIdx)
-			//fmt.Println("CUSTOM PERFORM CREATE INDEX:" + createIdx)
-			_, err = db2.Exec(createIdx)
-			if err != nil {
-
-				loggaErrore.Log = err.Error() + " - " + createIdx
+				allCompareIdx = append(allCompareIdx, dropIdx+" - KO")
+				allCompareIdx = append(allCompareIdx, createIdx+" - KO")
+				var clmnmiss string
+				for _, mm := range columnMissing {
+					clmnmiss += mm + ", "
+				}
+				fmt.Println("cannot add or drop indexs because some columns: " + clmnmiss + " are missing on " + dbDataName.DataName)
+				loggaErrore.Log = "cannot add or drop indexs because some columns: " + clmnmiss + " are missing on " + dbDataName.DataName
 				loggaErrore.Errore = -1
 				return loggaErrore, allCompareIdx
-			} else {
-				//	fmt.Println(createIdx + "  ok")
 			}
 
 		}
