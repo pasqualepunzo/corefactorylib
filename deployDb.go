@@ -681,8 +681,11 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 				nomeIndiceArr := strings.Split(iddi[v], ".")
 
 				// cerco se esiste l'indice
-				sqlCheck := "SHOW INDEX FROM " + dbDataName.DataName + "." + nomeIndiceArr[0] + "' WHERE KEY_NAME = '" + nomeIndiceArr[1] + "'"
+				sqlCheck := "SHOW INDEX FROM " + dbDataName.DataName + "." + nomeIndiceArr[0] + " WHERE KEY_NAME = '" + nomeIndiceArr[1] + "'"
+				fmt.Println(sqlCheck)
 				sqlCheckRes, errcheck := db.Query(sqlCheck)
+				// LogJson(sqlCheckRes)
+				// LogJson(errcheck)
 				if errcheck != nil {
 					loggaErrore.Log = err.Error() + " - " + sqlCheck
 					loggaErrore.Errore = -1
@@ -751,7 +754,7 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 			sqlIdx += "and COD_DIM = '" + codDim + "' "
 			sqlIdx += "and NAME_IDX = '" + nomeIndiceArr[1] + "' "
 			sqlIdx += " order by SEQUENCE_IDX"
-			//fmt.Println(sqlIdx)
+			fmt.Println(sqlIdx)
 			selDB2, err := db3.Query(sqlIdx)
 			if err != nil {
 				loggaErrore.Log = err.Error() + " - " + sqlIdx
@@ -779,17 +782,19 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 				var COLUMN_NAME_IDX string
 				sqlCheck := "SELECT COLUMN_NAME as COLUMN_NAME_IDX FROM INFORMATION_SCHEMA.COLUMNS "
 				sqlCheck += "WHERE TABLE_SCHEMA='" + dbData + "' "
-				sqlCheck += "AND TABLE_NAME='" + tableName + "' "
 				sqlCheck += "AND COLUMN_NAME='" + COLUMN_NAME + "' "
+				fmt.Println(sqlCheck)
 				sqlCheckRes, errcheck := db.Query(sqlCheck)
+				//LogJson(sqlCheckRes)
 				if errcheck != nil {
 					loggaErrore.Log = err.Error() + " - " + sqlCheck
 					loggaErrore.Errore = -1
 					return loggaErrore, allCompareIdx
 				}
 
-				for selDB.Next() {
+				for sqlCheckRes.Next() {
 					err = sqlCheckRes.Scan(&COLUMN_NAME_IDX)
+
 					if err != nil {
 						loggaErrore.Log = err.Error()
 						loggaErrore.Errore = -1
@@ -797,7 +802,10 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 					}
 					if COLUMN_NAME_IDX == "" {
 						culumnExists = false
-						columnMissing = append(columnMissing, COLUMN_NAME)
+						columnMissing = append(columnMissing, COLUMN_NAME_IDX)
+						fmt.Println("The column for key is missing")
+					} else {
+						fmt.Println("The column " + COLUMN_NAME_IDX + " for key exists")
 					}
 				}
 				// -------------------------
@@ -805,7 +813,7 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 					if UNIQUE_IDX == "1" {
 						createIdx += " UNIQUE "
 					}
-					dropIdx += NAME_IDX + " on " + nomeIndiceArr[0]
+					dropIdx += NAME_IDX + " on " + dbDataName.DataName + "." + nomeIndiceArr[0]
 					createIdx += " INDEX " + NAME_IDX + " on " + dbDataName.DataName + "." + nomeIndiceArr[0] + " ( "
 				}
 				createIdx += COLUMN_NAME + ", "
@@ -813,13 +821,14 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 				idx++
 			}
 			createIdx = createIdx[:len(createIdx)-2] + " ) "
-			//fmt.Println(dropIdx)
-			//fmt.Println(createIdx)
+			fmt.Println(dropIdx)
+			fmt.Println(createIdx)
+			fmt.Println(culumnExists)
 
 			if culumnExists {
 				allCompareIdx = append(allCompareIdx, dropIdx+" - OK")
 				//fmt.Println("CUSTOM PERFORM DROP INDEX:" + dropIdx)
-				_, err = db2.Exec(dropIdx)
+				_, err = db.Exec(dropIdx)
 				if err != nil {
 					loggaErrore.Log = err.Error() + " - " + dropIdx
 					loggaErrore.Errore = -1
@@ -830,7 +839,7 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 
 				allCompareIdx = append(allCompareIdx, createIdx+" - OK")
 				//fmt.Println("CUSTOM PERFORM CREATE INDEX:" + createIdx)
-				_, err = db2.Exec(createIdx)
+				_, err = db.Exec(createIdx)
 				if err != nil {
 
 					loggaErrore.Log = err.Error() + " - " + createIdx
