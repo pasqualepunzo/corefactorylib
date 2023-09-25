@@ -749,7 +749,7 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 			codDimArr := strings.Split(nomeIndiceArr[0], "_")
 			codDim := strings.Replace(codDimArr[2], "00", "", -1)
 
-			sqlIdx := "select NAME_IDX, UNIQUE_IDX, CODICE_IDX as COLUMN_NAME "
+			sqlIdx := "select COD_DIM, NAME_IDX, UNIQUE_IDX, CODICE_IDX as COLUMN_NAME "
 			sqlIdx += "from TB_INDEX where 1>0 "
 			sqlIdx += "and COD_DIM = '" + codDim + "' "
 			sqlIdx += "and NAME_IDX = '" + nomeIndiceArr[1] + "' "
@@ -761,7 +761,7 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 				loggaErrore.Errore = -1
 				return loggaErrore, allCompareIdx
 			}
-			var NAME_IDX, UNIQUE_IDX, COLUMN_NAME string
+			var COD_DIM, NAME_IDX, UNIQUE_IDX, COLUMN_NAME string
 
 			dropIdx := "DROP INDEX  "
 			createIdx := "CREATE "
@@ -771,7 +771,7 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 			culumnExists = true
 			var columnMissing []string
 			for selDB2.Next() {
-				err = selDB2.Scan(&NAME_IDX, &UNIQUE_IDX, &COLUMN_NAME)
+				err = selDB2.Scan(&COD_DIM, &NAME_IDX, &UNIQUE_IDX, &COLUMN_NAME)
 				if err != nil {
 					loggaErrore.Log = err.Error()
 					loggaErrore.Errore = -1
@@ -782,6 +782,7 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 				var COLUMN_NAME_IDX string
 				sqlCheck := "SELECT COLUMN_NAME as COLUMN_NAME_IDX FROM INFORMATION_SCHEMA.COLUMNS "
 				sqlCheck += "WHERE TABLE_SCHEMA='" + dbData + "' "
+				sqlCheck += "and TABLE_NAME = 'TB_ANAG_" + COD_DIM + "00' "
 				sqlCheck += "AND COLUMN_NAME='" + COLUMN_NAME + "' "
 				fmt.Println(sqlCheck)
 				sqlCheckRes, errcheck := db.Query(sqlCheck)
