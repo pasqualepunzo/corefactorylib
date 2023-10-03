@@ -749,6 +749,34 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 			codDimArr := strings.Split(nomeIndiceArr[0], "_")
 			codDim := strings.Replace(codDimArr[2], "00", "", -1)
 
+			// cerco se esiste l'indice
+			indexExistsONCreate := false
+			sqlCheckIdx := "SHOW INDEX FROM " + dbDataName.DataName + "." + nomeIndiceArr[0] + " WHERE KEY_NAME = '" + nomeIndiceArr[1] + "'"
+			fmt.Println(sqlCheckIdx)
+			sqlCheckResIdx, errcheckIdx := db.Query(sqlCheckIdx)
+			// LogJson(sqlCheckRes)
+			// LogJson(errcheck)
+			if errcheckIdx != nil {
+				loggaErrore.Log = err.Error() + " - " + sqlCheckIdx
+				loggaErrore.Errore = -1
+				return loggaErrore, allCompareIdx
+			}
+
+			var Key_name string
+			for selDB.Next() {
+				err = sqlCheckResIdx.Scan(&Key_name)
+				if err != nil {
+					loggaErrore.Log = err.Error()
+					loggaErrore.Errore = -1
+					return loggaErrore, allCompareIdx
+				}
+				fmt.Printf("++++++++++++++++++")
+				fmt.Printf("Key_name: " + Key_name)
+				if Key_name != "" {
+					indexExistsONCreate = true
+				}
+			}
+
 			sqlIdx := "select COD_DIM, NAME_IDX, UNIQUE_IDX, CODICE_IDX as COLUMN_NAME "
 			sqlIdx += "from TB_INDEX where 1>0 "
 			sqlIdx += "and COD_DIM = '" + codDim + "' "
@@ -770,6 +798,7 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 			var culumnExists bool
 			culumnExists = true
 			var columnMissing []string
+
 			for selDB2.Next() {
 				err = selDB2.Scan(&COD_DIM, &NAME_IDX, &UNIQUE_IDX, &COLUMN_NAME)
 				if err != nil {
@@ -826,16 +855,21 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 			fmt.Println(createIdx)
 			fmt.Println(culumnExists)
 
+			// se esistono le colonne
 			if culumnExists {
-				allCompareIdx = append(allCompareIdx, dropIdx+" - OK")
-				//fmt.Println("CUSTOM PERFORM DROP INDEX:" + dropIdx)
-				_, err = db.Exec(dropIdx)
-				if err != nil {
-					loggaErrore.Log = err.Error() + " - " + dropIdx
-					loggaErrore.Errore = -1
-					//return loggaErrore, allCompareIdx
+				// se l'indice esiste
+				if indexExistsONCreate {
+					allCompareIdx = append(allCompareIdx, dropIdx+" - OK")
+					_, err = db.Exec(dropIdx)
+					if err != nil {
+						loggaErrore.Log = err.Error() + " - " + dropIdx
+						loggaErrore.Errore = -1
+						//return loggaErrore, allCompareIdx
+					} else {
+						//	fmt.Println(dropIdx + "  ok")
+					}
 				} else {
-					//	fmt.Println(dropIdx + "  ok")
+					fmt.Println("CANT DROP INDEX BEACAUSE IT DOES NOT EXISTS:" + dropIdx)
 				}
 
 				allCompareIdx = append(allCompareIdx, createIdx+" - OK")

@@ -1851,7 +1851,7 @@ func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, can
 	argsDeploy["$filter"] += " and equals(XDEPLOYLOG06,'1') "
 	argsDeploy["$filter"] += " and equals(XDEPLOYLOG09,'" + enviro + "') "
 
-	restyDeployRes := ApiCallGET(ctx, true, argsDeploy, "ms"+devops, "/"+devops+"/DEPLOYLOG", devopsToken, dominio, coreApiVersion)
+	restyDeployRes := ApiCallGET(ctx, false, argsDeploy, "ms"+devops, "/"+devops+"/DEPLOYLOG", devopsToken, dominio, coreApiVersion)
 	if restyDeployRes.Errore < 0 {
 		Logga(ctx, restyDeployRes.Log)
 		erro = errors.New(restyDeployRes.Log)
@@ -1975,7 +1975,7 @@ func DeleteObjectsApi(namespace, apiHost, apiToken, object, kind string) LoggaEr
 	args["apiVerpropagationPolicysion"] = "Foreground"
 
 	clientKUBE := resty.New()
-	clientKUBE.Debug = true
+	clientKUBE.Debug = false
 	clientKUBE.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 
 	resKUBE, errKUBE := clientKUBE.R().
