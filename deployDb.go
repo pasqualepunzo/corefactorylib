@@ -694,7 +694,7 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 
 				indexExists := false
 				var Key_name string
-				for selDB.Next() {
+				for sqlCheckRes.Next() {
 					err = sqlCheckRes.Scan(&Key_name)
 					if err != nil {
 						loggaErrore.Log = err.Error()
@@ -763,7 +763,7 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 			}
 
 			var Key_name string
-			for selDB.Next() {
+			for sqlCheckResIdx.Next() {
 				err = sqlCheckResIdx.Scan(&Key_name)
 				if err != nil {
 					loggaErrore.Log = err.Error()
@@ -853,7 +853,8 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 			createIdx = createIdx[:len(createIdx)-2] + " ) "
 			fmt.Println(dropIdx)
 			fmt.Println(createIdx)
-			fmt.Println(culumnExists)
+			fmt.Println("culumnExists", culumnExists)
+			fmt.Println("indexExistsONCreate", indexExistsONCreate)
 
 			// se esistono le colonne
 			if culumnExists {
