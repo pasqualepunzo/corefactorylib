@@ -685,7 +685,7 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 				sqlCheck := " SELECT INDEX_NAME as Key_name "
 				sqlCheck += " FROM INFORMATION_SCHEMA.STATISTICS WHERE 1>0 "
 				sqlCheck += " and TABLE_SCHEMA = '" + dbDataName.DataName + "' "
-				sqlCheck += " and INDEX_NAME!='" + nomeIndiceArr[1] + "' "
+				sqlCheck += " and INDEX_NAME='" + nomeIndiceArr[1] + "' "
 				sqlCheck += " and  TABLE_NAME = '" + nomeIndiceArr[0] + "' "
 
 				fmt.Println(sqlCheck)
@@ -761,7 +761,7 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 			sqlCheckIdx := " SELECT INDEX_NAME as Key_name "
 			sqlCheckIdx += " FROM INFORMATION_SCHEMA.STATISTICS WHERE 1>0 "
 			sqlCheckIdx += " and TABLE_SCHEMA = '" + dbDataName.DataName + "' "
-			sqlCheckIdx += " and INDEX_NAME!='" + nomeIndiceArr[1] + "' "
+			sqlCheckIdx += " and INDEX_NAME='" + nomeIndiceArr[1] + "' "
 			sqlCheckIdx += " and  TABLE_NAME = '" + nomeIndiceArr[0] + "' "
 
 			fmt.Println(sqlCheckIdx)
