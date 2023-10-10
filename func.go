@@ -2114,3 +2114,52 @@ func GetApiHostAndToken(ctx context.Context, enviro, cluster, token, loginApiHos
 
 	return apiHost, apiToken, erro
 }
+func GeneraBuildDirectory(ctx context.Context, jobID string) (string, error) {
+
+	/* sezione filesystem */
+
+	Logga(ctx, "Sezione filesystem")
+
+	var erro error
+
+	ct := time.Now()
+	now := ct.Format("20060102150405")
+	nowNum, _ := strconv.Atoi(now)
+
+	files, erro := os.ReadDir("/tmp/")
+	if erro != nil {
+		return "", erro
+	}
+
+	// verifico se devo cancellare 	qualche TEMP DIR
+	for _, f := range files {
+		if len(f.Name()) >= 6 {
+			if f.Name()[:6] == "build_" {
+				arr := strings.Split(f.Name(), "_")
+				num, _ := strconv.Atoi(arr[1])
+				diff := nowNum - num
+				//fmt.Println(ctx, nowNum, num, diff)
+
+				// se la diff >= 2 significa che la tmp dir in oggetto e piu vecchia di 2 ore e quindi va cancellata
+				if diff >= 200 {
+					erro = os.RemoveAll("/tmp/" + f.Name())
+					Logga(ctx, "Delete /tmp/"+f.Name())
+					if erro != nil {
+						Logga(ctx, erro.Error(), "error")
+						return "", erro
+					}
+				}
+			}
+		}
+	}
+
+	dirToCreate := "/tmp/build_" + now + "_" + jobID
+	Logga(ctx, "Create "+dirToCreate)
+	erro = os.MkdirAll(dirToCreate, 0755)
+	if erro != nil {
+		Logga(ctx, erro.Error())
+		return "", erro
+	}
+
+	return dirToCreate, erro
+}
