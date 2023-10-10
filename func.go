@@ -2114,7 +2114,7 @@ func GetApiHostAndToken(ctx context.Context, enviro, cluster, token, loginApiHos
 
 	return apiHost, apiToken, erro
 }
-func GeneraBuildDirectory(ctx context.Context, jobID string) (string, error) {
+func GeneraBuildDirectory(ctx context.Context, microservice, jobID string) (string, error) {
 
 	/* sezione filesystem */
 
@@ -2153,7 +2153,7 @@ func GeneraBuildDirectory(ctx context.Context, jobID string) (string, error) {
 		}
 	}
 
-	dirToCreate := "/tmp/build_" + now + "_" + jobID
+	dirToCreate := "/tmp/build_" + now + "_" + microservice + "_" + jobID
 	Logga(ctx, "Create "+dirToCreate)
 	erro = os.MkdirAll(dirToCreate, 0755)
 	if erro != nil {
