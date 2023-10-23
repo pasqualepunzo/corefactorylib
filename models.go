@@ -384,6 +384,7 @@ type ClusterSt struct {
 	CloudNet     string `json:"cloudNet"`
 	Autopilot    string `json:"autopilot"`
 	DepEnv       string `json:"depEnv"`
+	DomainOvr    bool   `json:"domainOvr"`
 }
 type ClusterAccess struct {
 	Domain            string `json="domain"`

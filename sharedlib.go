@@ -299,8 +299,15 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 			}
 
 			if len(restyKubeCluEnvRes.BodyJson) > 0 {
-				clu.Domain = restyKubeCluEnvRes.BodyJson["XKUBECLUSTERENV08"].(string)
-				clu.RefappID = restyKubeCluEnvRes.BodyJson["XKUBECLUSTERENV09"].(string)
+				domainCluEnv, _ := restyKubeCluEnvRes.BodyJson["XKUBECLUSTERENV08"].(string)
+				if domainCluEnv != "" {
+					clu.Domain = restyKubeCluEnvRes.BodyJson["XKUBECLUSTERENV08"].(string)
+					clu.DomainOvr = true
+				}
+				refAppIDCluEnv, _ := restyKubeCluEnvRes.BodyJson["XKUBECLUSTERENV09"].(string)
+				if refAppIDCluEnv != "" {
+					clu.RefappID = restyKubeCluEnvRes.BodyJson["XKUBECLUSTERENV09"].(string)
+				}
 
 				// TOLGO QUESTE PERCHE PRENDO DA AMBDOMAIN 2023 05 02
 				// clu.MasterHost = restyKubeCluEnvRes.BodyJson["XKUBECLUSTERENV07"].(string)
