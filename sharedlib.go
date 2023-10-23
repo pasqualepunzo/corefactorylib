@@ -276,6 +276,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 			clu.CloudNet = x["XKUBECLUSTER24"].(string)
 
 			clu.Autopilot = strconv.FormatFloat(x["XKUBECLUSTER14"].(float64), 'f', 0, 64)
+			clu.DomainOvr = false
 
 			/**
 			Andiamo a vedere se esiste un record in KUBECLUSTERENV che fa l'overwrite di alcune proprietà di
@@ -348,6 +349,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 		ims.Profile = clus[ims.Cluster].Profile
 		ims.ProfileInt = clus[ims.Cluster].ProfileInt
 		ims.ClusterDomain = clus[ims.Cluster].Domain
+		ims.ClusterDomainOvr = clus[ims.Cluster].DomainOvr
 		ims.ClusterDomainProd = clus[ims.Cluster].DomainProd
 		ims.ClusterDomainStage = clus[ims.Cluster].DomainStage
 		ims.Token = clus[ims.Cluster].Token

@@ -308,6 +308,7 @@ type IstanzaMicro struct {
 	RefappID                            string `json:"refappID"`
 	PodName                             string `json:"podName"`
 	ClusterDomain                       string `json:"clusterDomain"`
+	ClusterDomainOvr                    bool   `json:"clusterDomainOvr"`
 	ClusterDomainProd                   string `json:"clusterDomainProd"` // Francesco - oltre a ClusterDomain, mi porto anche ClusterDomainProd e ClusterDomainStage
 	ClusterDomainStage                  string `json:"clusterDomainStage"`
 	Token                               string `json:"token"`
