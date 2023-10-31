@@ -145,7 +145,6 @@ func ApiCallPOST(ctx context.Context, debug bool, args []map[string]interface{},
 }
 func ApiCallGET(ctx context.Context, debug bool, args map[string]string, microservice, routing, token, dominio, coreApiVersion string) (CallGetResponse, error) {
 
-	//var erro error
 	if debug {
 		Logga(ctx, "apiCallGET")
 	}
@@ -194,7 +193,7 @@ func ApiCallGET(ctx context.Context, debug bool, args map[string]string, microse
 	// client.Debug = true
 	client.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 	// Set retry count to non zero to enable retries
-	client.SetRetryCount(2)
+	client.SetRetryCount(1)
 	// You can override initial retry wait time.
 	// Default is 100 milliseconds.
 	client.SetRetryWaitTime(1 * time.Second)
@@ -224,7 +223,6 @@ func ApiCallGET(ctx context.Context, debug bool, args map[string]string, microse
 	res, err := client.R().
 		SetHeader("Content-Type", "application/json").
 		SetHeader("Accept", "application/json").
-		//SetHeader("canary-mode", "on").
 		SetHeader("microservice", microservice).
 		SetAuthToken(token).
 		SetQueryParams(args).
@@ -243,6 +241,14 @@ func ApiCallGET(ctx context.Context, debug bool, args map[string]string, microse
 				if err1 != nil {
 					return resStruct, err1
 				} else {
+
+					val, ok := callResponse["data"]
+					if ok {
+						if val == nil {
+							erro := errors.New(dominio + "/api/" + coreApiVersion + routing + " -> ***** NO CONTENT *****")
+							return resStruct, erro
+						}
+					}
 					resStruct.Kind = "Json"
 					resStruct.BodyJson = callResponse
 
@@ -261,11 +267,28 @@ func ApiCallGET(ctx context.Context, debug bool, args map[string]string, microse
 					resStruct.BodyArray = callResponse
 				}
 			}
-		case 401, 404:
-			erro := errors.New(res.RawResponse.Status)
+		case 400, 401, 404:
+
+			callResponse := map[string]interface{}{}
+			err1 := json.Unmarshal(res.Body(), &callResponse)
+			if err1 != nil {
+				return resStruct, err1
+			} else {
+
+				val, ok := callResponse["message"].(map[string]interface{})
+				if ok {
+
+					message, ok2 := val["message"].(string)
+					if ok2 {
+						erro := errors.New(dominio + "/api/" + coreApiVersion + routing + " -> " + message)
+						return resStruct, erro
+					}
+				}
+			}
+			erro := errors.New(res.Status())
 			return resStruct, erro
 		case 500, 501, 502, 503, 504:
-			erro := errors.New(res.RawResponse.Status)
+			erro := errors.New(res.Status())
 			return resStruct, erro
 		}
 
