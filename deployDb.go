@@ -1077,7 +1077,10 @@ func GetMasterConn(ctx context.Context, gruppoDeveloper, cluster, devopsToken, d
 		}
 
 		if len(restyKubeCluEnvRes.BodyJson) > 0 {
-			master.MetaName = restyKubeCluEnvRes.BodyJson["XKUBECLUSTERENV07"].(string)
+			metanameCluEnv, _ := restyKubeCluEnvRes.BodyJson["XKUBECLUSTERENV07"].(string)
+			if metanameCluEnv != "" {
+				master.MetaName = metanameCluEnv
+			}
 			Logga(ctx, "KUBECLUSTERENV MASTER CONN OK")
 		}
 	} else {
