@@ -103,10 +103,10 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 		argsImicro["center_dett"] = "dettaglio"
 		argsImicro["$filter"] = "equals(XKUBEIMICROSERV03,'" + istanza + "') "
 
-		restyKubeImicroservRes := ApiCallGET(ctx, false, argsImicro, "ms"+devops, "/"+devops+"/KUBEIMICROSERV", devopsToken, dominio, coreApiVersion)
-		if restyKubeImicroservRes.Errore < 0 {
-			Logga(ctx, restyKubeImicroservRes.Log)
-			erro = errors.New(restyKubeImicroservRes.Log)
+		restyKubeImicroservRes, errKubeImicroservRes := ApiCallGET(ctx, false, argsImicro, "ms"+devops, "/"+devops+"/KUBEIMICROSERV", devopsToken, dominio, coreApiVersion)
+		if errKubeImicroservRes != nil {
+			Logga(ctx, errKubeImicroservRes.Error())
+			erro = errors.New(errKubeImicroservRes.Error())
 			return ims, erro
 		}
 
@@ -185,7 +185,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	argsStage["$filter"] += " and equals(XKUBESTAGE04,'" + enviro + "') "
 
 	//$filter=contains(XART20,'(kg)') or contains(XART20,'pizza')
-	restyStageRes := ApiCallGET(ctx, false, argsStage, "ms"+devops, "/"+devops+"/KUBESTAGE", devopsTokenDst, dominio, coreApiVersion)
+	restyStageRes, _ := ApiCallGET(ctx, false, argsStage, "ms"+devops, "/"+devops+"/KUBESTAGE", devopsTokenDst, dominio, coreApiVersion)
 	if restyStageRes.Errore < 0 {
 		Logga(ctx, restyStageRes.Log)
 	}
@@ -213,11 +213,11 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	argsClu["center_dett"] = "allviews"
 	argsClu["$filter"] = " equals(XKUBECLUSTER03,'" + ims.Cluster + "')"
 
-	restyKubeCluRes := ApiCallGET(ctx, false, argsClu, "ms"+devops, "/"+devops+"/KUBECLUSTER", devopsTokenDst, dominio, coreApiVersion)
-	if restyKubeCluRes.Errore < 0 {
-		Logga(ctx, restyKubeCluRes.Log)
+	restyKubeCluRes, errKubeCluRes := ApiCallGET(ctx, false, argsClu, "ms"+devops, "/"+devops+"/KUBECLUSTER", devopsTokenDst, dominio, coreApiVersion)
+	if errKubeCluRes != nil {
+		Logga(ctx, errKubeCluRes.Error())
 
-		erro = errors.New(restyKubeCluRes.Log)
+		erro = errors.New(errKubeCluRes.Error())
 		return ims, erro
 	}
 
@@ -290,11 +290,11 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 			argsCluEnv["$filter"] += " and XKUBECLUSTERENV05 eq " + strconv.Itoa(int(ambienteFloat)) + " "
 			argsCluEnv["$filter"] += " and equals(XKUBECLUSTERENV06,'" + enviro + "') "
 
-			restyKubeCluEnvRes := ApiCallGET(ctx, false, argsCluEnv, "ms"+devops, "/"+devops+"/KUBECLUSTERENV", devopsToken, dominio, coreApiVersion)
-			if restyKubeCluEnvRes.Errore < 0 {
-				Logga(ctx, restyKubeCluEnvRes.Log)
+			restyKubeCluEnvRes, errKubeCluEnvRes := ApiCallGET(ctx, false, argsCluEnv, "ms"+devops, "/"+devops+"/KUBECLUSTERENV", devopsToken, dominio, coreApiVersion)
+			if errKubeCluEnvRes != nil {
+				Logga(ctx, errKubeCluEnvRes.Error())
 
-				erro = errors.New(restyKubeCluEnvRes.Log)
+				erro = errors.New(errKubeCluEnvRes.Error())
 				return ims, erro
 			}
 
@@ -370,11 +370,11 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	argsAmbdomain["$select"] = "XAMBDOMAIN05,XAMBDOMAIN07,XAMBDOMAIN08,XAMBDOMAIN09,XAMBDOMAIN10,XAMBDOMAIN11"
 	argsAmbdomain["center_dett"] = "dettaglio"
 	argsAmbdomain["$filter"] += "  equals(XAMBDOMAIN04,'" + customerDomain + "') "
-	restyAmbdomainRes := ApiCallGET(ctx, false, argsAmbdomain, "msauth", "/core/AMBDOMAIN", devopsToken, dominio, coreApiVersion)
-	if restyAmbdomainRes.Errore < 0 {
-		Logga(ctx, restyAmbdomainRes.Log)
+	restyAmbdomainRes, errAmbdomainRes := ApiCallGET(ctx, false, argsAmbdomain, "msauth", "/core/AMBDOMAIN", devopsToken, dominio, coreApiVersion)
+	if errAmbdomainRes != nil {
+		Logga(ctx, errAmbdomainRes.Error())
 
-		erro = errors.New(restyAmbdomainRes.Log)
+		erro = errors.New(errAmbdomainRes.Error())
 		return ims, erro
 	}
 
@@ -400,11 +400,11 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	argsMS["$select"] = "XKUBEMICROSERV09,XKUBEMICROSERV15,XKUBEMICROSERV18"
 	argsMS["center_dett"] = "dettaglio"
 	argsMS["$filter"] = "equals(XKUBEMICROSERV05,'" + microservice + "') "
-	restyKubeMSRes := ApiCallGET(ctx, false, argsMS, "ms"+devops, "/"+devops+"/KUBEMICROSERV", devopsToken, dominio, coreApiVersion)
-	if restyKubeMSRes.Errore < 0 {
-		Logga(ctx, restyKubeMSRes.Log)
+	restyKubeMSRes, errKubeMSRes := ApiCallGET(ctx, false, argsMS, "ms"+devops, "/"+devops+"/KUBEMICROSERV", devopsToken, dominio, coreApiVersion)
+	if errKubeMSRes != nil {
+		Logga(ctx, errKubeMSRes.Error())
 
-		erro = errors.New(restyKubeMSRes.Log)
+		erro = errors.New(errKubeMSRes.Error())
 		return ims, erro
 	}
 
@@ -454,11 +454,11 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	argsAmb["public"] = strconv.Itoa(microservicePublic)
 	//argsAmb["swMultiEnvironment"] = ims.SwMultiEnvironment
 
-	restyKubeAmbRes := ApiCallGET(ctx, true, argsAmb, "msauth", "/"+auth+"/getAmbDomainMs", devopsTokenDst, dominio, coreApiVersion)
-	if restyKubeAmbRes.Errore < 0 {
-		Logga(ctx, restyKubeAmbRes.Log)
+	restyKubeAmbRes, errKubeAmbRes := ApiCallGET(ctx, true, argsAmb, "msauth", "/"+auth+"/getAmbDomainMs", devopsTokenDst, dominio, coreApiVersion)
+	if errKubeAmbRes != nil {
+		Logga(ctx, errKubeAmbRes.Error())
 
-		erro = errors.New(restyKubeAmbRes.Log)
+		erro = errors.New(errKubeAmbRes.Error())
 		return ims, erro
 	}
 
@@ -559,10 +559,10 @@ func GetIstanzaVersioni(ctx context.Context, iresReq IresRequest, istanza, envir
 	argsDeploy["$filter"] += " and equals(XDEPLOYLOG09,'" + enviro + "') "
 	argsDeploy["$filter"] += " and equals(XDEPLOYLOG06,'1') "
 
-	restyDeployRes := ApiCallGET(ctx, false, argsDeploy, "ms"+devops, "/"+devops+"/DEPLOYLOG", devopsTokenDst, dominio, coreApiVersion)
-	if restyDeployRes.Errore < 0 {
-		Logga(ctx, restyDeployRes.Log)
-		erro = errors.New(restyDeployRes.Log)
+	restyDeployRes, errDeployRes := ApiCallGET(ctx, false, argsDeploy, "ms"+devops, "/"+devops+"/DEPLOYLOG", devopsTokenDst, dominio, coreApiVersion)
+	if errDeployRes != nil {
+		Logga(ctx, errDeployRes.Error())
+		erro = errors.New(errDeployRes.Error())
 		return istanzaMicroVersioni, erro
 	}
 

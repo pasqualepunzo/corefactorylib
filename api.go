@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"math/rand"
 	"strconv"
 	"strings"
@@ -142,9 +143,12 @@ func ApiCallPOST(ctx context.Context, debug bool, args []map[string]interface{},
 
 	return resStruct
 }
-func ApiCallGET(ctx context.Context, debug bool, args map[string]string, microservice, routing, token, dominio, coreApiVersion string) CallGetResponse {
+func ApiCallGET(ctx context.Context, debug bool, args map[string]string, microservice, routing, token, dominio, coreApiVersion string) (CallGetResponse, error) {
 
-	Logga(ctx, "apiCallGET")
+	//var erro error
+	if debug {
+		Logga(ctx, "apiCallGET")
+	}
 	if !strings.Contains(dominio, "http") {
 		dominio = "https://" + dominio
 	}
@@ -173,13 +177,9 @@ func ApiCallGET(ctx context.Context, debug bool, args map[string]string, microse
 		Message string `json:"message"`
 	}
 
-	// if dominio == "" {
-	// 	dominio = GetApiHost()
-	// } else {
-	// 	dominio = "https://" + dominio
-	// }
-
-	Logga(ctx, dominio+"/api/"+coreApiVersion+routing+" - "+microservice)
+	if debug {
+		Logga(ctx, dominio+"/api/"+coreApiVersion+routing+" - "+microservice)
+	}
 
 	var resStruct CallGetResponse
 
@@ -231,50 +231,47 @@ func ApiCallGET(ctx context.Context, debug bool, args map[string]string, microse
 		Get(dominio + "/api/" + coreApiVersion + routing)
 
 	if err != nil { // HTTP ERRORE
-		resStruct.Errore = -1
-		resStruct.Log = "0 " + err.Error()
+		return resStruct, err
 	} else {
 
-		// se status ERROR
-		if res.StatusCode() != 200 && res.StatusCode() != 201 && res.StatusCode() != 204 {
-			var restyErr restyError
-			errJson := json.Unmarshal(res.Body(), &restyErr)
-			if errJson != nil {
-				resStruct.Errore = -1
-				resStruct.Log = errJson.Error()
-			} else {
-
-				resStruct.Errore = -2
-				resStruct.Log = strconv.Itoa(res.StatusCode()) + " - " + restyErr.Message
-
-			}
-		} else {
+		switch res.StatusCode() {
+		case 200:
 			switch res.Body()[0] {
 			case '{':
 				callResponse := map[string]interface{}{}
 				err1 := json.Unmarshal(res.Body(), &callResponse)
 				if err1 != nil {
-					resStruct.Errore = -1
-					resStruct.Log = err1.Error()
+					return resStruct, err1
 				} else {
 					resStruct.Kind = "Json"
 					resStruct.BodyJson = callResponse
+
+					if resStruct.BodyJson["code"] != 200 {
+						erro := errors.New(resStruct.BodyJson["error_msg"].(string))
+						return resStruct, erro
+					}
 				}
 			case '[':
 				callResponse := []map[string]interface{}{}
 				err1 := json.Unmarshal(res.Body(), &callResponse)
 				if err1 != nil {
-					resStruct.Errore = -1
-					resStruct.Log = err1.Error()
+					return resStruct, err1
 				} else {
 					resStruct.Kind = "Array"
 					resStruct.BodyArray = callResponse
 				}
 			}
+		case 401, 404:
+			erro := errors.New(res.RawResponse.Status)
+			return resStruct, erro
+		case 500, 501, 502, 503, 504:
+			erro := errors.New(res.RawResponse.Status)
+			return resStruct, erro
 		}
+
 	}
 	//LogJson(resStruct)
-	return resStruct
+	return resStruct, nil
 }
 
 func ApiCallLOGIN(ctx context.Context, debug bool, args map[string]interface{}, microservice, routing, dominio, coreApiVersion string) (map[string]interface{}, LoggaErrore) {
