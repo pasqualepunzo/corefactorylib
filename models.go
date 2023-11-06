@@ -309,6 +309,7 @@ type IstanzaMicro struct {
 	PodName                             string `json:"podName"`
 	ClusterDomain                       string `json:"clusterDomain"`
 	ClusterDomainOvr                    bool   `json:"clusterDomainOvr"`
+	ClusterDomainEnv                    string `json:"clusterDomainEnv"`
 	ClusterDomainProd                   string `json:"clusterDomainProd"` // Francesco - oltre a ClusterDomain, mi porto anche ClusterDomainProd e ClusterDomainStage
 	ClusterDomainStage                  string `json:"clusterDomainStage"`
 	Token                               string `json:"token"`
@@ -373,6 +374,7 @@ type ClusterSt struct {
 	Domain       string `json:"domain"`
 	DomainStage  string `json:"domainStage"`
 	DomainProd   string `json:"domainProd"`
+	DomainEnv    string `json:"domainEnv"`
 	Token        string `json:"token"`
 	MasterHost   string `json:"masterHost"`
 	MasterUser   string `json:"masterUser"`

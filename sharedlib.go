@@ -302,7 +302,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 			if len(restyKubeCluEnvRes.BodyJson) > 0 {
 				domainCluEnv, _ := restyKubeCluEnvRes.BodyJson["XKUBECLUSTERENV08"].(string)
 				if domainCluEnv != "" {
-					clu.Domain = restyKubeCluEnvRes.BodyJson["XKUBECLUSTERENV08"].(string)
+					clu.DomainEnv = restyKubeCluEnvRes.BodyJson["XKUBECLUSTERENV08"].(string)
 					clu.DomainOvr = true
 				}
 				refAppIDCluEnv, _ := restyKubeCluEnvRes.BodyJson["XKUBECLUSTERENV09"].(string)
@@ -352,6 +352,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 		ims.ClusterDomainOvr = clus[ims.Cluster].DomainOvr
 		ims.ClusterDomainProd = clus[ims.Cluster].DomainProd
 		ims.ClusterDomainStage = clus[ims.Cluster].DomainStage
+		ims.ClusterDomainEnv = clus[ims.Cluster].DomainEnv
 		ims.Token = clus[ims.Cluster].Token
 		ims.MasterUser = clus[ims.Cluster].MasterUser
 		ims.MasterPass = clus[ims.Cluster].MasterPasswd
