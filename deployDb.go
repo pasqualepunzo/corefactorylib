@@ -1035,10 +1035,10 @@ func GetMasterConn(ctx context.Context, gruppoDeveloper, cluster, devopsToken, d
 	argsClu["center_dett"] = "dettaglio"
 	argsClu["$filter"] = "equals(XKUBECLUSTER03,'" + cluster + "') "
 
-	restyKubeCluRes := ApiCallGET(ctx, false, argsClu, "ms"+devops, "/"+devops+"/KUBECLUSTER", devopsTokenDst, dominio, coreApiVersion)
-	if restyKubeCluRes.Errore < 0 {
+	restyKubeCluRes, errKubeCluRes := ApiCallGET(ctx, false, argsClu, "ms"+devops, "/"+devops+"/KUBECLUSTER", devopsTokenDst, dominio, coreApiVersion)
+	if errKubeCluRes != nil {
 		erro.Errore = -1
-		erro.Log = restyKubeCluRes.Log
+		erro.Log = errKubeCluRes.Error()
 		return master, erro
 
 	}
@@ -1069,10 +1069,10 @@ func GetMasterConn(ctx context.Context, gruppoDeveloper, cluster, devopsToken, d
 		argsCluEnv["$filter"] += " and XKUBECLUSTERENV05 eq " + strconv.Itoa(int(ambienteFloat)) + " "
 		argsCluEnv["$filter"] += " and equals(XKUBECLUSTERENV06,'" + enviro + "') "
 
-		restyKubeCluEnvRes := ApiCallGET(ctx, false, argsCluEnv, "ms"+devops, "/"+devops+"/KUBECLUSTERENV", devopsTokenDst, dominio, coreApiVersion)
-		if restyKubeCluEnvRes.Errore < 0 {
+		restyKubeCluEnvRes, errKubeCluEnvRes := ApiCallGET(ctx, false, argsCluEnv, "ms"+devops, "/"+devops+"/KUBECLUSTERENV", devopsTokenDst, dominio, coreApiVersion)
+		if errKubeCluEnvRes != nil {
 			erro.Errore = -1
-			erro.Log = restyKubeCluEnvRes.Log
+			erro.Log = errKubeCluEnvRes.Error()
 			return master, erro
 		}
 
