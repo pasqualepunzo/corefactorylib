@@ -252,8 +252,10 @@ func ApiCallGET(ctx context.Context, debug bool, args map[string]string, microse
 					resStruct.Kind = "Json"
 					resStruct.BodyJson = callResponse
 
-					if resStruct.BodyJson["code"] != 200 {
-						erro := errors.New(resStruct.BodyJson["error_msg"].(string))
+					bodyCode, _ := resStruct.BodyJson["code"].(float64)
+					if bodyCode != 0 && bodyCode != 200 {
+						errString, _ := resStruct.BodyJson["error_msg"].(string)
+						erro := errors.New(errString)
 						return resStruct, erro
 					}
 				}
