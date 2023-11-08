@@ -1094,6 +1094,8 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 
 							var endpoint Endpoint
 
+							endpoint.Priority = x["priority"].(string)
+
 							endpoint.MicroserviceDst = x["microservice_dst"].(string)
 							endpoint.DockerDst = x["docker_dst"].(string)
 							endpoint.TypeSrvDst = x["type_dst"].(string)
