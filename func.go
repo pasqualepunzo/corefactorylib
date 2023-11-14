@@ -1185,7 +1185,7 @@ func GetTenant(ctx context.Context, token, dominio, coreApiVersion string) ([]Te
 
 	args := make(map[string]string)
 
-	tenantRes, errtenantRes := ApiCallGET(ctx, true, args, "msauth", "/auth/tenants", token, dominio, coreApiVersion)
+	tenantRes, errtenantRes := ApiCallGET(ctx, false, args, "msauth", "/auth/tenants", token, dominio, coreApiVersion)
 	//LogJson(tenantRes)
 	if errtenantRes != nil {
 		Logga(ctx, errtenantRes.Error(), "error")
