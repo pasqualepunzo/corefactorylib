@@ -319,14 +319,18 @@ func ApiCallLOGIN(ctx context.Context, debug bool, args map[string]interface{}, 
 
 	args["uuid"] = args["uuid"].(string) + "-" + rnd
 
-	Logga(ctx, "")
-	Logga(ctx, "apiCallLOGIN")
-	Logga(ctx, "Args : ")
+	if debug {
+		Logga(ctx, "")
+		Logga(ctx, "apiCallLOGIN")
+		Logga(ctx, "Args : ")
+	}
 	jsonString, _ := json.Marshal(args)
-	Logga(ctx, string(jsonString))
+	if debug {
+		Logga(ctx, string(jsonString))
 
-	Logga(ctx, "Microservice : "+microservice)
-	Logga(ctx, "Url : "+dominio+"/api/"+coreApiVersion+routing)
+		Logga(ctx, "Microservice : "+microservice)
+		Logga(ctx, "Url : "+dominio+"/api/"+coreApiVersion+routing)
+	}
 
 	var LoggaErrore LoggaErrore
 	LoggaErrore.Errore = 0
