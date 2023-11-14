@@ -408,14 +408,15 @@ func ApiCallPUT(ctx context.Context, debug bool, args map[string]interface{}, mi
 	}
 	return res.Body(), LoggaErrore
 }
-func GetCoreFactoryToken(ctx context.Context, tenant, accessToken, loginApiDomain, coreApiVersion string) (string, LoggaErrore) {
+func GetCoreFactoryToken(ctx context.Context, tenant, accessToken, loginApiDomain, coreApiVersion string, debug bool) (string, error) {
 	/* ************************************************************************************************ */
 	// cerco il token di devops
 
-	Logga(ctx, "Core factory Token")
+	if debug {
+		Logga(ctx, "Core factory Token")
+	}
 
-	var erro LoggaErrore
-	erro.Errore = 0
+	var erro error
 
 	urlDevops := loginApiDomain
 	urlDevopsStripped := strings.Replace(urlDevops, "https://", "", -1)
@@ -432,22 +433,18 @@ func GetCoreFactoryToken(ctx context.Context, tenant, accessToken, loginApiDomai
 	argsAuth["resource"] = urlDevopsStripped
 	argsAuth["uuid"] = "devops-" + sha
 
-	restyAuthResponse, restyAuthErr := ApiCallLOGIN(ctx, false, argsAuth, "msauth", "/auth/login", loginApiDomain, coreApiVersion)
+	restyAuthResponse, restyAuthErr := ApiCallLOGIN(ctx, debug, argsAuth, "msauth", "/auth/login", loginApiDomain, coreApiVersion)
 	if restyAuthErr.Errore < 0 {
-		// QUI ERRORE
-		erro.Errore = -1
-		erro.Log = restyAuthErr.Log
+		erro = errors.New(restyAuthErr.Log)
 		return "", erro
 	}
 
 	if len(restyAuthResponse) > 0 {
 		return restyAuthResponse["idToken"].(string), erro
 	} else {
-		erro.Errore = -1
-		erro.Log = "token MISSING"
+		erro = errors.New("token MISSING")
 		return "", erro
 	}
-
 }
 func ApiCallDELETE(ctx context.Context, debug bool, args map[string]string, microservice, routing, token, dominio, coreApiVersion string) CallGetResponse {
 
