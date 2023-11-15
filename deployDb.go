@@ -396,7 +396,7 @@ func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, 
 			return loggaErrore, allCompareSql
 		}
 
-		for selDB.Next() {
+		for sqlCheckRes.Next() {
 			err = sqlCheckRes.Scan(&COLUMN_NAME)
 			if err != nil {
 				loggaErrore.Log = err.Error()
