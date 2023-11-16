@@ -2,6 +2,7 @@ package lib
 
 import (
 	"context"
+	"errors"
 	"os/exec"
 	"runtime/debug"
 	"strconv"
@@ -165,24 +166,21 @@ func DropDbData(ctx context.Context, dbDataName DbDataConnMs, db *sql.DB) LoggaE
 	loggaErrore.Errore = 1
 	return loggaErrore
 }
-func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, db *sql.DB, db2 *sql.DB) (LoggaErrore, []string) {
 
-	var loggaErrore LoggaErrore
+func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, db *sql.DB, db2 *sql.DB, doQueryExec bool) ([]string, []string, error) {
 
 	var allCompareSql []string
+	var allCompareSqlError []string
 
 	var dbDataSrc string
-	if strings.Contains(dbDataName.DataName, "_compare") {
-		dbDataSrc = dbDataName.DataName
-	} else {
-		dbDataSrc = dbDataName.DataName + "_compare"
-	}
-	dbDataDst := dbDataName.DataName
+
+	dbDataSrc = dbDataName.DataName + "_ccd_nuovo"
+	dbDataDst := dbDataName.DataName + "_ccd_prod"
 
 	// se facciamo il compare sui monoliti
 	if ires.Monolith == 1 {
-		dbDataSrc = dbDataName.DataName + "_compare_canary_monolith"
-		dbDataDst = dbDataName.DataName + "_compare_production_monolith"
+		dbDataSrc = dbDataName.DataName + "_ccd_nuovo_monolith"
+		dbDataDst = dbDataName.DataName + "_ccd_prod_monolith"
 	}
 
 	Logga(ctx, "")
@@ -204,9 +202,7 @@ func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, 
 	// os.Exit(0)
 	selDB, err := db.Query(sqlSel)
 	if err != nil {
-		loggaErrore.Log = err.Error() + " - " + sqlSel
-		loggaErrore.Errore = -1
-		return loggaErrore, allCompareSql
+		return allCompareSql, allCompareSqlError, errors.New(err.Error() + " - " + sqlSel)
 	}
 
 	var srcTbls []CompareDbRes
@@ -217,9 +213,7 @@ func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, 
 
 		err = selDB.Scan(&table_name, &column_name, &columns)
 		if err != nil {
-			loggaErrore.Log = err.Error()
-			loggaErrore.Errore = -1
-			return loggaErrore, allCompareSql
+			return allCompareSql, allCompareSqlError, err
 		}
 
 		tbl.Tbl = table_name
@@ -237,22 +231,18 @@ func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, 
 	sqlSel += " FROM information_schema.columns where 1>0 "
 	sqlSel += " and table_schema = '" + dbDataDst + "' "
 	sqlSel += " ORDER BY table_name, column_name"
-	// fmt.Println(sqlSel)
+	//fmt.Println(sqlSel)
 	// os.Exit(0)
 	selDB, err = db.Query(sqlSel)
 	if err != nil {
-		loggaErrore.Log = err.Error() + " - " + sqlSel
-		loggaErrore.Errore = -1
-		return loggaErrore, allCompareSql
+		return allCompareSql, allCompareSqlError, err
 	}
 
 	var dstTbls []CompareDbRes
 	for selDB.Next() {
 		err = selDB.Scan(&table_name, &column_name, &columns)
 		if err != nil {
-			loggaErrore.Log = err.Error()
-			loggaErrore.Errore = -1
-			return loggaErrore, allCompareSql
+			return allCompareSql, allCompareSqlError, err
 		}
 		var tbl CompareDbRes
 		tbl.Tbl = table_name
@@ -364,14 +354,12 @@ func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, 
 		// popolo un array con tutte le query da fare
 		allCompareSql = append(allCompareSql, sqlCompare)
 
+		// TODO - PORTA FUORI
 		_, err = db2.Exec(sqlCompare)
 		if err != nil {
-
-			loggaErrore.Log += err.Error() + " - " + sqlCompare + "\n"
-			loggaErrore.Errore = -1
-
+			allCompareSqlError = append(allCompareSqlError, sqlCompare)
 		} else {
-			Logga(ctx, sqlCompare+" ok")
+			// Logga(ctx, sqlCompare+" ok")
 		}
 	}
 
@@ -391,17 +379,13 @@ func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, 
 		sqlCheck += "AND COLUMN_NAME='" + vv.Column_name + "' "
 		sqlCheckRes, errcheck := db.Query(sqlCheck)
 		if errcheck != nil {
-			loggaErrore.Log = err.Error() + " - " + sqlCheck
-			loggaErrore.Errore = -1
-			return loggaErrore, allCompareSql
+			return allCompareSql, allCompareSqlError, errors.New(err.Error() + " - " + sqlCheck)
 		}
 
 		for sqlCheckRes.Next() {
 			err = sqlCheckRes.Scan(&COLUMN_NAME)
 			if err != nil {
-				loggaErrore.Log = err.Error()
-				loggaErrore.Errore = -1
-				return loggaErrore, allCompareSql
+				return allCompareSql, allCompareSqlError, err
 			}
 			if COLUMN_NAME == vv.Column_name {
 				columnExists = true
@@ -418,6 +402,7 @@ func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, 
 					sqlCompare = "ALTER TABLE " + dbDataName.DataName + "." + vv.Tbl + " CHANGE " + vv.Column_name + " " + vv.Column_name + " " + xxx[0]
 				}
 			} else {
+				allCompareSqlError = append(allCompareSqlError, sqlCompare+" - Cannot change "+vv.Column_name+" column missing")
 				fmt.Println("Cannot change " + vv.Column_name + " column missing")
 			}
 
@@ -429,6 +414,7 @@ func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, 
 					sqlCompare = "ALTER TABLE " + dbDataName.DataName + "." + vv.Tbl + " ADD " + vv.Column_name + " " + xxx[0]
 				}
 			} else {
+				allCompareSqlError = append(allCompareSqlError, sqlCompare+" - Cannot add "+vv.Column_name+" column exists")
 				fmt.Println("Cannot add " + vv.Column_name + " column exists")
 			}
 		}
@@ -437,54 +423,27 @@ func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, 
 		// popolo un array con tutte le query da fare
 		allCompareSql = append(allCompareSql, sqlCompare)
 
-		_, err = db2.Exec(sqlCompare)
-		if err != nil {
-			loggaErrore.Log += err.Error() + " - " + sqlCompare + "\n"
-			loggaErrore.Errore = -1
+		// SE DEVO APPLICARE LE DIFFERENCE (ddcm)
+		if doQueryExec {
+			_, err = db2.Exec(sqlCompare)
+			if err != nil {
+				allCompareSqlError = append(allCompareSqlError, err.Error()+" - "+sqlCompare)
 
-		} else {
-			Logga(ctx, sqlCompare+"  ok")
+			} else {
+				Logga(ctx, sqlCompare+"  ok")
+			}
 		}
 		// !!! fine blocco !!!
 
-	}
-	//os.Exit(0)
-
-	// se facciamo il compare sui monoliti
-	if ires.Monolith == 1 {
-		//_, err = db.Exec("DROP DATABASE " + dbDataSrc)
-		if err != nil {
-			loggaErrore.Log = err.Error()
-			loggaErrore.Errore = -1
-
-		} else {
-			Logga(ctx, "DROP DATABASE IF EXISTS "+dbDataSrc+"  ok")
-		}
-		//_, err = db.Exec("DROP DATABASE " + dbDataDst)
-		if err != nil {
-			loggaErrore.Log += err.Error() + "\n"
-			loggaErrore.Errore = -1
-
-		} else {
-			Logga(ctx, "DROP DATABASE "+dbDataSrc+"  ok")
-		}
-	} else {
-		_, err = db.Exec("DROP DATABASE IF EXISTS " + dbDataSrc)
-		if err != nil {
-			loggaErrore.Log += err.Error() + "\n"
-			loggaErrore.Errore = -1
-
-		} else {
-			Logga(ctx, "DROP DATABASE IF EXISTS "+dbDataSrc+"  ok")
-		}
 	}
 
 	Logga(ctx, "Compare Database terminated")
 	Logga(ctx, "")
 
-	return loggaErrore, allCompareSql
+	return allCompareSql, allCompareSqlError, nil
 }
-func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db2 *sql.DB, db3 *sql.DB) (LoggaErrore, []string) {
+
+func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db2 *sql.DB, db3 *sql.DB, doQueryExec bool) ([]string, []string, error) {
 	fmt.Println()
 	fmt.Println("Compare Index")
 
@@ -492,6 +451,7 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 	loggaErrore.Errore = 0
 
 	var allCompareIdx []string
+	var allCompareIdxError []string
 
 	dbData := dbDataName.DataName
 
@@ -507,9 +467,7 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 	//fmt.Println(sqlSel)
 	selDB, err := db.Query(sqlSel)
 	if err != nil {
-		loggaErrore.Log = err.Error() + " - " + sqlSel
-		loggaErrore.Errore = -1
-		return loggaErrore, allCompareIdx
+		return allCompareIdx, allCompareIdxError, errors.New(err.Error() + " - " + sqlSel)
 	}
 
 	var tableName string
@@ -519,9 +477,7 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 	for selDB.Next() {
 		err = selDB.Scan(&tableName)
 		if err != nil {
-			loggaErrore.Log = err.Error()
-			loggaErrore.Errore = -1
-			return loggaErrore, allCompareIdx
+			return allCompareIdx, allCompareIdxError, err
 		}
 
 		codDimArr := strings.Split(tableName, "_")
@@ -538,9 +494,7 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 				//fmt.Println(sqlIdx)
 				selDB2, err := db3.Query(sqlIdx)
 				if err != nil {
-					loggaErrore.Log = err.Error() + " - " + sqlIdx
-					loggaErrore.Errore = -1
-					return loggaErrore, allCompareIdx
+					return allCompareIdx, allCompareIdxError, errors.New(err.Error() + " - " + sqlIdx)
 				}
 				var tbIndex, NAME_IDX, UNIQUE_IDX, COLUMN_NAME string
 
@@ -549,7 +503,7 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 					if err != nil {
 						loggaErrore.Log = err.Error()
 						loggaErrore.Errore = -1
-						return loggaErrore, allCompareIdx
+						return allCompareIdx, allCompareIdxError, err
 					}
 
 					var idxSrc CompareIndex
@@ -571,17 +525,13 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 				// fmt.Println(sqlIdx)
 				selDB2, err = db.Query(sqlIdx)
 				if err != nil {
-					loggaErrore.Log = err.Error()
-					loggaErrore.Errore = -1
-					return loggaErrore, allCompareIdx
+					return allCompareIdx, allCompareIdxError, errors.New(err.Error() + " - " + sqlIdx)
 				}
 				var tbSchema, INDEX_NAME string
 				for selDB2.Next() {
 					err = selDB2.Scan(&INDEX_NAME, &UNIQUE_IDX, &COLUMN_NAME, &tbSchema)
 					if err != nil {
-						loggaErrore.Log = err.Error()
-						loggaErrore.Errore = -1
-						return loggaErrore, allCompareIdx
+						return allCompareIdx, allCompareIdxError, err
 					}
 					var idxDst CompareIndex
 					idxDst.Tbl = tableName
@@ -693,9 +643,7 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 				// LogJson(sqlCheckRes)
 				// LogJson(errcheck)
 				if errcheck != nil {
-					loggaErrore.Log = err.Error() + " - " + sqlCheck
-					loggaErrore.Errore = -1
-					return loggaErrore, allCompareIdx
+					return allCompareIdx, allCompareIdxError, errors.New(err.Error() + " - " + sqlCheck)
 				}
 
 				indexExists := false
@@ -703,9 +651,7 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 				for sqlCheckRes.Next() {
 					err = sqlCheckRes.Scan(&Key_name)
 					if err != nil {
-						loggaErrore.Log = err.Error()
-						loggaErrore.Errore = -1
-						return loggaErrore, allCompareIdx
+						return allCompareIdx, allCompareIdxError, err
 					}
 					fmt.Printf("++++++++++++++++++")
 					fmt.Printf("Key_name: " + Key_name)
@@ -719,17 +665,18 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 
 				if indexExists {
 					allCompareIdx = append(allCompareIdx, dropIdx)
-					_, err = db2.Exec(dropIdx)
-					if err != nil {
-						loggaErrore.Log = err.Error() + " - " + dropIdx
-						loggaErrore.Errore = -1
-						//return loggaErrore, allCompareIdx
-					} else {
-						//	fmt.Println(dropIdx + "  ok")
+					if doQueryExec {
+						_, err = db2.Exec(dropIdx)
+						if err != nil {
+							allCompareIdxError = append(allCompareIdxError, dropIdx)
+							//return loggaErrore, allCompareIdx
+						} else {
+							//	fmt.Println(dropIdx + "  ok")
+						}
 					}
 				} else {
 					allCompareIdx = append(allCompareIdx, dropIdx+" - KO")
-					fmt.Println("INDEX " + nomeIndiceArr[1] + " NON DROPPATO PERCHE MANCA")
+					allCompareIdxError = append(allCompareIdxError, dropIdx+" - KO NON DROPPATO PERCHE MANCA")
 				}
 			}
 		}
@@ -766,21 +713,15 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 
 			fmt.Println(sqlCheckIdx)
 			sqlCheckResIdx, errcheckIdx := db.Query(sqlCheckIdx)
-			// LogJson(sqlCheckRes)
-			// LogJson(errcheck)
 			if errcheckIdx != nil {
-				loggaErrore.Log = err.Error() + " - " + sqlCheckIdx
-				loggaErrore.Errore = -1
-				return loggaErrore, allCompareIdx
+				return allCompareIdx, allCompareIdxError, errors.New(err.Error() + " - " + sqlCheckIdx)
 			}
 
 			var Key_name string
 			for sqlCheckResIdx.Next() {
 				err = sqlCheckResIdx.Scan(&Key_name)
 				if err != nil {
-					loggaErrore.Log = err.Error()
-					loggaErrore.Errore = -1
-					return loggaErrore, allCompareIdx
+					return allCompareIdx, allCompareIdxError, err
 				}
 				fmt.Printf("++++++++++++++++++")
 				fmt.Printf("Key_name: " + Key_name)
@@ -797,9 +738,7 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 			fmt.Println(sqlIdx)
 			selDB2, err := db3.Query(sqlIdx)
 			if err != nil {
-				loggaErrore.Log = err.Error() + " - " + sqlIdx
-				loggaErrore.Errore = -1
-				return loggaErrore, allCompareIdx
+				return allCompareIdx, allCompareIdxError, errors.New(err.Error() + " - " + sqlIdx)
 			}
 			var COD_DIM, NAME_IDX, UNIQUE_IDX, COLUMN_NAME string
 
@@ -810,13 +749,12 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 			var culumnExists bool
 			culumnExists = true
 			var columnMissing []string
+			indexFieldList := ""
 
 			for selDB2.Next() {
 				err = selDB2.Scan(&COD_DIM, &NAME_IDX, &UNIQUE_IDX, &COLUMN_NAME)
 				if err != nil {
-					loggaErrore.Log = err.Error()
-					loggaErrore.Errore = -1
-					return loggaErrore, allCompareIdx
+					return allCompareIdx, allCompareIdxError, err
 				}
 
 				// poiche la madonna di mysql non contempla add column if not exist sono costretto a tirare le madonne ...
@@ -829,24 +767,21 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 				sqlCheckRes, errcheck := db.Query(sqlCheck)
 				//LogJson(sqlCheckRes)
 				if errcheck != nil {
-					loggaErrore.Log = err.Error() + " - " + sqlCheck
-					loggaErrore.Errore = -1
-					return loggaErrore, allCompareIdx
+					return allCompareIdx, allCompareIdxError, errors.New(err.Error() + " - " + sqlCheck)
 				}
 
 				for sqlCheckRes.Next() {
 					err = sqlCheckRes.Scan(&COLUMN_NAME_IDX)
 
 					if err != nil {
-						loggaErrore.Log = err.Error()
-						loggaErrore.Errore = -1
-						return loggaErrore, allCompareIdx
+						return allCompareIdx, allCompareIdxError, err
 					}
 					if COLUMN_NAME_IDX == "" {
 						culumnExists = false
 						columnMissing = append(columnMissing, COLUMN_NAME_IDX)
 						fmt.Println("The column for key is missing")
 					} else {
+						indexFieldList += COLUMN_NAME_IDX + ", "
 						fmt.Println("The column " + COLUMN_NAME_IDX + " for key exists")
 					}
 				}
@@ -862,6 +797,32 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 
 				idx++
 			}
+
+			// facciamo un check sui record
+			if UNIQUE_IDX == "1" {
+				var UNIQUE_CHECK_NUM int
+				sqlIndexUniqueCheck := " select count(*) as num "
+				sqlIndexUniqueCheck += " from " + dbDataName.DataName + "." + nomeIndiceArr[0]
+				sqlIndexUniqueCheck += " group by " + indexFieldList[:len(indexFieldList)-2] + " "
+				sqlIndexUniqueCheck += " having num > 1"
+
+				fmt.Println(sqlIndexUniqueCheck)
+				sqlCheckUniqueRes, errcheckUnique := db.Query(sqlIndexUniqueCheck)
+				if errcheckUnique != nil {
+
+				}
+				idxUni := 0
+				for sqlCheckUniqueRes.Next() {
+					err = sqlCheckUniqueRes.Scan(&UNIQUE_CHECK_NUM)
+					idxUni++
+					break
+				}
+				if idxUni > 0 {
+					allCompareIdxError = append(allCompareIdxError, "THE UNIQUE INDEX "+NAME_IDX+" CANNOT BE CREATED DUE unique index constraint violation ERROR ")
+				}
+			}
+			// FINE facciamo un check sui record
+
 			createIdx = createIdx[:len(createIdx)-2] + " ) "
 			fmt.Println(dropIdx)
 			fmt.Println(createIdx)
@@ -873,13 +834,14 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 				// se l'indice esiste
 				if indexExistsONCreate {
 					allCompareIdx = append(allCompareIdx, dropIdx)
-					_, err = db.Exec(dropIdx)
-					if err != nil {
-						loggaErrore.Log = err.Error() + " - " + dropIdx
-						loggaErrore.Errore = -1
-						//return loggaErrore, allCompareIdx
-					} else {
-						//	fmt.Println(dropIdx + "  ok")
+					if doQueryExec {
+						_, err = db.Exec(dropIdx)
+						if err != nil {
+							allCompareIdxError = append(allCompareIdxError, err.Error()+" - "+dropIdx)
+							//return loggaErrore, allCompareIdx
+						} else {
+							//	fmt.Println(dropIdx + "  ok")
+						}
 					}
 				} else {
 					fmt.Println("CANT DROP INDEX BEACAUSE IT DOES NOT EXISTS:" + dropIdx)
@@ -887,14 +849,13 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 
 				allCompareIdx = append(allCompareIdx, createIdx)
 				//fmt.Println("CUSTOM PERFORM CREATE INDEX:" + createIdx)
-				_, err = db.Exec(createIdx)
-				if err != nil {
-
-					loggaErrore.Log = err.Error() + " - " + createIdx
-					loggaErrore.Errore = -1
-					return loggaErrore, allCompareIdx
-				} else {
-					//	fmt.Println(createIdx + "  ok")
+				if doQueryExec {
+					_, err = db.Exec(createIdx)
+					if err != nil {
+						return allCompareIdx, allCompareIdxError, errors.New(err.Error() + " - " + createIdx)
+					} else {
+						//	fmt.Println(createIdx + "  ok")
+					}
 				}
 			} else {
 				allCompareIdx = append(allCompareIdx, dropIdx+" - KO")
@@ -903,10 +864,8 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 				for _, mm := range columnMissing {
 					clmnmiss += mm + ", "
 				}
-				fmt.Println("cannot add or drop indexs because some columns: " + clmnmiss + " are missing on " + dbDataName.DataName)
-				loggaErrore.Log = "cannot add or drop indexs because some columns: " + clmnmiss + " are missing on " + dbDataName.DataName
-				loggaErrore.Errore = -1
-				return loggaErrore, allCompareIdx
+
+				return allCompareIdx, allCompareIdxError, errors.New("cannot add or drop indexs because some columns: " + clmnmiss + " are missing on " + dbDataName.DataName)
 			}
 
 		}
@@ -915,8 +874,9 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 		fmt.Println()
 	}
 
-	return loggaErrore, allCompareIdx
+	return allCompareIdx, allCompareIdxError, nil
 }
+
 func RenameDatabases(ctx context.Context, dbMetaName DbMetaConnMs, masterDb MasterConn, db *sql.DB) {
 
 	query := "DROP DATABASE IF EXISTS " + dbMetaName.MetaName + "_METAOLD"
