@@ -1177,7 +1177,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 	return microservices, loggaErrore
 }
 func GetTenant(ctx context.Context, token, dominio, coreApiVersion string) ([]Tenant, error) {
-	Logga(ctx, "Get TENANT")
+	//Logga(ctx, "Get TENANT")
 
 	var erro error
 	var tenants []Tenant
@@ -1970,7 +1970,7 @@ func DeleteObjectsApi(namespace, apiHost, apiToken, object, kind string) LoggaEr
 
 	args := make(map[string]string)
 	args["kind"] = "DeleteOptions"
-	args["apiVersion"] = "v1"
+	args["apiVersion"] = apiversion
 	args["apiVerpropagationPolicysion"] = "Foreground"
 
 	clientKUBE := resty.New()
