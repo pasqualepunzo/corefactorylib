@@ -298,9 +298,9 @@ func GetNextVersion(ctx context.Context, masterBranch, nomeDocker, tenant, acces
 
 	// cerco il token di Corefactory
 	Logga(ctx, "Getting token")
-	devopsToken, erro := GetCoreFactoryToken(ctx, tenant, accessToken, loginApiDomain, coreApiVersion)
-	if erro.Errore < 0 {
-		Logga(ctx, erro.Log)
+	devopsToken, erro := GetCoreFactoryToken(ctx, tenant, accessToken, loginApiDomain, coreApiVersion, false)
+	if erro != nil {
+		Logga(ctx, erro.Error())
 	} else {
 		Logga(ctx, "Token OK")
 	}
@@ -1094,6 +1094,8 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 
 							var endpoint Endpoint
 
+							endpoint.Priority = x["priority"].(string)
+
 							endpoint.MicroserviceDst = x["microservice_dst"].(string)
 							endpoint.DockerDst = x["docker_dst"].(string)
 							endpoint.TypeSrvDst = x["type_dst"].(string)
@@ -1175,7 +1177,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 	return microservices, loggaErrore
 }
 func GetTenant(ctx context.Context, token, dominio, coreApiVersion string) ([]Tenant, error) {
-	Logga(ctx, "TENANT")
+	Logga(ctx, "Get TENANT")
 
 	var erro error
 	var tenants []Tenant
@@ -1183,13 +1185,11 @@ func GetTenant(ctx context.Context, token, dominio, coreApiVersion string) ([]Te
 
 	args := make(map[string]string)
 
-	tenantRes, errtenantRes := ApiCallGET(ctx, true, args, "msauth", "/auth/tenants", token, dominio, coreApiVersion)
-	LogJson(tenantRes)
+	tenantRes, errtenantRes := ApiCallGET(ctx, false, args, "msauth", "/auth/tenants", token, dominio, coreApiVersion)
+	//LogJson(tenantRes)
 	if errtenantRes != nil {
 		Logga(ctx, errtenantRes.Error(), "error")
-
 		erro = errors.New(errtenantRes.Error())
-
 		return tenants, erro
 	}
 
@@ -1244,9 +1244,9 @@ func GetBuildLastTag(ctx context.Context, team, docker, tipo, tenant, accessToke
 
 	// cerco il token di Corefactory
 	Logga(ctx, "Getting token")
-	devopsToken, erro := GetCoreFactoryToken(ctx, tenant, accessToken, loginApiDomain, coreApiVersion)
-	if erro.Errore < 0 {
-		Logga(ctx, erro.Log)
+	devopsToken, erroT := GetCoreFactoryToken(ctx, tenant, accessToken, loginApiDomain, coreApiVersion, false)
+	if erroT != nil {
+		Logga(ctx, erroT.Error())
 	} else {
 		Logga(ctx, "Token OK")
 	}
@@ -1293,9 +1293,9 @@ func GetCurrentBranchSprint(ctx context.Context, team, tipo, tenant, accessToken
 
 	// cerco il token di Corefactory
 	Logga(ctx, "Getting token")
-	devopsToken, erro := GetCoreFactoryToken(ctx, tenant, accessToken, loginApiDomain, coreApiVersion)
-	if erro.Errore < 0 {
-		Logga(ctx, erro.Log)
+	devopsToken, erroT := GetCoreFactoryToken(ctx, tenant, accessToken, loginApiDomain, coreApiVersion, false)
+	if erroT != nil {
+		Logga(ctx, erroT.Error())
 	} else {
 		Logga(ctx, "Token OK")
 	}
@@ -1418,9 +1418,9 @@ func GetEnvironmentStatus(ctx context.Context, cluster, enviro, microserice, cus
 	status := ""
 
 	// cerco il token di Corefactory
-	devopsToken, erro := GetCoreFactoryToken(ctx, tenant, accessToken, loginApiDomain, coreApiVersion)
-	if erro.Errore < 0 {
-		Logga(ctx, erro.Log)
+	devopsToken, erroT := GetCoreFactoryToken(ctx, tenant, accessToken, loginApiDomain, coreApiVersion, false)
+	if erroT != nil {
+		Logga(ctx, erroT.Error())
 	}
 
 	/* ************************************************************************************************ */
@@ -1470,11 +1470,11 @@ func SetEnvironmentStatus(ctx context.Context, cluster, enviro, microserice, cus
 	loggaErrore.Errore = 0
 
 	// cerco il token di Corefactory
-	devopsToken, erro := GetCoreFactoryToken(ctx, tenant, accessToken, loginApiDomain, coreApiVersion)
-	if erro.Errore < 0 {
-		Logga(ctx, erro.Log)
-		loggaErrore.Errore = erro.Errore
-		loggaErrore.Log = erro.Log
+	devopsToken, erroT := GetCoreFactoryToken(ctx, tenant, accessToken, loginApiDomain, coreApiVersion, false)
+	if erroT != nil {
+		Logga(ctx, erroT.Error())
+		loggaErrore.Errore = -1
+		loggaErrore.Log = erroT.Error()
 	}
 
 	/* ************************************************************************************************ */
@@ -1571,9 +1571,9 @@ func GetJsonDatabases(ctx context.Context, stage, developer string, market int32
 		return callResponse, erro
 	}
 
-	devopsToken, erro := GetCoreFactoryToken(ctx, tenant, accessToken, loginApiDomain, coreApiVersion)
-	if erro.Errore < 0 {
-		Logga(ctx, erro.Log)
+	devopsToken, erroT := GetCoreFactoryToken(ctx, tenant, accessToken, loginApiDomain, coreApiVersion, false)
+	if erroT != nil {
+		Logga(ctx, erroT.Error())
 	} else {
 		Logga(ctx, "Token OK")
 	}
