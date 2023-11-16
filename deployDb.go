@@ -718,7 +718,7 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 				dropIdx := "DROP INDEX  " + nomeIndiceArr[1] + " on " + dbDataName.DataName + "." + nomeIndiceArr[0]
 
 				if indexExists {
-					allCompareIdx = append(allCompareIdx, dropIdx+" - OK")
+					allCompareIdx = append(allCompareIdx, dropIdx)
 					_, err = db2.Exec(dropIdx)
 					if err != nil {
 						loggaErrore.Log = err.Error() + " - " + dropIdx
@@ -872,7 +872,7 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 			if culumnExists {
 				// se l'indice esiste
 				if indexExistsONCreate {
-					allCompareIdx = append(allCompareIdx, dropIdx+" - OK")
+					allCompareIdx = append(allCompareIdx, dropIdx)
 					_, err = db.Exec(dropIdx)
 					if err != nil {
 						loggaErrore.Log = err.Error() + " - " + dropIdx
@@ -885,7 +885,7 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 					fmt.Println("CANT DROP INDEX BEACAUSE IT DOES NOT EXISTS:" + dropIdx)
 				}
 
-				allCompareIdx = append(allCompareIdx, createIdx+" - OK")
+				allCompareIdx = append(allCompareIdx, createIdx)
 				//fmt.Println("CUSTOM PERFORM CREATE INDEX:" + createIdx)
 				_, err = db.Exec(createIdx)
 				if err != nil {
