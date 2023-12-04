@@ -362,7 +362,7 @@ func Times(str string, n int) string {
 	}
 	return strings.Repeat(str, n)
 }
-func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVersion, devopsToken, autopilot, enviro, dominio, coreApiVersion string) (Microservice, LoggaErrore) {
+func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVersion, devopsToken, autopilot, enviro, dominio, coreApiVersion string) (Microservice, error) {
 
 	Logga(ctx, "")
 	Logga(ctx, " + + + + + + + + + + + + + + + + + + + + ")
@@ -371,6 +371,8 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 	Logga(ctx, "gitDevMaster "+gitDevMaster)
 	Logga(ctx, "BUILDVERSION "+buildVersion)
 	Logga(ctx, "getMicroserviceDetail begin")
+
+	var erro error
 
 	devops := "devops"
 	if strings.Contains(ims, "p2rpowerna-monolith") {
@@ -388,10 +390,6 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 
 	var microservices Microservice
 
-	var loggaErrore LoggaErrore
-	loggaErrore.Errore = 0
-	loggaErrore.Log = ""
-
 	/* ************************************************************************************************ */
 	// KUBEIMICROSERV
 	Logga(ctx, "Getting KUBEIMICROSERV")
@@ -404,9 +402,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 	restyKubeImicroservRes, errKubeImicroservRes := ApiCallGET(ctx, false, argsImicro, "ms"+devops, "/"+devops+"/KUBEIMICROSERV", devopsToken, dominio, coreApiVersion)
 	if errKubeImicroservRes != nil {
 		Logga(ctx, errKubeImicroservRes.Error())
-		loggaErrore.Errore = -1
-		loggaErrore.Log = errKubeImicroservRes.Error()
-		return microservices, loggaErrore
+		return microservices, errKubeImicroservRes
 	}
 
 	microservice := ""
@@ -419,9 +415,8 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 		Logga(ctx, "KUBEIMICROSERV OK")
 	} else {
 		Logga(ctx, "   !!!   KUBEIMICROSERV MISSING")
-		loggaErrore.Errore = -1
-		loggaErrore.Log = "KUBEIMICROSERV MISSING"
-		return microservices, loggaErrore
+		erro := errors.New("KUBEIMICROSERV MISSING")
+		return microservices, erro
 	}
 	Logga(ctx, "")
 
@@ -438,9 +433,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 	restyKubeCluRes, errKubeCluRes := ApiCallGET(ctx, false, argsClu, "ms"+devops, "/"+devops+"/KUBECLUSTER", devopsToken, dominio, coreApiVersion)
 	if errKubeCluRes != nil {
 		Logga(ctx, errKubeCluRes.Error())
-		loggaErrore.Errore = -1
-		loggaErrore.Log = errKubeCluRes.Error()
-		//return ims, loggaErrore
+		return microservices, errKubeCluRes
 	}
 
 	clusterHost := ""
@@ -467,9 +460,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 	restyKubeMSRes, errKubeMSRes := ApiCallGET(ctx, false, argsMS, "ms"+devops, "/"+devops+"/KUBEMICROSERV", devopsToken, dominio, coreApiVersion)
 	if errKubeMSRes != nil {
 		Logga(ctx, errKubeMSRes.Error())
-		loggaErrore.Errore = -1
-		loggaErrore.Log = errKubeMSRes.Error()
-		return microservices, loggaErrore
+		return microservices, errKubeMSRes
 	}
 
 	hpaTmpl := ""
@@ -484,9 +475,8 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 		Logga(ctx, "KUBEMICROSERV OK")
 	} else {
 		Logga(ctx, "   !!!   KUBEMICROSERV MISSING")
-		loggaErrore.Errore = 0
-		loggaErrore.Log = "KUBEMICROSERV MISSING"
-		//return microservices, loggaErrore
+		erro := errors.New("KUBEIMICROSERV MISSING")
+		return microservices, erro
 	}
 	Logga(ctx, "")
 
@@ -503,9 +493,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 		restyKubeHpaRes, errKubeHpaRes := ApiCallGET(ctx, false, argsHpa, "ms"+devops, "/"+devops+"/KUBEMICROSERVHPA", devopsToken, dominio, coreApiVersion)
 		if errKubeHpaRes != nil {
 			Logga(ctx, errKubeHpaRes.Error())
-			loggaErrore.Errore = -1
-			loggaErrore.Log = errKubeHpaRes.Error()
-			return microservices, loggaErrore
+			return microservices, errKubeHpaRes
 		}
 
 		if len(restyKubeHpaRes.BodyJson) > 0 {
@@ -539,8 +527,8 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 			Logga(ctx, "KUBEMICROSERVHPA OK")
 		} else {
 			Logga(ctx, "   !!!   KUBEMICROSERVHPA MISSING")
-			loggaErrore.Errore = 0
-			loggaErrore.Log = "KUBEMICROSERVHPA MISSING"
+			erro := errors.New("KUBEMICROSERVHPA MISSING")
+			return microservices, erro
 			//return microservices, loggaErrore
 		}
 		Logga(ctx, "")
@@ -558,9 +546,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 	restyDkrLstRes, errDkrLstRes := ApiCallGET(ctx, false, argsDkr, "ms"+devops, "/core/custom/SELKUBEDKRLIST/values", devopsToken, dominio, coreApiVersion)
 	if errDkrLstRes != nil {
 		Logga(ctx, errDkrLstRes.Error())
-		loggaErrore.Errore = -1
-		loggaErrore.Log = errDkrLstRes.Error()
-		return microservices, loggaErrore
+		return microservices, errDkrLstRes
 	}
 
 	if len(restyDkrLstRes.BodyArray) > 0 {
@@ -617,9 +603,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 			if errKubeBldRes != nil {
 				//fmt.Println("A")
 				Logga(ctx, errKubeBldRes.Error())
-				loggaErrore.Errore = -1
-				loggaErrore.Log = errKubeBldRes.Error()
-				return microservices, loggaErrore
+				return microservices, errKubeBldRes
 			}
 
 			if len(restyKubeBldRes.BodyArray) > 0 {
@@ -663,9 +647,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 				if errKubeBldRes != nil {
 					//fmt.Println("A")
 					Logga(ctx, errKubeBldRes.Error())
-					loggaErrore.Errore = -1
-					loggaErrore.Log = errKubeBldRes.Error()
-					return microservices, loggaErrore
+					return microservices, errKubeBldRes
 				}
 
 				if len(restyKubeBldRes.BodyArray) > 0 {
@@ -690,9 +672,8 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 				} else {
 
 					Logga(ctx, "   !!! "+docker+"  KUBEDKRBUILD MISSING")
-					loggaErrore.Errore = -1
-					loggaErrore.Log = "!!! ERROR !!!\n\nThe component " + docker + " of the microservice " + microservices.Nome + " is MISSING,\nyou have to build it first.\nbye\n\n"
-					return microservices, loggaErrore
+					erro := errors.New("The component " + docker + " of the microservice " + microservices.Nome + " is MISSING - you have to build it first.")
+					return microservices, erro
 				}
 			}
 
@@ -712,9 +693,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 			restyKubeMntRes, errKubeMntRes := ApiCallGET(ctx, false, argsMnt, "ms"+devops, "/"+devops+"/KUBEDKRMOUNT", devopsToken, dominio, coreApiVersion)
 			if errKubeMntRes != nil {
 				Logga(ctx, errKubeMntRes.Error())
-				loggaErrore.Errore = -1
-				loggaErrore.Log = errKubeMntRes.Error()
-				return microservices, loggaErrore
+				return microservices, errKubeMntRes
 			}
 
 			if len(restyKubeMntRes.BodyArray) > 0 {
@@ -732,9 +711,8 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 				pod.Mount = mounts
 				Logga(ctx, "KUBEDKRMOUNT OK")
 			} else {
-				loggaErrore.Errore = 0
-				loggaErrore.Log = "KUBEDKRMOUNT MISSING"
-				//return microservices, loggaErrore
+				erro := errors.New("KUBEDKRMOUNT MISSING")
+				return microservices, erro
 			}
 			Logga(ctx, "")
 
@@ -752,9 +730,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 			restyKubeSrcRes, errKubeSrcRes := ApiCallGET(ctx, false, argsSrc, "ms"+devops, "/"+devops+"/KUBEDKRRESOURCE", devopsToken, dominio, coreApiVersion)
 			if errKubeSrcRes != nil {
 				Logga(ctx, errKubeSrcRes.Error())
-				loggaErrore.Errore = -1
-				loggaErrore.Log = errKubeSrcRes.Error()
-				return microservices, loggaErrore
+				return microservices, errKubeSrcRes
 			}
 
 			if len(restyKubeSrcRes.BodyJson) > 0 {
@@ -768,9 +744,8 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 				pod.Resource = resource
 				Logga(ctx, "KUBEDKRRESOURCE OK")
 			} else {
-				loggaErrore.Errore = -1
-				loggaErrore.Log = "KUBEDKRRESOURCE MISSING"
-				return microservices, loggaErrore
+				erro := errors.New("KUBEDKRRESOURCE MISSING")
+				return microservices, erro
 			}
 			Logga(ctx, "")
 
@@ -790,9 +765,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 			restyKubePrbRes, errKubePrbRes := ApiCallGET(ctx, false, argsProbes, "ms"+devops, "/"+devops+"/KUBEDKRPROBE", devopsToken, dominio, coreApiVersion)
 			if errKubePrbRes != nil {
 				Logga(ctx, errKubePrbRes.Error())
-				loggaErrore.Errore = -1
-				loggaErrore.Log = errKubePrbRes.Error()
-				return microservices, loggaErrore
+				return microservices, errKubePrbRes
 			}
 
 			if len(restyKubePrbRes.BodyArray) > 0 {
@@ -853,9 +826,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 			restyKubeSrvDkrRes, errKubeSrvDkrRes := ApiCallGET(ctx, false, argsSrvDkr, "ms"+devops, "/"+devops+"/KUBESERVICEDKR", devopsToken, dominio, coreApiVersion)
 			if errKubeSrvDkrRes != nil {
 				Logga(ctx, errKubeSrvDkrRes.Error())
-				loggaErrore.Errore = -1
-				loggaErrore.Log = errKubeSrvDkrRes.Error()
-				return microservices, loggaErrore
+				return microservices, errKubeSrvDkrRes
 			}
 
 			if len(restyKubeSrvDkrRes.BodyArray) > 0 {
@@ -989,96 +960,6 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 					sqlEndpoint += "partner desc , "
 					sqlEndpoint += "market desc "
 
-					/*sqlEndpoint += "select * from ( "
-
-					sqlEndpoint += "select "
-					sqlEndpoint += "ifnull(aa.XKUBEENDPOINT05,'') as microservice_src, "
-					sqlEndpoint += "ifnull(cc.XKUBESERVICEDKR04,'') as docker_src, "
-					sqlEndpoint += "ifnull(aa.XKUBEENDPOINT10,'') as type_src, "
-					sqlEndpoint += "ifnull(aa.XKUBEENDPOINT09,'') as route_src, "
-					sqlEndpoint += "ifnull(aa.XKUBEENDPOINT11,'') as rewrite_src, "
-					sqlEndpoint += "ifnull(cc.XKUBESERVICEDKR06,'') as port_src, "
-					sqlEndpoint += "ifnull(aa.XKUBEENDPOINT12,'') as priority, "
-					sqlEndpoint += "ifnull(bb.XKUBEENDPOINT05,'') as microservice_dst, "
-					sqlEndpoint += "ifnull(bb.XKUBESERVICEDKR03,'') as docker_dst, "
-					sqlEndpoint += "ifnull(bb.XKUBEENDPOINT10,'') as type_dst, "
-					sqlEndpoint += "ifnull(bb.XKUBEENDPOINT09,'') as route_dst, "
-					sqlEndpoint += "ifnull(bb.XKUBEENDPOINT11,'') as rewrite_dst, "
-					sqlEndpoint += "ifnull(bb.XKUBEMICROSERV04,'') as namespace_dst, "
-					sqlEndpoint += "ifnull(bb.XDEPLOYLOG05,'') as version_dst, "
-					sqlEndpoint += "ifnull(bb.XKUBECLUSTER15,'') as domain, "
-					sqlEndpoint += "ifnull(bb.XKUBEENDPOINTOVR06,'') as market, "
-					sqlEndpoint += "ifnull(bb.XKUBEENDPOINTOVR07,'') as partner, "
-					sqlEndpoint += "ifnull(bb.XKUBEENDPOINTOVR08,'') as customer "
-					sqlEndpoint += "from TB_ANAG_KUBEENDPOINT00 aa "
-					sqlEndpoint += "JOIN TB_ANAG_KUBESERVICEDKR00 cc on (cc.XKUBESERVICEDKR03=aa.XKUBEENDPOINT06) "
-					sqlEndpoint += "left join "
-					sqlEndpoint += "( "
-					sqlEndpoint += "select XKUBECLUSTER15, XKUBEENDPOINT03,XKUBEENDPOINT09,XKUBEENDPOINT10,XKUBEENDPOINT11,XKUBEENDPOINT05,XKUBEMICROSERV05, "
-					sqlEndpoint += "XKUBEMICROSERV04,XKUBEENDPOINTOVR03,XKUBESERVICEDKR04,XKUBESERVICEDKR03,XDEPLOYLOG05, "
-					sqlEndpoint += "XKUBEENDPOINTOVR06,XKUBEENDPOINTOVR07,XKUBEENDPOINTOVR08 "
-					sqlEndpoint += "from TB_ANAG_KUBEENDPOINT00 a "
-					sqlEndpoint += "join TB_ANAG_KUBEENDPOINTOVR00 b on (a.XKUBEENDPOINT03=b.XKUBEENDPOINTOVR04) "
-					sqlEndpoint += "join TB_ANAG_KUBEMICROSERV00 on (XKUBEMICROSERV05=XKUBEENDPOINT05) "
-					sqlEndpoint += "join TB_ANAG_KUBESERVICEDKR00 on (XKUBESERVICEDKR03=XKUBEENDPOINT06) "
-					sqlEndpoint += "JOIN TB_ANAG_KUBEIMICROSERV00 on (XKUBEENDPOINT05=XKUBEIMICROSERV04  and XKUBEIMICROSERV05 = '" + cluster + "' ) "
-					sqlEndpoint += "JOIN TB_ANAG_KUBECLUSTER00 on(XKUBECLUSTER03 = XKUBEIMICROSERV05 and XKUBECLUSTER12 = '" + profile + "') "
-					sqlEndpoint += "JOIN TB_ANAG_DEPLOYLOG00 on (XDEPLOYLOG04=XKUBEIMICROSERV03 "
-					sqlEndpoint += "and XDEPLOYLOG09='" + enviro + "' "
-					sqlEndpoint += "and XDEPLOYLOG03='production' "
-					sqlEndpoint += "and XDEPLOYLOG06=1 and XDEPLOYLOG07=0) ) bb "
-					sqlEndpoint += "on (aa.XKUBEENDPOINT03 = bb.XKUBEENDPOINTOVR03 ) "
-					sqlEndpoint += "having 1>0 "
-					sqlEndpoint += "and docker_src = '" + docker + "'"
-					sqlEndpoint += "and port_src = '" + port + "'"
-					sqlEndpoint += "union "
-					sqlEndpoint += "select "
-					sqlEndpoint += "ifnull(aa.XKUBEENDPOINT05,'') as microservice_src, "
-					sqlEndpoint += "ifnull(cc.XKUBESERVICEDKR04,'') as docker_src, "
-					sqlEndpoint += "ifnull(aa.XKUBEENDPOINT10,'') as type_src, "
-					sqlEndpoint += "ifnull(aa.XKUBEENDPOINT09,'') as route_src, "
-					sqlEndpoint += "ifnull(aa.XKUBEENDPOINT11,'') as rewrite_src, "
-					sqlEndpoint += "ifnull(cc.XKUBESERVICEDKR06,'') as port_src, "
-					sqlEndpoint += "ifnull(aa.XKUBEENDPOINT12,'') as priority, "
-					sqlEndpoint += "ifnull(bb.XKUBEENDPOINT05,'') as microservice_dst, "
-					sqlEndpoint += "ifnull(bb.XKUBESERVICEDKR03,'') as docker_dst, "
-					sqlEndpoint += "ifnull(bb.XKUBEENDPOINT10,'') as type_dst, "
-					sqlEndpoint += "ifnull(bb.XKUBEENDPOINT09,'') as route_dst, "
-					sqlEndpoint += "ifnull(bb.XKUBEENDPOINT11,'') as rewrite_dst, "
-					sqlEndpoint += "ifnull(bb.XKUBEMICROSERV04,'') as namespace_dst, "
-					sqlEndpoint += "ifnull(bb.XDEPLOYLOG05,'') as version_dst, "
-					sqlEndpoint += "ifnull(bb.XKUBECLUSTER15,'') as domain, "
-					sqlEndpoint += "ifnull(bb.XKUBEENDPOINTOVR06,'') as market, "
-					sqlEndpoint += "ifnull(bb.XKUBEENDPOINTOVR07,'') as partner, "
-					sqlEndpoint += "ifnull(bb.XKUBEENDPOINTOVR08,'') as customer "
-					sqlEndpoint += "from TB_ANAG_KUBEENDPOINT00 aa "
-					sqlEndpoint += "JOIN TB_ANAG_KUBESERVICEDKR00 cc on (cc.XKUBESERVICEDKR03=aa.XKUBEENDPOINT06) "
-					sqlEndpoint += "join "
-					sqlEndpoint += "( "
-					sqlEndpoint += "select XKUBECLUSTER15, XKUBEENDPOINT03,XKUBEENDPOINT09,XKUBEENDPOINT10,XKUBEENDPOINT11,XKUBEENDPOINT05,XKUBEMICROSERV05, "
-					sqlEndpoint += "XKUBEMICROSERV04,XKUBEENDPOINTOVR03,XKUBESERVICEDKR04,XKUBESERVICEDKR03,XDEPLOYLOG05, "
-					sqlEndpoint += "XKUBEENDPOINTOVR06,XKUBEENDPOINTOVR07,XKUBEENDPOINTOVR08 "
-					sqlEndpoint += "from TB_ANAG_KUBEENDPOINT00 a "
-					sqlEndpoint += "join TB_ANAG_KUBEENDPOINTOVR00 b on (a.XKUBEENDPOINT03=b.XKUBEENDPOINTOVR04) "
-					sqlEndpoint += "join TB_ANAG_KUBEMICROSERV00 on (XKUBEMICROSERV05=XKUBEENDPOINT05) "
-					sqlEndpoint += "join TB_ANAG_KUBESERVICEDKR00 on (XKUBESERVICEDKR03=XKUBEENDPOINT06) "
-					sqlEndpoint += "JOIN TB_ANAG_KUBEIMICROSERV00 on (XKUBEENDPOINT05=XKUBEIMICROSERV04) "
-					sqlEndpoint += "JOIN TB_ANAG_KUBECLUSTER00 on(XKUBECLUSTER03 = XKUBEIMICROSERV05 and XKUBECLUSTER12 = '2' and XKUBECLUSTER06 != '" + clusterOwner + "') "
-					sqlEndpoint += "JOIN TB_ANAG_DEPLOYLOG00 on (XDEPLOYLOG04=XKUBEIMICROSERV03 "
-					sqlEndpoint += "and XDEPLOYLOG09='" + enviro + "' "
-					sqlEndpoint += "and XDEPLOYLOG03='production' "
-					sqlEndpoint += "and XDEPLOYLOG06=1 and XDEPLOYLOG07=0) ) bb "
-					sqlEndpoint += "on (aa.XKUBEENDPOINT03 = bb.XKUBEENDPOINTOVR03 ) "
-					sqlEndpoint += "having 1>0 "
-					sqlEndpoint += "and docker_src = '" + docker + "'"
-					sqlEndpoint += "and port_src = '" + port + "'"
-					sqlEndpoint += ") as tbl "
-					sqlEndpoint += "order by length(priority), priority, route_src, customer desc , partner desc , market desc, "
-					sqlEndpoint += "(case when domain = '" + clusterHost + "' then 0 else 1 end) asc "
-					*/
-					//fmt.Println(sqlEndpoint)
-					//	os.Exit(0)
-
 					argsEndpoint := make(map[string]string)
 					argsEndpoint["source"] = "devops-8"
 					argsEndpoint["$fullquery"] = sqlEndpoint
@@ -1146,9 +1027,8 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 
 				Logga(ctx, "KUBESERVICEDKR OK")
 			} else {
-				loggaErrore.Errore = 0
-				loggaErrore.Log = "KUBESERVICEDKR MISSING"
-				// return microservices, loggaErrore
+				erro := errors.New("KUBESERVICEDKR MISSING")
+				return microservices, erro
 			}
 			Logga(ctx, "")
 
@@ -1161,9 +1041,8 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 
 		Logga(ctx, "SELKUBEDKRLIST OK")
 	} else {
-		loggaErrore.Errore = 0
-		loggaErrore.Log = "SELKUBEDKRLIST MISSING"
-		return microservices, loggaErrore
+		erro := errors.New("SELKUBEDKRLIST MISSING")
+		return microservices, erro
 	}
 	Logga(ctx, "")
 
@@ -1174,7 +1053,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 	// fmt.Println(microservices)
 	// LogJson(microservices)
 	// os.Exit(0)
-	return microservices, loggaErrore
+	return microservices, erro
 }
 func GetTenant(ctx context.Context, token, dominio, coreApiVersion string) ([]Tenant, error) {
 	//Logga(ctx, "Get TENANT")
