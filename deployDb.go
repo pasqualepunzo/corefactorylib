@@ -3,6 +3,7 @@ package lib
 import (
 	"context"
 	"errors"
+	"os"
 	"os/exec"
 	"runtime/debug"
 	"strconv"
@@ -19,7 +20,7 @@ func DropMetadato(ctx context.Context, dbMetaName DbMetaConnMs, db *sql.DB) Logg
 	var loggaErrore LoggaErrore
 	loggaErrore.Errore = 0
 
-	Logga(ctx, "Drop metadata :"+dbMetaName.MetaName)
+	Logga(ctx, "", "Drop metadata :"+dbMetaName.MetaName)
 
 	_, err := db.Exec("drop database if exists " + dbMetaName.MetaName)
 	if err != nil {
@@ -27,7 +28,7 @@ func DropMetadato(ctx context.Context, dbMetaName DbMetaConnMs, db *sql.DB) Logg
 		loggaErrore.Errore = -1
 		return loggaErrore
 	} else {
-		Logga(ctx, "Database "+dbMetaName.MetaName+" dropped")
+		Logga(ctx, "", "Database "+dbMetaName.MetaName+" dropped")
 	}
 
 	loggaErrore.Log = ""
@@ -40,14 +41,14 @@ func CreateDbMeta(ctx context.Context, dbMetaName DbMetaConnMs, db *sql.DB) Logg
 	loggaErrore.Errore = 0
 
 	query := "CREATE DATABASE " + dbMetaName.MetaName
-	Logga(ctx, query)
+	Logga(ctx, "", query)
 	_, err := db.Exec(query)
 	if err != nil {
 		loggaErrore.Log = err.Error()
 		loggaErrore.Errore = -1
 		return loggaErrore
 	} else {
-		Logga(ctx, "Database "+dbMetaName.MetaName+" instance done")
+		Logga(ctx, "", "Database "+dbMetaName.MetaName+" instance done")
 	}
 
 	// creo gli user
@@ -66,7 +67,7 @@ func CreateDbData(ctx context.Context, dbDataName DbDataConnMs, db *sql.DB) Logg
 		loggaErrore.Errore = -1
 		return loggaErrore
 	} else {
-		Logga(ctx, "Create Database "+dbDataName.DataName+" instance done")
+		Logga(ctx, "", "Create Database "+dbDataName.DataName+" instance done")
 	}
 
 	// creo gli user
@@ -101,39 +102,39 @@ func CreateUser(ctx context.Context, dbMetaName DbMetaConnMs, db *sql.DB) LoggaE
 
 			// create user
 			query := "CREATE USER   '" + dbMetaName.MetaUser + "'@'%' IDENTIFIED BY '" + dbMetaName.MetaPass + "'"
-			Logga(ctx, query)
+			Logga(ctx, "", query)
 			_, err := db.Exec(query)
 			if err != nil {
 				loggaErrore.Log = err.Error()
 				loggaErrore.Errore = -1
 				return loggaErrore
 			} else {
-				Logga(ctx, "CREATE USER    "+dbMetaName.MetaUser+" done")
+				Logga(ctx, "", "CREATE USER    "+dbMetaName.MetaUser+" done")
 			}
 
 			// grant su metadati
 			query = "GRANT ALL PRIVILEGES ON " + dbMetaName.MetaName + ".* TO '" + dbMetaName.MetaUser + "'@'%' WITH GRANT OPTION "
-			Logga(ctx, query)
+			Logga(ctx, "", query)
 			_, err = db.Exec(query)
-			//Logga(ctx, "GRANT ALL PRIVILEGES ON " + ires.MetaName + ".* TO '" + ires.MetaUser + "'@'%'")
+			//Logga(ctx, "", "GRANT ALL PRIVILEGES ON " + ires.MetaName + ".* TO '" + ires.MetaUser + "'@'%'")
 			if err != nil {
 				loggaErrore.Log = err.Error()
 				loggaErrore.Errore = -1
 				return loggaErrore
 			} else {
-				Logga(ctx, "GRANT ON "+dbMetaName.MetaName+" created")
+				Logga(ctx, "", "GRANT ON "+dbMetaName.MetaName+" created")
 			}
 
 			// grant su data
 			query = "FLUSH PRIVILEGES"
-			Logga(ctx, query)
+			Logga(ctx, "", query)
 			_, err = db.Exec(query)
 			if err != nil {
 				loggaErrore.Log = err.Error()
 				loggaErrore.Errore = -1
 				return loggaErrore
 			} else {
-				Logga(ctx, "FLUSH PRIVILEGES "+dbMetaName.MetaName+" done")
+				Logga(ctx, "", "FLUSH PRIVILEGES "+dbMetaName.MetaName+" done")
 			}
 		} else {
 			loggaErrore.Log = errUser.Error()
@@ -143,7 +144,7 @@ func CreateUser(ctx context.Context, dbMetaName DbMetaConnMs, db *sql.DB) LoggaE
 
 	} else {
 
-		Logga(ctx, "User: "+dbMetaName.MetaUser+" already exists")
+		Logga(ctx, "", "User: "+dbMetaName.MetaUser+" already exists")
 	}
 
 	loggaErrore.Log = ""
@@ -160,7 +161,7 @@ func DropDbData(ctx context.Context, dbDataName DbDataConnMs, db *sql.DB) LoggaE
 		loggaErrore.Errore = -1
 		return loggaErrore
 	} else {
-		Logga(ctx, "Database "+dbDataName.DataName+" dropped")
+		Logga(ctx, "", "Database "+dbDataName.DataName+" dropped")
 	}
 	loggaErrore.Log = ""
 	loggaErrore.Errore = 1
@@ -183,12 +184,12 @@ func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, 
 		dbDataDst = dbDataName.DataName + "_ccd_prod_monolith"
 	}
 
-	Logga(ctx, "")
-	Logga(ctx, "*********")
-	Logga(ctx, "Source Database: "+dbDataSrc)
-	Logga(ctx, "Destination Database: "+dbDataDst)
-	Logga(ctx, "*********")
-	Logga(ctx, "")
+	Logga(ctx, "", "")
+	Logga(ctx, "", "*********")
+	Logga(ctx, "", "Source Database: "+dbDataSrc)
+	Logga(ctx, "", "Destination Database: "+dbDataDst)
+	Logga(ctx, "", "*********")
+	Logga(ctx, "", "")
 
 	var table_name, column_name, columns string
 
@@ -336,11 +337,11 @@ func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, 
 	// fmt.Println(diffTbls)
 	// os.Exit(0)
 
-	Logga(ctx, "Get all diff")
-	Logga(ctx, "")
-	Logga(ctx, "STO PER APPLICARE LE DIFF")
-	Logga(ctx, "Change Database Structure on "+dbDataName.DataName)
-	Logga(ctx, dbDataName.DataHost+"|"+dbDataName.DataName)
+	Logga(ctx, "", "Get all diff")
+	Logga(ctx, "", "")
+	Logga(ctx, "", "STO PER APPLICARE LE DIFF")
+	Logga(ctx, "", "Change Database Structure on "+dbDataName.DataName)
+	Logga(ctx, "", dbDataName.DataHost+"|"+dbDataName.DataName)
 	//fmt.Println(missingTbls)
 
 	// **************************************************************************
@@ -359,7 +360,7 @@ func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, 
 		if err != nil {
 			allCompareSqlError = append(allCompareSqlError, sqlCompare)
 		} else {
-			// Logga(ctx, sqlCompare+" ok")
+			// Logga(ctx, "", sqlCompare+" ok")
 		}
 	}
 
@@ -430,15 +431,15 @@ func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, 
 				allCompareSqlError = append(allCompareSqlError, err.Error()+" - "+sqlCompare)
 
 			} else {
-				Logga(ctx, sqlCompare+"  ok")
+				Logga(ctx, "", sqlCompare+"  ok")
 			}
 		}
 		// !!! fine blocco !!!
 
 	}
 
-	Logga(ctx, "Compare Database terminated")
-	Logga(ctx, "")
+	Logga(ctx, "", "Compare Database terminated")
+	Logga(ctx, "", "")
 
 	return allCompareSql, allCompareSqlError, nil
 }
@@ -951,9 +952,14 @@ func RenameDatabases(ctx context.Context, dbMetaName DbMetaConnMs, masterDb Mast
 }
 func GetMasterConn(ctx context.Context, gruppoDeveloper, cluster, devopsToken, devopsTokenDst, enviro, dominio, coreApiVersion string, monolith int32) (MasterConn, LoggaErrore) {
 
-	Logga(ctx, "getMasterConn")
-	Logga(ctx, "Cluster: "+cluster)
-	Logga(ctx, "Gruppo: "+gruppoDeveloper)
+	Logga(ctx, "", "getMasterConn")
+	Logga(ctx, "", "Cluster: "+cluster)
+	Logga(ctx, "", "Gruppo: "+gruppoDeveloper)
+
+	restyDebug := false
+	if os.Getenv("restyDebug") == "true" {
+		restyDebug = true
+	}
 
 	devops := "devops"
 	if monolith == 1 {
@@ -961,7 +967,7 @@ func GetMasterConn(ctx context.Context, gruppoDeveloper, cluster, devopsToken, d
 	}
 
 	if gruppoDeveloper == "" && cluster == "" {
-		Logga(ctx, "BOTH GROUP AND CLUSTER MISSING")
+		Logga(ctx, "", "BOTH GROUP AND CLUSTER MISSING")
 		debug.PrintStack()
 		//os.Exit(0)
 	}
@@ -979,15 +985,15 @@ func GetMasterConn(ctx context.Context, gruppoDeveloper, cluster, devopsToken, d
 		// ottengo lo stage
 		gruppo, erro := GetUserGroup(ctx, devopsToken, gruppoDeveloper, dominio, coreApiVersion)
 		if erro != nil {
-			Logga(ctx, "getUserGroup")
-			Logga(ctx, erro.Error())
+			Logga(ctx, "", "getUserGroup")
+			Logga(ctx, "", erro.Error())
 		}
 		cluster = gruppo["stage"]
 	}
 
 	/* ************************************************************************************************ */
 	// KUBECLUSTER
-	Logga(ctx, "Getting KUBECLUSTER MASTER CONN")
+	Logga(ctx, "", "Getting KUBECLUSTER MASTER CONN")
 
 	argsClu := make(map[string]string)
 	argsClu["source"] = "devops-8"
@@ -995,7 +1001,7 @@ func GetMasterConn(ctx context.Context, gruppoDeveloper, cluster, devopsToken, d
 	argsClu["center_dett"] = "dettaglio"
 	argsClu["$filter"] = "equals(XKUBECLUSTER03,'" + cluster + "') "
 
-	restyKubeCluRes, errKubeCluRes := ApiCallGET(ctx, false, argsClu, "ms"+devops, "/"+devops+"/KUBECLUSTER", devopsTokenDst, dominio, coreApiVersion)
+	restyKubeCluRes, errKubeCluRes := ApiCallGET(ctx, restyDebug, argsClu, "ms"+devops, "/"+devops+"/KUBECLUSTER", devopsTokenDst, dominio, coreApiVersion)
 	if errKubeCluRes != nil {
 		erro.Errore = -1
 		erro.Log = errKubeCluRes.Error()
@@ -1011,7 +1017,7 @@ func GetMasterConn(ctx context.Context, gruppoDeveloper, cluster, devopsToken, d
 		master.Domain = restyKubeCluRes.BodyJson["XKUBECLUSTER15"].(string)
 		master.AccessToken = restyKubeCluRes.BodyJson["XKUBECLUSTER20"].(string)
 		master.Cluster = cluster
-		Logga(ctx, "KUBECLUSTER MASTER CONN OK")
+		Logga(ctx, "", "KUBECLUSTER MASTER CONN OK")
 
 		/**
 		Andiamo a vedere se esiste un record in KUBECLUSTERENV che fa l'overwrite di alcune proprietà di
@@ -1029,7 +1035,7 @@ func GetMasterConn(ctx context.Context, gruppoDeveloper, cluster, devopsToken, d
 		argsCluEnv["$filter"] += " and XKUBECLUSTERENV05 eq " + strconv.Itoa(int(ambienteFloat)) + " "
 		argsCluEnv["$filter"] += " and equals(XKUBECLUSTERENV06,'" + enviro + "') "
 
-		restyKubeCluEnvRes, errKubeCluEnvRes := ApiCallGET(ctx, false, argsCluEnv, "ms"+devops, "/"+devops+"/KUBECLUSTERENV", devopsTokenDst, dominio, coreApiVersion)
+		restyKubeCluEnvRes, errKubeCluEnvRes := ApiCallGET(ctx, restyDebug, argsCluEnv, "ms"+devops, "/"+devops+"/KUBECLUSTERENV", devopsTokenDst, dominio, coreApiVersion)
 		if errKubeCluEnvRes != nil {
 			erro.Errore = -1
 			erro.Log = errKubeCluEnvRes.Error()
@@ -1041,12 +1047,12 @@ func GetMasterConn(ctx context.Context, gruppoDeveloper, cluster, devopsToken, d
 			if metanameCluEnv != "" {
 				master.MetaName = metanameCluEnv
 			}
-			Logga(ctx, "KUBECLUSTERENV MASTER CONN OK")
+			Logga(ctx, "", "KUBECLUSTERENV MASTER CONN OK")
 		}
 	} else {
-		Logga(ctx, "KUBECLUSTER MASTER CONN MISSING")
+		Logga(ctx, "", "KUBECLUSTER MASTER CONN MISSING")
 	}
-	Logga(ctx, "")
+	Logga(ctx, "", "")
 	/* ************************************************************************************************ */
 
 	if cluster == "" {
