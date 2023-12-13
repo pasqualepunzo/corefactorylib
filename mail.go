@@ -101,10 +101,10 @@ func SendMail(mailer Mailer) error {
 
 	err := smtp.SendMail(host, auth, from_email, mailer.Receivers, data)
 	if err == nil {
-		Logga(ctx, jsonLog, "Email Sent Successfully")
+		Logga(ctx, ctx.Value("JsonLog").(bool), "Email Sent Successfully")
 		return nil
 	} else {
-		Logga(ctx, jsonLog, "ERROR: "+err.Error(), "error")
+		Logga(ctx, ctx.Value("JsonLog").(bool), "ERROR: "+err.Error(), "error")
 		return err
 	}
 }

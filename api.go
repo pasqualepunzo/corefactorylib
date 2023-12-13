@@ -20,27 +20,27 @@ type RestyClientLogger struct{}
 func (cliLogger *RestyClientLogger) Debugf(format string, v ...interface{}) {
 	for _, m := range v {
 		ctx := context.Background()
-		Logga(ctx, jsonLog, m, "info")
+		Logga(ctx, ctx.Value("JsonLog").(bool), m, "info")
 	}
 }
 
 func (cliLogger *RestyClientLogger) Warnf(format string, v ...interface{}) {
 	for _, m := range v {
 		ctx := context.Background()
-		Logga(ctx, jsonLog, m, "warn")
+		Logga(ctx, ctx.Value("JsonLog").(bool), m, "warn")
 	}
 }
 
 func (cliLogger *RestyClientLogger) Errorf(format string, v ...interface{}) {
 	for _, m := range v {
 		ctx := context.Background()
-		Logga(ctx, jsonLog, m, "error")
+		Logga(ctx, ctx.Value("JsonLog").(bool), m, "error")
 	}
 }
 
 func ApiCallPOST(ctx context.Context, debug bool, args []map[string]interface{}, microservice, routing, token, dominio, coreApiVersion string) CallGetResponse {
 
-	Logga(ctx, jsonLog, "apiCallPOST")
+	Logga(ctx, ctx.Value("JsonLog").(bool), "apiCallPOST")
 	if !strings.Contains(dominio, "http") {
 		dominio = "https://" + dominio
 	}
@@ -60,7 +60,7 @@ func ApiCallPOST(ctx context.Context, debug bool, args []map[string]interface{},
 
 	var resStruct CallGetResponse
 
-	Logga(ctx, jsonLog, dominio+"/api/"+coreApiVersion+routing+" - "+microservice)
+	Logga(ctx, ctx.Value("JsonLog").(bool), dominio+"/api/"+coreApiVersion+routing+" - "+microservice)
 
 	var LoggaErrore LoggaErrore
 	LoggaErrore.Errore = 0
@@ -146,7 +146,7 @@ func ApiCallPOST(ctx context.Context, debug bool, args []map[string]interface{},
 func ApiCallGET(ctx context.Context, debug bool, args map[string]string, microservice, routing, token, dominio, coreApiVersion string) (CallGetResponse, error) {
 
 	if debug {
-		Logga(ctx, jsonLog, "apiCallGET")
+		Logga(ctx, ctx.Value("JsonLog").(bool), "apiCallGET")
 	}
 	if !strings.Contains(dominio, "http") {
 		dominio = "https://" + dominio
@@ -177,7 +177,7 @@ func ApiCallGET(ctx context.Context, debug bool, args map[string]string, microse
 	}
 
 	if debug {
-		Logga(ctx, jsonLog, dominio+"/api/"+coreApiVersion+routing+" - "+microservice)
+		Logga(ctx, ctx.Value("JsonLog").(bool), dominio+"/api/"+coreApiVersion+routing+" - "+microservice)
 	}
 
 	var resStruct CallGetResponse
@@ -320,16 +320,16 @@ func ApiCallLOGIN(ctx context.Context, debug bool, args map[string]interface{}, 
 	args["uuid"] = args["uuid"].(string) + "-" + rnd
 
 	if debug {
-		Logga(ctx, jsonLog, "")
-		Logga(ctx, jsonLog, "apiCallLOGIN")
-		Logga(ctx, jsonLog, "Args : ")
+		Logga(ctx, ctx.Value("JsonLog").(bool), "")
+		Logga(ctx, ctx.Value("JsonLog").(bool), "apiCallLOGIN")
+		Logga(ctx, ctx.Value("JsonLog").(bool), "Args : ")
 	}
 	jsonString, _ := json.Marshal(args)
 	if debug {
-		Logga(ctx, jsonLog, string(jsonString))
+		Logga(ctx, ctx.Value("JsonLog").(bool), string(jsonString))
 
-		Logga(ctx, jsonLog, "Microservice : "+microservice)
-		Logga(ctx, jsonLog, "Url : "+dominio+"/api/"+coreApiVersion+routing)
+		Logga(ctx, ctx.Value("JsonLog").(bool), "Microservice : "+microservice)
+		Logga(ctx, ctx.Value("JsonLog").(bool), "Url : "+dominio+"/api/"+coreApiVersion+routing)
 	}
 
 	var LoggaErrore LoggaErrore
@@ -413,7 +413,7 @@ func GetCoreFactoryToken(ctx context.Context, tenant, accessToken, loginApiDomai
 	// cerco il token di devops
 
 	if debug {
-		Logga(ctx, jsonLog, "Core factory Token")
+		Logga(ctx, ctx.Value("JsonLog").(bool), "Core factory Token")
 	}
 
 	var erro error
@@ -466,7 +466,7 @@ func ApiCallDELETE(ctx context.Context, debug bool, args map[string]string, micr
 
 	var resStruct CallGetResponse
 
-	Logga(ctx, jsonLog, dominio+"/api/"+coreApiVersion+routing+" - "+microservice)
+	Logga(ctx, ctx.Value("JsonLog").(bool), dominio+"/api/"+coreApiVersion+routing+" - "+microservice)
 
 	//fmt.Println("apiCallDELETE", debug)
 	client := resty.New()
