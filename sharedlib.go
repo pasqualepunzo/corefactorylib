@@ -19,13 +19,9 @@ import (
 
 func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction, dominio, coreApiVersion string) (IstanzaMicro, error) {
 
-	Logga(ctx, ctx.Value("JsonLog").(bool), "")
-	Logga(ctx, ctx.Value("JsonLog").(bool), " + + + + + + + + + + + + + + + + + + + +")
-	Logga(ctx, ctx.Value("JsonLog").(bool), "getIstanceDetail begin")
-	restyDebug := false
-	if os.Getenv("restyDebug") == "true" {
-		restyDebug = true
-	}
+	Logga(ctx, os.Getenv("JsonLog"), "")
+	Logga(ctx, os.Getenv("JsonLog"), " + + + + + + + + + + + + + + + + + + + +")
+	Logga(ctx, os.Getenv("JsonLog"), "getIstanceDetail begin")
 
 	var LoggaErrore LoggaErrore
 	LoggaErrore.Errore = 0
@@ -100,16 +96,16 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	// KUBEIMICROSERV
 
 	if !iresReq.SwDest { // se stiamo in migrazione non server fare questa chiamata perche nella destinazione non esiste e non deve esistere
-		Logga(ctx, ctx.Value("JsonLog").(bool), "Getting KUBEIMICROSERV - deploy.go")
+		Logga(ctx, os.Getenv("JsonLog"), "Getting KUBEIMICROSERV - deploy.go")
 		argsImicro := make(map[string]string)
 		argsImicro["source"] = "devops-8"
 		argsImicro["$select"] = "XKUBEIMICROSERV04,XKUBEIMICROSERV05"
 		argsImicro["center_dett"] = "dettaglio"
 		argsImicro["$filter"] = "equals(XKUBEIMICROSERV03,'" + istanza + "') "
 
-		restyKubeImicroservRes, errKubeImicroservRes := ApiCallGET(ctx, restyDebug, argsImicro, "ms"+devops, "/"+devops+"/KUBEIMICROSERV", devopsToken, dominio, coreApiVersion)
+		restyKubeImicroservRes, errKubeImicroservRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsImicro, "ms"+devops, "/"+devops+"/KUBEIMICROSERV", devopsToken, dominio, coreApiVersion)
 		if errKubeImicroservRes != nil {
-			Logga(ctx, ctx.Value("JsonLog").(bool), errKubeImicroservRes.Error())
+			Logga(ctx, os.Getenv("JsonLog"), errKubeImicroservRes.Error())
 			erro = errors.New(errKubeImicroservRes.Error())
 			return ims, erro
 		}
@@ -119,7 +115,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 			ims.Cluster = restyKubeImicroservRes.BodyJson["XKUBEIMICROSERV05"].(string)
 			ims.Microservice = microservice
 
-			Logga(ctx, ctx.Value("JsonLog").(bool), "KUBEIMICROSERV OK")
+			Logga(ctx, os.Getenv("JsonLog"), "KUBEIMICROSERV OK")
 		} else {
 			fmt.Println("aspettamma a mauro con l'orchestretor ...")
 
@@ -153,12 +149,12 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 
 				keyvalueslices = append(keyvalueslices, keyvalueslice)
 
-				resKubeims := ApiCallPOST(ctx, restyDebug, keyvalueslices, "ms"+devops, "/"+devops+"/KUBEIMICROSERV", devopsToken, dominio, coreApiVersion)
+				resKubeims := ApiCallPOST(ctx, os.Getenv("RestyDebug"), keyvalueslices, "ms"+devops, "/"+devops+"/KUBEIMICROSERV", devopsToken, dominio, coreApiVersion)
 
 				if resKubeims.Errore < 0 {
-					Logga(ctx, ctx.Value("JsonLog").(bool), "")
-					Logga(ctx, ctx.Value("JsonLog").(bool), "NON RIESCO A SCRIVRERE L'ISTANZA "+resKubeims.Log)
-					Logga(ctx, ctx.Value("JsonLog").(bool), "")
+					Logga(ctx, os.Getenv("JsonLog"), "")
+					Logga(ctx, os.Getenv("JsonLog"), "NON RIESCO A SCRIVRERE L'ISTANZA "+resKubeims.Log)
+					Logga(ctx, os.Getenv("JsonLog"), "")
 
 					erro = errors.New(resKubeims.Log)
 					return ims, erro
@@ -166,20 +162,20 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 
 			} else {
 
-				Logga(ctx, ctx.Value("JsonLog").(bool), "KUBEIMICROSERV MISSING")
+				Logga(ctx, os.Getenv("JsonLog"), "KUBEIMICROSERV MISSING")
 			}
 		}
-		Logga(ctx, ctx.Value("JsonLog").(bool), "")
+		Logga(ctx, os.Getenv("JsonLog"), "")
 	} else {
 
-		Logga(ctx, ctx.Value("JsonLog").(bool), "CLUSTER PRESO DA iresReq "+iresReq.ClusterDst)
+		Logga(ctx, os.Getenv("JsonLog"), "CLUSTER PRESO DA iresReq "+iresReq.ClusterDst)
 		// se siamo in migrazione non applichiamo questo metodo ma abbiamo necessita di avere il cluster valorizzato
 		ims.Cluster = iresReq.ClusterDst
 	}
 
 	/* ************************************************************************************************ */
 	// KUBESTAGE
-	Logga(ctx, ctx.Value("JsonLog").(bool), "Getting KUBESTAGE sharedlib")
+	Logga(ctx, os.Getenv("JsonLog"), "Getting KUBESTAGE sharedlib")
 
 	argsStage := make(map[string]string)
 	argsStage["source"] = "devops-8"
@@ -189,9 +185,9 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	argsStage["$filter"] += " and equals(XKUBESTAGE04,'" + enviro + "') "
 
 	//$filter=contains(XART20,'(kg)') or contains(XART20,'pizza')
-	restyStageRes, _ := ApiCallGET(ctx, restyDebug, argsStage, "ms"+devops, "/"+devops+"/KUBESTAGE", devopsTokenDst, dominio, coreApiVersion)
+	restyStageRes, _ := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsStage, "ms"+devops, "/"+devops+"/KUBESTAGE", devopsTokenDst, dominio, coreApiVersion)
 	if restyStageRes.Errore < 0 {
-		Logga(ctx, ctx.Value("JsonLog").(bool), restyStageRes.Log)
+		Logga(ctx, os.Getenv("JsonLog"), restyStageRes.Log)
 	}
 
 	var swProdStage int
@@ -199,9 +195,9 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	if len(restyStageRes.BodyJson) > 0 {
 		depEnv, _ = restyStageRes.BodyJson["XKUBESTAGE09"].(string)
 		swProdStage = int(restyStageRes.BodyJson["XKUBESTAGE08"].(float64))
-		Logga(ctx, ctx.Value("JsonLog").(bool), "KUBESTAGE: OK")
+		Logga(ctx, os.Getenv("JsonLog"), "KUBESTAGE: OK")
 	} else {
-		Logga(ctx, ctx.Value("JsonLog").(bool), "KUBESTAGE: MISSING")
+		Logga(ctx, os.Getenv("JsonLog"), "KUBESTAGE: MISSING")
 	}
 
 	/* ************************************************************************************************ */
@@ -210,16 +206,16 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	// il 21 04 2023 mepo laszlo e frnc non si addoneno del motivo di una array bidimens
 	// e a puorc schiattano un filtro sul cluster lasciando tutto invariato
 	// ma ovviamente la matrice avra una sola KEY
-	Logga(ctx, ctx.Value("JsonLog").(bool), "Getting KUBECLUSTER")
+	Logga(ctx, os.Getenv("JsonLog"), "Getting KUBECLUSTER")
 
 	argsClu := make(map[string]string)
 	argsClu["source"] = "devops-8"
 	argsClu["center_dett"] = "allviews"
 	argsClu["$filter"] = " equals(XKUBECLUSTER03,'" + ims.Cluster + "')"
 
-	restyKubeCluRes, errKubeCluRes := ApiCallGET(ctx, restyDebug, argsClu, "ms"+devops, "/"+devops+"/KUBECLUSTER", devopsTokenDst, dominio, coreApiVersion)
+	restyKubeCluRes, errKubeCluRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsClu, "ms"+devops, "/"+devops+"/KUBECLUSTER", devopsTokenDst, dominio, coreApiVersion)
 	if errKubeCluRes != nil {
-		Logga(ctx, ctx.Value("JsonLog").(bool), errKubeCluRes.Error())
+		Logga(ctx, os.Getenv("JsonLog"), errKubeCluRes.Error())
 
 		erro = errors.New(errKubeCluRes.Error())
 		return ims, erro
@@ -295,9 +291,9 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 			argsCluEnv["$filter"] += " and XKUBECLUSTERENV05 eq " + strconv.Itoa(int(ambienteFloat)) + " "
 			argsCluEnv["$filter"] += " and equals(XKUBECLUSTERENV06,'" + enviro + "') "
 
-			restyKubeCluEnvRes, errKubeCluEnvRes := ApiCallGET(ctx, restyDebug, argsCluEnv, "ms"+devops, "/"+devops+"/KUBECLUSTERENV", devopsToken, dominio, coreApiVersion)
+			restyKubeCluEnvRes, errKubeCluEnvRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsCluEnv, "ms"+devops, "/"+devops+"/KUBECLUSTERENV", devopsToken, dominio, coreApiVersion)
 			if errKubeCluEnvRes != nil {
-				Logga(ctx, ctx.Value("JsonLog").(bool), errKubeCluEnvRes.Error())
+				Logga(ctx, os.Getenv("JsonLog"), errKubeCluEnvRes.Error())
 
 				erro = errors.New(errKubeCluEnvRes.Error())
 				return ims, erro
@@ -317,33 +313,33 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 				// TOLGO QUESTE PERCHE PRENDO DA AMBDOMAIN 2023 05 02
 				// clu.MasterHost = restyKubeCluEnvRes.BodyJson["XKUBECLUSTERENV07"].(string)
 
-				Logga(ctx, ctx.Value("JsonLog").(bool), "KUBECLUSTERENV OK")
+				Logga(ctx, os.Getenv("JsonLog"), "KUBECLUSTERENV OK")
 			}
 
 			clus[x["XKUBECLUSTER03"].(string)] = clu
 
-			// Logga(ctx, ctx.Value("JsonLog").(bool), x["XKUBECLUSTER03"].(string))
+			// Logga(ctx, os.Getenv("JsonLog"), x["XKUBECLUSTER03"].(string))
 			// LogJson(clu)
 
 		}
 
 		//ims.Clusters = clus
 
-		Logga(ctx, ctx.Value("JsonLog").(bool), "KUBECLUSTER OK")
+		Logga(ctx, os.Getenv("JsonLog"), "KUBECLUSTER OK")
 	} else {
-		Logga(ctx, ctx.Value("JsonLog").(bool), "KUBECLUSTER MISSING")
+		Logga(ctx, os.Getenv("JsonLog"), "KUBECLUSTER MISSING")
 	}
-	Logga(ctx, ctx.Value("JsonLog").(bool), "")
+	Logga(ctx, os.Getenv("JsonLog"), "")
 
 	/* ************************************************************************************************ */
 
 	/* ************************************************************************************************ */
 	// KUBECLUSTER
-	Logga(ctx, ctx.Value("JsonLog").(bool), "Getting KUBECLUSTER")
+	Logga(ctx, os.Getenv("JsonLog"), "Getting KUBECLUSTER")
 
 	if _, ok := clus[ims.Cluster]; ok {
 
-		Logga(ctx, ctx.Value("JsonLog").(bool), " +++ KUBECLUSTER OK +++ ")
+		Logga(ctx, os.Getenv("JsonLog"), " +++ KUBECLUSTER OK +++ ")
 
 		// fmt.Println(ims.cluster)
 		// LogJson(clus[ims.cluster])
@@ -368,25 +364,25 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 		ims.CloudNet = clus[ims.Cluster].CloudNet
 		ims.DepEnv = clus[ims.Cluster].DepEnv
 
-		Logga(ctx, ctx.Value("JsonLog").(bool), "KUBECLUSTER OK")
+		Logga(ctx, os.Getenv("JsonLog"), "KUBECLUSTER OK")
 	} else {
-		Logga(ctx, ctx.Value("JsonLog").(bool), "KUBECLUSTER MISSING")
+		Logga(ctx, os.Getenv("JsonLog"), "KUBECLUSTER MISSING")
 	}
-	Logga(ctx, ctx.Value("JsonLog").(bool), "")
+	Logga(ctx, os.Getenv("JsonLog"), "")
 
 	/* ************************************************************************************************ */
 	// AMBDOMAIN
 
-	Logga(ctx, ctx.Value("JsonLog").(bool), "Getting AMBDOMAIN")
+	Logga(ctx, os.Getenv("JsonLog"), "Getting AMBDOMAIN")
 
 	argsAmbdomain := make(map[string]string)
 	argsAmbdomain["source"] = "auth-1"
 	argsAmbdomain["$select"] = "XAMBDOMAIN05,XAMBDOMAIN07,XAMBDOMAIN08,XAMBDOMAIN09,XAMBDOMAIN10,XAMBDOMAIN11"
 	argsAmbdomain["center_dett"] = "dettaglio"
 	argsAmbdomain["$filter"] += "  equals(XAMBDOMAIN04,'" + customerDomain + "') "
-	restyAmbdomainRes, errAmbdomainRes := ApiCallGET(ctx, restyDebug, argsAmbdomain, "msauth", "/core/AMBDOMAIN", devopsToken, dominio, coreApiVersion)
+	restyAmbdomainRes, errAmbdomainRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsAmbdomain, "msauth", "/core/AMBDOMAIN", devopsToken, dominio, coreApiVersion)
 	if errAmbdomainRes != nil {
-		Logga(ctx, ctx.Value("JsonLog").(bool), errAmbdomainRes.Error())
+		Logga(ctx, os.Getenv("JsonLog"), errAmbdomainRes.Error())
 
 		erro = errors.New(errAmbdomainRes.Error())
 		return ims, erro
@@ -400,23 +396,23 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 		ims.MasterHostMeta = restyAmbdomainRes.BodyJson["XAMBDOMAIN07"].(string)
 		ims.MasterUser = restyAmbdomainRes.BodyJson["XAMBDOMAIN09"].(string)
 		ims.MasterPass = restyAmbdomainRes.BodyJson["XAMBDOMAIN10"].(string)
-		Logga(ctx, ctx.Value("JsonLog").(bool), "AMBDOMAIN OK")
+		Logga(ctx, os.Getenv("JsonLog"), "AMBDOMAIN OK")
 	} else {
-		Logga(ctx, ctx.Value("JsonLog").(bool), "AMBDOMAIN MISSING")
+		Logga(ctx, os.Getenv("JsonLog"), "AMBDOMAIN MISSING")
 	}
-	Logga(ctx, ctx.Value("JsonLog").(bool), "")
+	Logga(ctx, os.Getenv("JsonLog"), "")
 	/* ************************************************************************************************ */
 	// KUBEMICROSERV
-	Logga(ctx, ctx.Value("JsonLog").(bool), "Getting KUBEMICROSERV")
+	Logga(ctx, os.Getenv("JsonLog"), "Getting KUBEMICROSERV")
 
 	argsMS := make(map[string]string)
 	argsMS["source"] = "devops-8"
 	argsMS["$select"] = "XKUBEMICROSERV09,XKUBEMICROSERV15,XKUBEMICROSERV18"
 	argsMS["center_dett"] = "dettaglio"
 	argsMS["$filter"] = "equals(XKUBEMICROSERV05,'" + microservice + "') "
-	restyKubeMSRes, errKubeMSRes := ApiCallGET(ctx, restyDebug, argsMS, "ms"+devops, "/"+devops+"/KUBEMICROSERV", devopsToken, dominio, coreApiVersion)
+	restyKubeMSRes, errKubeMSRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsMS, "ms"+devops, "/"+devops+"/KUBEMICROSERV", devopsToken, dominio, coreApiVersion)
 	if errKubeMSRes != nil {
-		Logga(ctx, ctx.Value("JsonLog").(bool), errKubeMSRes.Error())
+		Logga(ctx, os.Getenv("JsonLog"), errKubeMSRes.Error())
 
 		erro = errors.New(errKubeMSRes.Error())
 		return ims, erro
@@ -437,15 +433,15 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 		microservicePublic = int(restyKubeMSRes.BodyJson["XKUBEMICROSERV18"].(float64))
 
 		ims.SwDb = swDb
-		Logga(ctx, ctx.Value("JsonLog").(bool), "KUBEMICROSERV OK")
+		Logga(ctx, os.Getenv("JsonLog"), "KUBEMICROSERV OK")
 	} else {
-		Logga(ctx, ctx.Value("JsonLog").(bool), "KUBEMICROSERV MISSING")
+		Logga(ctx, os.Getenv("JsonLog"), "KUBEMICROSERV MISSING")
 	}
-	Logga(ctx, ctx.Value("JsonLog").(bool), "")
+	Logga(ctx, os.Getenv("JsonLog"), "")
 
 	/* ************************************************************************************************ */
 	// AMB
-	Logga(ctx, ctx.Value("JsonLog").(bool), "Getting AMB")
+	Logga(ctx, os.Getenv("JsonLog"), "Getting AMB")
 
 	versionAmb := ""
 	if canaryProduction == "canary" {
@@ -468,9 +464,9 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	argsAmb["public"] = strconv.Itoa(microservicePublic)
 	//argsAmb["swMultiEnvironment"] = ims.SwMultiEnvironment
 
-	restyKubeAmbRes, errKubeAmbRes := ApiCallGET(ctx, restyDebug, argsAmb, "msauth", "/"+auth+"/getAmbDomainMs", devopsTokenDst, dominio, coreApiVersion)
+	restyKubeAmbRes, errKubeAmbRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsAmb, "msauth", "/"+auth+"/getAmbDomainMs", devopsTokenDst, dominio, coreApiVersion)
 	if errKubeAmbRes != nil {
-		Logga(ctx, ctx.Value("JsonLog").(bool), errKubeAmbRes.Error())
+		Logga(ctx, os.Getenv("JsonLog"), errKubeAmbRes.Error())
 
 		erro = errors.New(errKubeAmbRes.Error())
 		return ims, erro
@@ -531,40 +527,35 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 		ims.AttributiMS = attributiMSs
 
 		//fmt.Println(dbMetaConnMss, dbDataConnMss, attributiMSs)
-		Logga(ctx, ctx.Value("JsonLog").(bool), "AMB OK")
+		Logga(ctx, os.Getenv("JsonLog"), "AMB OK")
 	} else {
-		Logga(ctx, ctx.Value("JsonLog").(bool), "AMB MISSING")
+		Logga(ctx, os.Getenv("JsonLog"), "AMB MISSING")
 	}
 	// os.Exit(0)
-	Logga(ctx, ctx.Value("JsonLog").(bool), "")
+	Logga(ctx, os.Getenv("JsonLog"), "")
 
 	/* ************************************************************************************************ */
 	// DEPLOYLOG
 	var erroIstanzaVersioni error
 	ims.IstanzaMicroVersioni, erroIstanzaVersioni = GetIstanzaVersioni(ctx, iresReq, istanza, enviro, devops, devopsTokenDst, dominio, coreApiVersion)
 	if erroIstanzaVersioni != nil {
-		Logga(ctx, ctx.Value("JsonLog").(bool), erroIstanzaVersioni.Error())
+		Logga(ctx, os.Getenv("JsonLog"), erroIstanzaVersioni.Error())
 		return ims, erroIstanzaVersioni
 	}
 	// DEPLOYLOG
 	/* ************************************************************************************************ */
 
-	//Logga(ctx, ctx.Value("JsonLog").(bool), ims)
-	Logga(ctx, ctx.Value("JsonLog").(bool), "", "getIstanceDetail end")
-	Logga(ctx, ctx.Value("JsonLog").(bool), "", " - - - - - - - - - - - - - - - - - - - ")
-	Logga(ctx, ctx.Value("JsonLog").(bool), "", "")
+	//Logga(ctx, os.Getenv("JsonLog"), ims)
+	Logga(ctx, os.Getenv("JsonLog"), "", "getIstanceDetail end")
+	Logga(ctx, os.Getenv("JsonLog"), "", " - - - - - - - - - - - - - - - - - - - ")
+	Logga(ctx, os.Getenv("JsonLog"), "", "")
 	//os.Exit(0)
 	return ims, erro
 }
 func GetIstanzaVersioni(ctx context.Context, iresReq IresRequest, istanza, enviro, devops, devopsTokenDst, dominio, coreApiVersion string) ([]IstanzaMicroVersioni, error) {
-	Logga(ctx, ctx.Value("JsonLog").(bool), "Getting DEPLOYLOG")
+	Logga(ctx, os.Getenv("JsonLog"), "Getting DEPLOYLOG")
 	var erro error
 	var istanzaMicroVersioni []IstanzaMicroVersioni
-
-	restyDebug := false
-	if os.Getenv("restyDebug") == "true" {
-		restyDebug = true
-	}
 
 	argsDeploy := make(map[string]string)
 	argsDeploy["source"] = "devops-8"
@@ -578,9 +569,9 @@ func GetIstanzaVersioni(ctx context.Context, iresReq IresRequest, istanza, envir
 	argsDeploy["$filter"] += " and equals(XDEPLOYLOG09,'" + enviro + "') "
 	argsDeploy["$filter"] += " and equals(XDEPLOYLOG06,'1') "
 
-	restyDeployRes, errDeployRes := ApiCallGET(ctx, restyDebug, argsDeploy, "ms"+devops, "/"+devops+"/DEPLOYLOG", devopsTokenDst, dominio, coreApiVersion)
+	restyDeployRes, errDeployRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsDeploy, "ms"+devops, "/"+devops+"/DEPLOYLOG", devopsTokenDst, dominio, coreApiVersion)
 	if errDeployRes != nil {
-		Logga(ctx, ctx.Value("JsonLog").(bool), errDeployRes.Error())
+		Logga(ctx, os.Getenv("JsonLog"), errDeployRes.Error())
 		erro = errors.New(errDeployRes.Error())
 		return istanzaMicroVersioni, erro
 	}
@@ -594,11 +585,11 @@ func GetIstanzaVersioni(ctx context.Context, iresReq IresRequest, istanza, envir
 
 			istanzaMicroVersioni = append(istanzaMicroVersioni, istanzaMicroVersione)
 		}
-		Logga(ctx, ctx.Value("JsonLog").(bool), "DEPLOYLOG OK")
+		Logga(ctx, os.Getenv("JsonLog"), "DEPLOYLOG OK")
 	} else {
-		Logga(ctx, ctx.Value("JsonLog").(bool), "DEPLOYLOG MISSING")
+		Logga(ctx, os.Getenv("JsonLog"), "DEPLOYLOG MISSING")
 	}
-	Logga(ctx, ctx.Value("JsonLog").(bool), "")
+	Logga(ctx, os.Getenv("JsonLog"), "")
 
 	return istanzaMicroVersioni, erro
 }
@@ -607,17 +598,12 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 	var LoggaErrore LoggaErrore
 	LoggaErrore.Errore = 0
 
-	restyDebug := false
-	if os.Getenv("restyDebug") == "true" {
-		restyDebug = true
-	}
-
-	Logga(ctx, ctx.Value("JsonLog").(bool), "")
-	Logga(ctx, ctx.Value("JsonLog").(bool), " + + + + + + + + + + + + + + + + + + + + ")
-	Logga(ctx, ctx.Value("JsonLog").(bool), "updateIstanzaMicroservice begin")
-	Logga(ctx, ctx.Value("JsonLog").(bool), "versioneMicroservizio "+versioneMicroservizio)
+	Logga(ctx, os.Getenv("JsonLog"), "")
+	Logga(ctx, os.Getenv("JsonLog"), " + + + + + + + + + + + + + + + + + + + + ")
+	Logga(ctx, os.Getenv("JsonLog"), "updateIstanzaMicroservice begin")
+	Logga(ctx, os.Getenv("JsonLog"), "versioneMicroservizio "+versioneMicroservizio)
 	for _, ccc := range istanza.IstanzaMicroVersioni {
-		Logga(ctx, ctx.Value("JsonLog").(bool), ccc.TipoVersione+" "+ccc.Versione)
+		Logga(ctx, os.Getenv("JsonLog"), ccc.TipoVersione+" "+ccc.Versione)
 	}
 
 	devops := "devops"
@@ -637,11 +623,11 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 		case "canary", "Canary":
 			if versioni.TipoVersione == "canary" || versioni.TipoVersione == "Canary" {
 
-				Logga(ctx, ctx.Value("JsonLog").(bool), "Old canary found")
+				Logga(ctx, os.Getenv("JsonLog"), "Old canary found")
 
-				Logga(ctx, ctx.Value("JsonLog").(bool), "Delete canary "+istanza.Istanza+"-v"+versioni.Versione)
-				Logga(ctx, ctx.Value("JsonLog").(bool), "Make obsolete canary "+istanza.Istanza+" to version "+versioni.Versione)
-				Logga(ctx, ctx.Value("JsonLog").(bool), "New canary "+istanza.Istanza+" to version "+versioneMicroservizio)
+				Logga(ctx, os.Getenv("JsonLog"), "Delete canary "+istanza.Istanza+"-v"+versioni.Versione)
+				Logga(ctx, os.Getenv("JsonLog"), "Make obsolete canary "+istanza.Istanza+" to version "+versioni.Versione)
+				Logga(ctx, os.Getenv("JsonLog"), "New canary "+istanza.Istanza+" to version "+versioneMicroservizio)
 
 				// rendo obsoleto il vecchio canarino
 				keyvalueslice := make(map[string]interface{})
@@ -651,7 +637,7 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 
 				filter := "equals(XDEPLOYLOG04,'" + istanza.Istanza + "') and equals(XDEPLOYLOG03,'canary') and XDEPLOYLOG06 eq 1"
 
-				_, erro := ApiCallPUT(ctx, restyDebug, keyvalueslice, "ms"+devops, "/"+devops+"/DEPLOYLOG/"+filter, devopsToken, dominio, coreApiVersion)
+				_, erro := ApiCallPUT(ctx, os.Getenv("RestyDebug"), keyvalueslice, "ms"+devops, "/"+devops+"/DEPLOYLOG/"+filter, devopsToken, dominio, coreApiVersion)
 
 				if erro.Errore < 0 {
 					return erro
@@ -662,9 +648,9 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 
 		case "production", "Production":
 
-			Logga(ctx, ctx.Value("JsonLog").(bool), "Delete production "+istanza.Istanza+"-v"+versioni.Versione)
-			Logga(ctx, ctx.Value("JsonLog").(bool), "Make obsolete production "+istanza.Istanza+" to version "+versioni.Versione)
-			Logga(ctx, ctx.Value("JsonLog").(bool), "Make canary the new production "+istanza.Istanza)
+			Logga(ctx, os.Getenv("JsonLog"), "Delete production "+istanza.Istanza+"-v"+versioni.Versione)
+			Logga(ctx, os.Getenv("JsonLog"), "Make obsolete production "+istanza.Istanza+" to version "+versioni.Versione)
+			Logga(ctx, os.Getenv("JsonLog"), "Make canary the new production "+istanza.Istanza)
 
 			// FAC-744 - rendere tutte le precedenti versioni obsolete XDEPLOYLOG07 = 1
 
@@ -679,7 +665,7 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 
 				filter := "equals(XDEPLOYLOG04,'" + istanza.Istanza + "') and equals(XDEPLOYLOG03,'production') and XDEPLOYLOG06 eq 1"
 
-				_, erro := ApiCallPUT(ctx, restyDebug, keyvalueslice, "ms"+devops, "/"+devops+"/DEPLOYLOG/"+filter, devopsToken, dominio, coreApiVersion)
+				_, erro := ApiCallPUT(ctx, os.Getenv("RestyDebug"), keyvalueslice, "ms"+devops, "/"+devops+"/DEPLOYLOG/"+filter, devopsToken, dominio, coreApiVersion)
 				if erro.Errore < 0 {
 					return erro
 				}
@@ -694,7 +680,7 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 
 				filter := "equals(XDEPLOYLOG04,'" + istanza.Istanza + "') and equals(XDEPLOYLOG03,'canary')"
 
-				_, erro := ApiCallPUT(ctx, restyDebug, keyvalueslice, "ms"+devops, "/"+devops+"/DEPLOYLOG/"+filter, devopsToken, dominio, coreApiVersion)
+				_, erro := ApiCallPUT(ctx, os.Getenv("RestyDebug"), keyvalueslice, "ms"+devops, "/"+devops+"/DEPLOYLOG/"+filter, devopsToken, dominio, coreApiVersion)
 				if erro.Errore < 0 {
 					return erro
 				}
@@ -707,7 +693,7 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 
 	}
 
-	Logga(ctx, ctx.Value("JsonLog").(bool), "Inserisco il record")
+	Logga(ctx, os.Getenv("JsonLog"), "Inserisco il record")
 
 	canaryProduction = strings.ToLower(canaryProduction)
 	ista := strings.ToLower(istanza.Istanza)
@@ -742,7 +728,7 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 
 	detailJson, err := json.Marshal(details)
 	if err != nil {
-		Logga(ctx, ctx.Value("JsonLog").(bool), err.Error())
+		Logga(ctx, os.Getenv("JsonLog"), err.Error())
 	}
 
 	/* -------------------------- */
@@ -762,14 +748,14 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 	keyvalueslice["XDEPLOYLOG10"] = microfrontendJson
 	keyvalueslices = append(keyvalueslices, keyvalueslice)
 
-	resPOST := ApiCallPOST(ctx, restyDebug, keyvalueslices, "ms"+devops, "/"+devops+"/DEPLOYLOG", devopsToken, dominio, coreApiVersion)
+	resPOST := ApiCallPOST(ctx, os.Getenv("RestyDebug"), keyvalueslices, "ms"+devops, "/"+devops+"/DEPLOYLOG", devopsToken, dominio, coreApiVersion)
 	if resPOST.Errore < 0 {
 		LoggaErrore.Log = resPOST.Log
 		return LoggaErrore
 	}
 
-	Logga(ctx, ctx.Value("JsonLog").(bool), "updateIstanzaMicroservice end")
-	Logga(ctx, ctx.Value("JsonLog").(bool), " - - - - - - - - - - - - - - - - - - - ")
+	Logga(ctx, os.Getenv("JsonLog"), "updateIstanzaMicroservice end")
+	Logga(ctx, os.Getenv("JsonLog"), " - - - - - - - - - - - - - - - - - - - ")
 
 	//os.Exit(0)
 	return LoggaErrore
@@ -831,9 +817,9 @@ func GetGkeToken() (string, error) {
 }
 func CloudBuils(ctx context.Context, docker, verPad, dirRepo string, bArgs []string, swMonolith bool, cftoolenv TenantEnv) (BuildRes, error) {
 
-	Logga(ctx, ctx.Value("JsonLog").(bool), "")
-	Logga(ctx, ctx.Value("JsonLog").(bool), "CLOUD BUILD for "+docker)
-	Logga(ctx, ctx.Value("JsonLog").(bool), "")
+	Logga(ctx, os.Getenv("JsonLog"), "")
+	Logga(ctx, os.Getenv("JsonLog"), "CLOUD BUILD for "+docker)
+	Logga(ctx, os.Getenv("JsonLog"), "")
 
 	var errBuild error
 	fmt.Println(dirRepo + "-" + docker + "-" + verPad)
@@ -924,12 +910,8 @@ func GetBuildStatus(ID string, cftoolenv TenantEnv, token string) (BuildStatus, 
 func UpdateDockerVersion(ctx context.Context, docker, ver, user, devMaster, sha, team, newTagName, releaseNote, parentBranch, cs, merged, tenant, devopsToken, dominio, coreApiVersion string) error {
 
 	var erro error
-	Logga(ctx, ctx.Value("JsonLog").(bool), "Insert TB_ANAG_KUBEDKRBUILD00 ")
+	Logga(ctx, os.Getenv("JsonLog"), "Insert TB_ANAG_KUBEDKRBUILD00 ")
 
-	restyDebug := false
-	if os.Getenv("restyDebug") == "true" {
-		restyDebug = true
-	}
 	keyvalueslices := make([]map[string]interface{}, 0)
 	keyvalueslice := make(map[string]interface{})
 	keyvalueslice["debug"] = true
@@ -948,15 +930,15 @@ func UpdateDockerVersion(ctx context.Context, docker, ver, user, devMaster, sha,
 
 	keyvalueslices = append(keyvalueslices, keyvalueslice)
 
-	Logga(ctx, ctx.Value("JsonLog").(bool), "beore ApiCallPOST")
-	res := ApiCallPOST(ctx, restyDebug, keyvalueslices, "msdevops", "/devops/KUBEDKRBUILD", devopsToken, dominio, coreApiVersion)
-	Logga(ctx, ctx.Value("JsonLog").(bool), "after ApiCallPOST")
+	Logga(ctx, os.Getenv("JsonLog"), "beore ApiCallPOST")
+	res := ApiCallPOST(ctx, os.Getenv("RestyDebug"), keyvalueslices, "msdevops", "/devops/KUBEDKRBUILD", devopsToken, dominio, coreApiVersion)
+	Logga(ctx, os.Getenv("JsonLog"), "after ApiCallPOST")
 	if res.Errore != 0 {
-		Logga(ctx, ctx.Value("JsonLog").(bool), res.Log)
+		Logga(ctx, os.Getenv("JsonLog"), res.Log)
 		erro = errors.New(res.Log)
 		return erro
 	}
-	Logga(ctx, ctx.Value("JsonLog").(bool), "Insert TB_ANAG_KUBEDKRBUILD00 DONE")
+	Logga(ctx, os.Getenv("JsonLog"), "Insert TB_ANAG_KUBEDKRBUILD00 DONE")
 	return erro
 }
 
@@ -969,7 +951,7 @@ ritorna un LOG
 */
 func GitMergeApi(ctx context.Context, src, dst, repo, tipo string, bitbucketEnv MergeToMaster) (string, string) {
 
-	Logga(ctx, ctx.Value("JsonLog").(bool), "gitMergeApi")
+	Logga(ctx, os.Getenv("JsonLog"), "gitMergeApi")
 
 	var mergeRes MergeResponse
 	var erroMerge, noChanges bool
@@ -1001,7 +983,7 @@ func GitMergeApi(ctx context.Context, src, dst, repo, tipo string, bitbucketEnv 
 			fmt.Println("_##START##_   *WARNING* Cannot delete previous temporary branch " + tmpBranch + " _##STOP##_")
 		}
 
-		Logga(ctx, ctx.Value("JsonLog").(bool), repo+": creo branch dal tag "+src)
+		Logga(ctx, os.Getenv("JsonLog"), repo+": creo branch dal tag "+src)
 		// creo un branch vivo dal tag
 
 		body := `{"name": "` + tmpBranch + `","target": {  "hash": "` + src + `"}}`
@@ -1042,7 +1024,7 @@ func GitMergeApi(ctx context.Context, src, dst, repo, tipo string, bitbucketEnv 
 	}
 
 	// FACCIO LA PULL REQUEST PER IL MERGE
-	Logga(ctx, ctx.Value("JsonLog").(bool), repo+": faccio pull req di merge di "+src+" su "+dst)
+	Logga(ctx, os.Getenv("JsonLog"), repo+": faccio pull req di merge di "+src+" su "+dst)
 	titolo := "Merge " + src + " on " + dst
 	var body string
 	if tipo == "tag" {
@@ -1091,7 +1073,7 @@ func GitMergeApi(ctx context.Context, src, dst, repo, tipo string, bitbucketEnv 
 		if !erroMerge {
 
 			// NON HO ERRORI E QUINDI FACCIO IL MERGE
-			Logga(ctx, ctx.Value("JsonLog").(bool), repo+": faccio Merge di "+src+" su "+dst)
+			Logga(ctx, os.Getenv("JsonLog"), repo+": faccio Merge di "+src+" su "+dst)
 			mergeRes.Log += "Do MERGE of " + src + " on " + dst + "\n"
 
 			clientMerge := resty.New()
@@ -1158,9 +1140,9 @@ func GitMergeApi(ctx context.Context, src, dst, repo, tipo string, bitbucketEnv 
 }
 func CreaDirAndCloneDocker(ctx context.Context, dkr DockerStruct, dirToCreate, branch string, buildArgs BuildArgs) {
 
-	Logga(ctx, ctx.Value("JsonLog").(bool), "Work on: "+dkr.Docker)
-	Logga(ctx, ctx.Value("JsonLog").(bool), "Repo git: "+dkr.GitRepo)
-	Logga(ctx, ctx.Value("JsonLog").(bool), "Repo git branch: "+branch)
+	Logga(ctx, os.Getenv("JsonLog"), "Work on: "+dkr.Docker)
+	Logga(ctx, os.Getenv("JsonLog"), "Repo git: "+dkr.GitRepo)
+	Logga(ctx, os.Getenv("JsonLog"), "Repo git branch: "+branch)
 
 	// REPO TEMPLATE DOCKER
 	repoDocker := "https://" + buildArgs.UserGit + ":" + buildArgs.TokenGit + "@" + buildArgs.UrlGit + "/" + buildArgs.ProjectGit + "/docker-tmpl.git"
@@ -1173,7 +1155,7 @@ func CreaDirAndCloneDocker(ctx context.Context, dkr DockerStruct, dirToCreate, b
 	// creo la dir del docker
 	err := os.MkdirAll(dir, 0755)
 	if err != nil {
-		Logga(ctx, ctx.Value("JsonLog").(bool), err.Error(), "error")
+		Logga(ctx, os.Getenv("JsonLog"), err.Error(), "error")
 	}
 
 	// mi porto a terra i dockerfile e tutto cio che mi serve per creare il docker
@@ -1183,13 +1165,13 @@ func CreaDirAndCloneDocker(ctx context.Context, dkr DockerStruct, dirToCreate, b
 	// remove .git
 	err = os.RemoveAll(dir + "/.git")
 	if err != nil {
-		Logga(ctx, ctx.Value("JsonLog").(bool), err.Error(), "error")
+		Logga(ctx, os.Getenv("JsonLog"), err.Error(), "error")
 	}
 
 	// creo la dir src
 	err = os.MkdirAll(dirSrc, 0755)
 	if err != nil {
-		Logga(ctx, ctx.Value("JsonLog").(bool), err.Error(), "error")
+		Logga(ctx, os.Getenv("JsonLog"), err.Error(), "error")
 	}
 
 	// mi porto a terra i file del progetto e mi porto al branch dichiarato
@@ -1199,6 +1181,6 @@ func CreaDirAndCloneDocker(ctx context.Context, dkr DockerStruct, dirToCreate, b
 	// remove .git
 	err = os.RemoveAll(dirSrc + "/.git")
 	if err != nil {
-		Logga(ctx, ctx.Value("JsonLog").(bool), err.Error(), "error")
+		Logga(ctx, os.Getenv("JsonLog"), err.Error(), "error")
 	}
 }

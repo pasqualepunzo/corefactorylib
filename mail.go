@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"net/smtp"
+	"os"
 	"strings"
 
 	"github.com/go-resty/resty/v2"
@@ -101,10 +102,10 @@ func SendMail(mailer Mailer) error {
 
 	err := smtp.SendMail(host, auth, from_email, mailer.Receivers, data)
 	if err == nil {
-		Logga(ctx, ctx.Value("JsonLog").(bool), "Email Sent Successfully")
+		Logga(ctx, os.Getenv("JsonLog"), "Email Sent Successfully")
 		return nil
 	} else {
-		Logga(ctx, ctx.Value("JsonLog").(bool), "ERROR: "+err.Error(), "error")
+		Logga(ctx, os.Getenv("JsonLog"), "ERROR: "+err.Error(), "error")
 		return err
 	}
 }

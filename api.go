@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"math/rand"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -20,27 +21,27 @@ type RestyClientLogger struct{}
 func (cliLogger *RestyClientLogger) Debugf(format string, v ...interface{}) {
 	for _, m := range v {
 		ctx := context.Background()
-		Logga(ctx, ctx.Value("JsonLog").(bool), m, "info")
+		Logga(ctx, os.Getenv("JsonLog"), m, "info")
 	}
 }
 
 func (cliLogger *RestyClientLogger) Warnf(format string, v ...interface{}) {
 	for _, m := range v {
 		ctx := context.Background()
-		Logga(ctx, ctx.Value("JsonLog").(bool), m, "warn")
+		Logga(ctx, os.Getenv("JsonLog"), m, "warn")
 	}
 }
 
 func (cliLogger *RestyClientLogger) Errorf(format string, v ...interface{}) {
 	for _, m := range v {
 		ctx := context.Background()
-		Logga(ctx, ctx.Value("JsonLog").(bool), m, "error")
+		Logga(ctx, os.Getenv("JsonLog"), m, "error")
 	}
 }
 
-func ApiCallPOST(ctx context.Context, debug bool, args []map[string]interface{}, microservice, routing, token, dominio, coreApiVersion string) CallGetResponse {
+func ApiCallPOST(ctx context.Context, debug string, args []map[string]interface{}, microservice, routing, token, dominio, coreApiVersion string) CallGetResponse {
 
-	Logga(ctx, ctx.Value("JsonLog").(bool), "apiCallPOST")
+	Logga(ctx, os.Getenv("JsonLog"), "apiCallPOST")
 	if !strings.Contains(dominio, "http") {
 		dominio = "https://" + dominio
 	}
@@ -60,7 +61,7 @@ func ApiCallPOST(ctx context.Context, debug bool, args []map[string]interface{},
 
 	var resStruct CallGetResponse
 
-	Logga(ctx, ctx.Value("JsonLog").(bool), dominio+"/api/"+coreApiVersion+routing+" - "+microservice)
+	Logga(ctx, os.Getenv("JsonLog"), dominio+"/api/"+coreApiVersion+routing+" - "+microservice)
 
 	var LoggaErrore LoggaErrore
 	LoggaErrore.Errore = 0
@@ -71,7 +72,13 @@ func ApiCallPOST(ctx context.Context, debug bool, args []map[string]interface{},
 	restyLogger := RestyClientLogger{}
 	client.SetLogger(&restyLogger)
 
-	client.Debug = debug
+	debool, errBool := strconv.ParseBool(debug)
+	if errBool != nil {
+		resStruct.Errore = -1
+		resStruct.Log = errBool.Error()
+		return resStruct
+	}
+	client.Debug = debool
 	// Set retry count to non zero to enable retries
 	client.SetRetryCount(2)
 	// You can override initial retry wait time.
@@ -143,21 +150,7 @@ func ApiCallPOST(ctx context.Context, debug bool, args []map[string]interface{},
 
 	return resStruct
 }
-func ApiCallGET(ctx context.Context, debug bool, args map[string]string, microservice, routing, token, dominio, coreApiVersion string) (CallGetResponse, error) {
-
-	if debug {
-		Logga(ctx, ctx.Value("JsonLog").(bool), "apiCallGET")
-	}
-	if !strings.Contains(dominio, "http") {
-		dominio = "https://" + dominio
-	}
-
-	JobID := ""
-	if ctx.Value("JobID") != nil {
-		JobID = ctx.Value("JobID").(string)
-	}
-
-	args["JobID"] = JobID
+func ApiCallGET(ctx context.Context, debug string, args map[string]string, microservice, routing, token, dominio, coreApiVersion string) (CallGetResponse, error) {
 
 	type restyStruct struct {
 		Data    string      `json:"data"`
@@ -176,11 +169,30 @@ func ApiCallGET(ctx context.Context, debug bool, args map[string]string, microse
 		Message string `json:"message"`
 	}
 
-	if debug {
-		Logga(ctx, ctx.Value("JsonLog").(bool), dominio+"/api/"+coreApiVersion+routing+" - "+microservice)
+	var resStruct CallGetResponse
+
+	debool, errBool := strconv.ParseBool(debug)
+	if errBool != nil {
+		return resStruct, errBool
 	}
 
-	var resStruct CallGetResponse
+	if debool {
+		Logga(ctx, os.Getenv("JsonLog"), "apiCallGET")
+	}
+	if !strings.Contains(dominio, "http") {
+		dominio = "https://" + dominio
+	}
+
+	JobID := ""
+	if ctx.Value("JobID") != nil {
+		JobID = ctx.Value("JobID").(string)
+	}
+
+	args["JobID"] = JobID
+
+	if debool {
+		Logga(ctx, os.Getenv("JsonLog"), dominio+"/api/"+coreApiVersion+routing+" - "+microservice)
+	}
 
 	client := resty.New()
 
@@ -188,7 +200,7 @@ func ApiCallGET(ctx context.Context, debug bool, args map[string]string, microse
 	restyLogger := RestyClientLogger{}
 	client.SetLogger(&restyLogger)
 
-	client.Debug = debug
+	client.Debug = debool
 
 	// client.Debug = true
 	client.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
@@ -299,7 +311,7 @@ func ApiCallGET(ctx context.Context, debug bool, args map[string]string, microse
 	return resStruct, nil
 }
 
-func ApiCallLOGIN(ctx context.Context, debug bool, args map[string]interface{}, microservice, routing, dominio, coreApiVersion string) (map[string]interface{}, LoggaErrore) {
+func ApiCallLOGIN(ctx context.Context, debug string, args map[string]interface{}, microservice, routing, dominio, coreApiVersion string) (map[string]interface{}, LoggaErrore) {
 
 	if !strings.Contains(dominio, "http") {
 		dominio = "https://" + dominio
@@ -319,23 +331,29 @@ func ApiCallLOGIN(ctx context.Context, debug bool, args map[string]interface{}, 
 
 	args["uuid"] = args["uuid"].(string) + "-" + rnd
 
-	if debug {
-		Logga(ctx, ctx.Value("JsonLog").(bool), "")
-		Logga(ctx, ctx.Value("JsonLog").(bool), "apiCallLOGIN")
-		Logga(ctx, ctx.Value("JsonLog").(bool), "Args : ")
-	}
-	jsonString, _ := json.Marshal(args)
-	if debug {
-		Logga(ctx, ctx.Value("JsonLog").(bool), string(jsonString))
-
-		Logga(ctx, ctx.Value("JsonLog").(bool), "Microservice : "+microservice)
-		Logga(ctx, ctx.Value("JsonLog").(bool), "Url : "+dominio+"/api/"+coreApiVersion+routing)
-	}
+	callResponse := map[string]interface{}{}
 
 	var LoggaErrore LoggaErrore
 	LoggaErrore.Errore = 0
 
-	callResponse := map[string]interface{}{}
+	debool, errBool := strconv.ParseBool(debug)
+	if errBool != nil {
+		LoggaErrore.Errore = -1
+		LoggaErrore.Log = errBool.Error()
+		return callResponse, LoggaErrore
+	}
+	if debool {
+		Logga(ctx, os.Getenv("JsonLog"), "")
+		Logga(ctx, os.Getenv("JsonLog"), "apiCallLOGIN")
+		Logga(ctx, os.Getenv("JsonLog"), "Args : ")
+	}
+	jsonString, _ := json.Marshal(args)
+	if debool {
+		Logga(ctx, os.Getenv("JsonLog"), string(jsonString))
+
+		Logga(ctx, os.Getenv("JsonLog"), "Microservice : "+microservice)
+		Logga(ctx, os.Getenv("JsonLog"), "Url : "+dominio+"/api/"+coreApiVersion+routing)
+	}
 
 	client := resty.New()
 
@@ -344,7 +362,7 @@ func ApiCallLOGIN(ctx context.Context, debug bool, args map[string]interface{}, 
 	client.SetLogger(&restyLogger)
 
 	//client.Debug = debug
-	client.Debug = debug
+	client.Debug = debool
 	client.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 	res, err := client.R().
 		SetHeader("Content-Type", "application/json").
@@ -375,7 +393,7 @@ func ApiCallLOGIN(ctx context.Context, debug bool, args map[string]interface{}, 
 	}
 	return callResponse, LoggaErrore
 }
-func ApiCallPUT(ctx context.Context, debug bool, args map[string]interface{}, microservice, routing, token, dominio, coreApiVersion string) ([]byte, LoggaErrore) {
+func ApiCallPUT(ctx context.Context, debug string, args map[string]interface{}, microservice, routing, token, dominio, coreApiVersion string) ([]byte, LoggaErrore) {
 	if !strings.Contains(dominio, "http") {
 		dominio = "https://" + dominio
 	}
@@ -383,11 +401,18 @@ func ApiCallPUT(ctx context.Context, debug bool, args map[string]interface{}, mi
 	var LoggaErrore LoggaErrore
 	LoggaErrore.Errore = 0
 
+	debool, errBool := strconv.ParseBool(debug)
+	if errBool != nil {
+		LoggaErrore.Errore = -1
+		LoggaErrore.Log = errBool.Error()
+		return nil, LoggaErrore
+	}
+
 	client := resty.New()
 	// Set logrus as Logger
 	restyLogger := RestyClientLogger{}
 	client.SetLogger(&restyLogger)
-	client.Debug = debug
+	client.Debug = debool
 	client.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 	res, err := client.R().
 		SetHeader("Content-Type", "application/json").
@@ -408,15 +433,19 @@ func ApiCallPUT(ctx context.Context, debug bool, args map[string]interface{}, mi
 	}
 	return res.Body(), LoggaErrore
 }
-func GetCoreFactoryToken(ctx context.Context, tenant, accessToken, loginApiDomain, coreApiVersion string, debug bool) (string, error) {
+func GetCoreFactoryToken(ctx context.Context, tenant, accessToken, loginApiDomain, coreApiVersion string, debug string) (string, error) {
 	/* ************************************************************************************************ */
 	// cerco il token di devops
+	var erro error
 
-	if debug {
-		Logga(ctx, ctx.Value("JsonLog").(bool), "Core factory Token")
+	debool, errBool := strconv.ParseBool(debug)
+	if errBool != nil {
+		return "", errBool
 	}
 
-	var erro error
+	if debool {
+		Logga(ctx, os.Getenv("JsonLog"), "Core factory Token")
+	}
 
 	urlDevops := loginApiDomain
 	urlDevopsStripped := strings.Replace(urlDevops, "https://", "", -1)
@@ -446,7 +475,7 @@ func GetCoreFactoryToken(ctx context.Context, tenant, accessToken, loginApiDomai
 		return "", erro
 	}
 }
-func ApiCallDELETE(ctx context.Context, debug bool, args map[string]string, microservice, routing, token, dominio, coreApiVersion string) CallGetResponse {
+func ApiCallDELETE(ctx context.Context, debug string, args map[string]string, microservice, routing, token, dominio, coreApiVersion string) CallGetResponse {
 
 	JobID := ""
 	if ctx.Value("JobID") != nil {
@@ -466,14 +495,20 @@ func ApiCallDELETE(ctx context.Context, debug bool, args map[string]string, micr
 
 	var resStruct CallGetResponse
 
-	Logga(ctx, ctx.Value("JsonLog").(bool), dominio+"/api/"+coreApiVersion+routing+" - "+microservice)
+	Logga(ctx, os.Getenv("JsonLog"), dominio+"/api/"+coreApiVersion+routing+" - "+microservice)
+
+	debool, errBool := strconv.ParseBool(debug)
+	if errBool != nil {
+		resStruct.Errore = -1
+		resStruct.Log = errBool.Error()
+	}
 
 	//fmt.Println("apiCallDELETE", debug)
 	client := resty.New()
 	// Set logrus as Logger
 	restyLogger := RestyClientLogger{}
 	client.SetLogger(&restyLogger)
-	client.Debug = debug
+	client.Debug = debool
 	client.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 	res, err := client.R().
 		SetHeader("Content-Type", "application/json").

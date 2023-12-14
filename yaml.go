@@ -34,8 +34,8 @@ func GetYamlContainerProbes(prbsarray []Probes) string {
 			yamlProbes += "            command:\n"
 			var cmdarray []string
 			err := json.Unmarshal([]byte(prbs.Command), &cmdarray)
-			//Logga(ctx, ctx.Value("JsonLog").(bool), httpheadersarray)
-			//Logga(ctx, ctx.Value("JsonLog").(bool), err)
+			//Logga(ctx, os.Getenv("JsonLog"), httpheadersarray)
+			//Logga(ctx, os.Getenv("JsonLog"), err)
 			if err == nil {
 				for _, cmdvalue := range cmdarray {
 					if cmdvalue != "" {
@@ -56,8 +56,8 @@ func GetYamlContainerProbes(prbsarray []Probes) string {
 
 				var httpheadersarray []HttpHeadersJson
 				err := json.Unmarshal([]byte(prbs.HttpHeaders), &httpheadersarray)
-				//Logga(ctx, ctx.Value("JsonLog").(bool), httpheadersarray)
-				//Logga(ctx, ctx.Value("JsonLog").(bool), err)
+				//Logga(ctx, os.Getenv("JsonLog"), httpheadersarray)
+				//Logga(ctx, os.Getenv("JsonLog"), err)
 				if err == nil {
 					for _, HttpNameValue := range httpheadersarray {
 						if HttpNameValue.Name != "" {
