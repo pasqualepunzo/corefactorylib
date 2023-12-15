@@ -393,19 +393,16 @@ func ApiCallLOGIN(ctx context.Context, debug string, args map[string]interface{}
 	}
 	return callResponse, LoggaErrore
 }
-func ApiCallPUT(ctx context.Context, debug string, args map[string]interface{}, microservice, routing, token, dominio, coreApiVersion string) ([]byte, LoggaErrore) {
+func ApiCallPUT(ctx context.Context, debug string, args map[string]interface{}, microservice, routing, token, dominio, coreApiVersion string) ([]byte, error) {
+
+	var erro error
 	if !strings.Contains(dominio, "http") {
 		dominio = "https://" + dominio
 	}
 
-	var LoggaErrore LoggaErrore
-	LoggaErrore.Errore = 0
-
 	debool, errBool := strconv.ParseBool(debug)
 	if errBool != nil {
-		LoggaErrore.Errore = -1
-		LoggaErrore.Log = errBool.Error()
-		return nil, LoggaErrore
+		return nil, errBool
 	}
 
 	client := resty.New()
@@ -424,14 +421,13 @@ func ApiCallPUT(ctx context.Context, debug string, args map[string]interface{}, 
 		Put(dominio + "/api/" + coreApiVersion + routing)
 
 	if res.StatusCode() != 200 {
-		LoggaErrore.Errore = -1
-		LoggaErrore.Log = "Token error Cannot get a valid token"
-
+		erro = errors.New("Update error - CODE: " + strconv.Itoa(res.StatusCode()))
+		return nil, erro
 	}
 	if err != nil {
-
+		return nil, err
 	}
-	return res.Body(), LoggaErrore
+	return res.Body(), erro
 }
 func GetCoreFactoryToken(ctx context.Context, tenant, accessToken, loginApiDomain, coreApiVersion string, debug string) (string, error) {
 	/* ************************************************************************************************ */

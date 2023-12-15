@@ -639,8 +639,10 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 
 				_, erro := ApiCallPUT(ctx, os.Getenv("RestyDebug"), keyvalueslice, "ms"+devops, "/"+devops+"/DEPLOYLOG/"+filter, devopsToken, dominio, coreApiVersion)
 
-				if erro.Errore < 0 {
-					return erro
+				if erro != nil {
+					LoggaErrore.Errore = -1
+					LoggaErrore.Log = erro.Error()
+					return LoggaErrore
 				}
 			}
 
@@ -666,8 +668,10 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 				filter := "equals(XDEPLOYLOG04,'" + istanza.Istanza + "') and equals(XDEPLOYLOG03,'production') and XDEPLOYLOG06 eq 1"
 
 				_, erro := ApiCallPUT(ctx, os.Getenv("RestyDebug"), keyvalueslice, "ms"+devops, "/"+devops+"/DEPLOYLOG/"+filter, devopsToken, dominio, coreApiVersion)
-				if erro.Errore < 0 {
-					return erro
+				if erro != nil {
+					LoggaErrore.Errore = -1
+					LoggaErrore.Log = erro.Error()
+					return LoggaErrore
 				}
 
 			case "canary", "Canary":
@@ -681,8 +685,10 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 				filter := "equals(XDEPLOYLOG04,'" + istanza.Istanza + "') and equals(XDEPLOYLOG03,'canary')"
 
 				_, erro := ApiCallPUT(ctx, os.Getenv("RestyDebug"), keyvalueslice, "ms"+devops, "/"+devops+"/DEPLOYLOG/"+filter, devopsToken, dominio, coreApiVersion)
-				if erro.Errore < 0 {
-					return erro
+				if erro != nil {
+					LoggaErrore.Errore = -1
+					LoggaErrore.Log = erro.Error()
+					return LoggaErrore
 				}
 
 				break
@@ -867,9 +873,16 @@ func CloudBuils(ctx context.Context, docker, verPad, dirRepo string, bArgs []str
 	cb.Steps = append(cb.Steps, step1)
 	cb.Steps = append(cb.Steps, step2)
 
+	var bres BuildRes
+
+	debool, errBool := strconv.ParseBool(os.Getenv("RestyDebug"))
+	if errBool != nil {
+		return bres, errBool
+	}
+
 	// lancio la BUILD
 	cliB := resty.New()
-	cliB.Debug = true
+	cliB.Debug = debool
 	cliB.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 	restyResB, errApiB := cliB.R().
 		SetAuthToken(gkeToken).
@@ -879,7 +892,6 @@ func CloudBuils(ctx context.Context, docker, verPad, dirRepo string, bArgs []str
 
 	}
 
-	var bres BuildRes
 	if restyResB.StatusCode() != 200 {
 		var brerr BuildError
 		json.Unmarshal([]byte(restyResB.Body()), &brerr)
