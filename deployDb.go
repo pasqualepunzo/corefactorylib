@@ -176,7 +176,7 @@ func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, 
 	var dbDataSrc string
 
 	dbDataSrc = dbDataName.DataName + "_ccd_nuovo"
-	dbDataDst := dbDataName.DataName + "_ccd_prod"
+	dbDataDst := dbDataName.DataName
 
 	// se facciamo il compare sui monoliti
 	if ires.Monolith == 1 {
@@ -375,7 +375,7 @@ func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, 
 		// poiche la madonna di mysql non contempla add column if not exist sono costretto a tirare le madonne ...
 		var COLUMN_NAME string
 		sqlCheck := "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS "
-		sqlCheck += "WHERE TABLE_SCHEMA='" + dbDataName.DataName + "' "
+		sqlCheck += "WHERE TABLE_SCHEMA='" + dbDataDst + "' "
 		sqlCheck += "AND TABLE_NAME='" + vv.Tbl + "' "
 		sqlCheck += "AND COLUMN_NAME='" + vv.Column_name + "' "
 		sqlCheckRes, errcheck := db.Query(sqlCheck)
