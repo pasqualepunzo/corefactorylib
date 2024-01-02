@@ -1680,6 +1680,8 @@ func CheckPodHealth(microservice, versione, namespace, apiHost, apiToken string,
 						if item.Spec.Replicas == item.Status.ReadyReplicas {
 							return true, erro
 						}
+					} else {
+						return true, erro
 					}
 				}
 
