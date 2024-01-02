@@ -319,17 +319,18 @@ type IstanzaMicro struct {
 	Tags                                []string
 	AmbID                               int `json:"ambID"`
 	Monolith, ProfileDeploy, ProfileInt int32
-	DbMetaConnMs                        []DbMetaConnMs `json:"dbMetaConnMs"`
-	DbDataConnMs                        []DbDataConnMs `json:"dbDataConnMs"`
-	MasterHost                          string         `json:"masterHost"`
-	MasterName                          string         `json:"masterName"`
-	MasterHostData                      string         `json:"masterHostData"`
-	MasterHostMeta                      string         `json:"masterHostMeta"`
-	MasterUser                          string         `json:"masterUser"`
-	MasterPass                          string         `json:"masterPass"`
-	SwMultiEnvironment                  string         `json:"swMultiEnvironment"`
-	SwCore                              bool
-	SwDb                                int
+	DbMetaConnMs                        []DbMetaConnMs         `json:"dbMetaConnMs"`
+	DbDataConnMs                        []DbDataConnMs         `json:"dbDataConnMs"`
+	MasterHost                          string                 `json:"masterHost"`
+	MasterName                          string                 `json:"masterName"`
+	MasterHostData                      string                 `json:"masterHostData"`
+	MasterHostMeta                      string                 `json:"masterHostMeta"`
+	MasterUser                          string                 `json:"masterUser"`
+	MasterPass                          string                 `json:"masterPass"`
+	SwMultiEnvironment                  string                 `json:"swMultiEnvironment"`
+	SwCore                              bool                   `json:"swCore"`
+	ScaleToZero                         bool                   `json:"scaleToZero"`
+	SwDb                                int                    `json:"swDb"`
 	IstanzaMicroVersioni                []IstanzaMicroVersioni `json:"istanzaMicroVersioni"`
 	AttributiMS                         []AttributiMS          `json:"attributiMS"`
 	ApiHost                             string                 `json:"apiHost"`

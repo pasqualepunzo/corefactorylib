@@ -407,7 +407,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 
 	argsMS := make(map[string]string)
 	argsMS["source"] = "devops-8"
-	argsMS["$select"] = "XKUBEMICROSERV09,XKUBEMICROSERV15,XKUBEMICROSERV18"
+	argsMS["$select"] = "XKUBEMICROSERV09,XKUBEMICROSERV15,XKUBEMICROSERV18,XKUBEMICROSERV20"
 	argsMS["center_dett"] = "dettaglio"
 	argsMS["$filter"] = "equals(XKUBEMICROSERV05,'" + microservice + "') "
 	restyKubeMSRes, errKubeMSRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsMS, "ms"+devops, "/"+devops+"/KUBEMICROSERV", devopsToken, dominio, coreApiVersion)
@@ -428,6 +428,15 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 			swCoreBool = true
 		}
 		ims.SwCore = swCoreBool
+
+		var scaleToZero bool
+		scaleToZeroFloat := restyKubeMSRes.BodyJson["XKUBEMICROSERV20"].(float64)
+		if scaleToZeroFloat == 0 {
+			scaleToZero = false
+		} else {
+			scaleToZero = true
+		}
+		ims.ScaleToZero = scaleToZero
 
 		swDb := int(restyKubeMSRes.BodyJson["XKUBEMICROSERV15"].(float64))
 		microservicePublic = int(restyKubeMSRes.BodyJson["XKUBEMICROSERV18"].(float64))
