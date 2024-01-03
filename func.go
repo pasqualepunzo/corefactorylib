@@ -1795,19 +1795,19 @@ func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, can
 		}
 		for _, item := range item.Items {
 
-			Logga(ctx, os.Getenv("JsonLog"), "item yaml: "+item.Spec.Selector.MatchLabels.App)
-			Logga(ctx, os.Getenv("JsonLog"), "version: "+item.Spec.Selector.MatchLabels.Version)
+			Logga(ctx, os.Getenv("JsonLog"), "item yaml: "+item.Spec.Template.Metadata.Labels.App)
+			Logga(ctx, os.Getenv("JsonLog"), "version: "+item.Spec.Template.Metadata.Labels.Version)
 			Logga(ctx, os.Getenv("JsonLog"), "item ires: "+microservice)
 			// primo filtro sulla refapp giusta
-			if item.Spec.Selector.MatchLabels.App == microservice {
+			if item.Spec.Template.Metadata.Labels.App == microservice {
 
 				Logga(ctx, os.Getenv("JsonLog"), "Kill everything with different version of canary: "+versioneCanaryDb+" or production: "+versioneProductionDb+" - Current version: "+item.Spec.Selector.MatchLabels.Version)
 				// secondo filtro sulle versione
-				if item.Spec.Selector.MatchLabels.Version == versioneCanaryDb || item.Spec.Selector.MatchLabels.Version == versioneProductionDb {
+				if item.Spec.Template.Metadata.Labels.Version == versioneCanaryDb || item.Spec.Template.Metadata.Labels.Version == versioneProductionDb {
 					// SKIP
 				} else {
 
-					deployment := item.Spec.Selector.MatchLabels.App + "-" + item.Spec.Selector.MatchLabels.Version
+					deployment := item.Spec.Template.Metadata.Labels.App + "-" + item.Spec.Template.Metadata.Labels.Version
 					Logga(ctx, os.Getenv("JsonLog"), "KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL")
 
 					Logga(ctx, os.Getenv("JsonLog"), "I DO KILL: "+deployment)
