@@ -410,6 +410,12 @@ type DeploymntStatus struct {
 				} `json:"matchLabels"`
 			} `json:"selector"`
 			Template struct {
+				Metadata struct {
+					Labels struct {
+						App     string `json:"app"`
+						Version string `json:"version"`
+					} `json:"labels"`
+				} `json:"metadata"`
 				Spec struct {
 					Containers []struct {
 						Env []struct {

@@ -1588,7 +1588,7 @@ func GetCfToolEnv(ctx context.Context, token, dominio, tenant, coreApiVersion st
 	return tntEnv, erro
 
 }
-func GetDeploymentApi(namespace, apiHost, apiToken string) (DeploymntStatus, LoggaErrore) {
+func GetDeploymentApi(namespace, apiHost, apiToken string, scaleToZero bool) (DeploymntStatus, LoggaErrore) {
 
 	var erro LoggaErrore
 	erro.Errore = 0
@@ -1599,10 +1599,14 @@ func GetDeploymentApi(namespace, apiHost, apiToken string) (DeploymntStatus, Log
 	clientKUBE.Debug = false
 	clientKUBE.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 
+	endPoint := "https://" + apiHost + "/apis/apps/v1/namespaces/" + namespace + "/deployments"
+	if scaleToZero {
+		endPoint = "https://" + apiHost + "/apis/serving.knative.dev/v1/namespaces/" + namespace + "/services"
+	}
 	resKUBE, errKUBE := clientKUBE.R().
 		SetHeader("Content-Type", "application/json").
 		SetAuthToken(apiToken).
-		Get("https://" + apiHost + "/apis/apps/v1/namespaces/" + namespace + "/deployments")
+		Get(endPoint)
 
 	if errKUBE != nil {
 		erro.Errore = -1
@@ -1640,7 +1644,8 @@ func GetDeploymentApi(namespace, apiHost, apiToken string) (DeploymntStatus, Log
 
 	return deploy, erro
 }
-func CheckPodHealth(microservice, versione, namespace, apiHost, apiToken string) (bool, LoggaErrore) {
+
+func CheckPodHealth(microservice, versione, namespace, apiHost, apiToken string, scaleToZero bool) (bool, LoggaErrore) {
 
 	var erro LoggaErrore
 	erro.Errore = 0
@@ -1649,7 +1654,7 @@ func CheckPodHealth(microservice, versione, namespace, apiHost, apiToken string)
 	msMatch := false
 	i := 0
 	for {
-		item, err := GetDeploymentApi(namespace, apiHost, apiToken)
+		item, err := GetDeploymentApi(namespace, apiHost, apiToken, scaleToZero)
 		if err.Errore < 0 {
 			erro.Errore = -1
 			erro.Log = err.Log
@@ -1668,10 +1673,14 @@ func CheckPodHealth(microservice, versione, namespace, apiHost, apiToken string)
 				if item.Metadata.Name == msDeploy {
 					msMatch = true
 
-					var ctx context.Context
-					Logga(ctx, os.Getenv("JsonLog"), item.Metadata.Name+" desired: ", strconv.Itoa(item.Spec.Replicas), " - aviable: ", strconv.Itoa(item.Status.ReadyReplicas))
+					if !scaleToZero {
+						var ctx context.Context
+						Logga(ctx, os.Getenv("JsonLog"), item.Metadata.Name+" desired: ", strconv.Itoa(item.Spec.Replicas), " - aviable: ", strconv.Itoa(item.Status.ReadyReplicas))
 
-					if item.Spec.Replicas == item.Status.ReadyReplicas {
+						if item.Spec.Replicas == item.Status.ReadyReplicas {
+							return true, erro
+						}
+					} else {
 						return true, erro
 					}
 				}
@@ -1763,7 +1772,7 @@ func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, can
 	//msDeploy := microservice + "-v" + versione
 
 	//LogJson(ires)
-	item, err := GetDeploymentApi(namespace, ires.ApiHost, ires.ApiToken)
+	item, err := GetDeploymentApi(namespace, ires.ApiHost, ires.ApiToken, ires.ScaleToZero)
 	//LogJson(item)
 	if err.Errore < 0 {
 		erro = errors.New(err.Log)
@@ -1786,27 +1795,31 @@ func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, can
 		}
 		for _, item := range item.Items {
 
-			Logga(ctx, os.Getenv("JsonLog"), "item yaml: "+item.Spec.Selector.MatchLabels.App)
-			Logga(ctx, os.Getenv("JsonLog"), "version: "+item.Spec.Selector.MatchLabels.Version)
+			Logga(ctx, os.Getenv("JsonLog"), "item yaml: "+item.Spec.Template.Metadata.Labels.App)
+			Logga(ctx, os.Getenv("JsonLog"), "version: "+item.Spec.Template.Metadata.Labels.Version)
 			Logga(ctx, os.Getenv("JsonLog"), "item ires: "+microservice)
 			// primo filtro sulla refapp giusta
-			if item.Spec.Selector.MatchLabels.App == microservice {
+			if item.Spec.Template.Metadata.Labels.App == microservice {
 
 				Logga(ctx, os.Getenv("JsonLog"), "Kill everything with different version of canary: "+versioneCanaryDb+" or production: "+versioneProductionDb+" - Current version: "+item.Spec.Selector.MatchLabels.Version)
 				// secondo filtro sulle versione
-				if item.Spec.Selector.MatchLabels.Version == versioneCanaryDb || item.Spec.Selector.MatchLabels.Version == versioneProductionDb {
+				if item.Spec.Template.Metadata.Labels.Version == versioneCanaryDb || item.Spec.Template.Metadata.Labels.Version == versioneProductionDb {
 					// SKIP
 				} else {
 
-					deployment := item.Spec.Selector.MatchLabels.App + "-" + item.Spec.Selector.MatchLabels.Version
+					deployment := item.Spec.Template.Metadata.Labels.App + "-" + item.Spec.Template.Metadata.Labels.Version
 					Logga(ctx, os.Getenv("JsonLog"), "KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL")
 
 					Logga(ctx, os.Getenv("JsonLog"), "I DO KILL: "+deployment)
-					// delete deployment
-					DeleteObjectsApi(namespace, ires.ApiHost, ires.ApiToken, deployment, "deployment")
 
-					// delete HPA
-					DeleteObjectsApi(namespace, ires.ApiHost, ires.ApiToken, deployment, "hpa")
+					if ires.ScaleToZero {
+						DeleteObjectsApi(namespace, ires.ApiHost, ires.ApiToken, deployment, "knservice")
+					} else {
+						// delete deployment
+						DeleteObjectsApi(namespace, ires.ApiHost, ires.ApiToken, deployment, "deployment")
+						// delete HPA
+						DeleteObjectsApi(namespace, ires.ApiHost, ires.ApiToken, deployment, "hpa")
+					}
 
 				}
 			}
@@ -1840,6 +1853,9 @@ func DeleteObjectsApi(namespace, apiHost, apiToken, object, kind string) LoggaEr
 	case "deployment":
 		apiversion = "apps/v1"
 		name = "deployments"
+	case "knservice":
+		apiversion = "serving.knative.dev/v1"
+		name = "services"
 	}
 
 	var erro LoggaErrore
