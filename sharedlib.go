@@ -2,7 +2,10 @@ package lib
 
 import (
 	"context"
+	"crypto/sha256"
 	"crypto/tls"
+	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -820,6 +823,19 @@ func UploadFileBucket(bucket, object, filename string) error {
 	}
 	fmt.Println(filename + " uploaded in " + object)
 	return nil
+}
+func GetGkeDevopsToken(salt string) string {
+	ct := time.Now()
+	date := ct.Format("20060102")
+	year := date[0:4]
+	month := date[4:6]
+	day := date[6:8]
+	secret := year + "." + salt + "." + month + "." + day
+
+	h := sha256.New()
+	h.Write([]byte(secret))
+	sha1_hash := hex.EncodeToString(h.Sum(nil))
+	return base64.StdEncoding.EncodeToString([]byte(sha1_hash))
 }
 func GetGkeToken() (string, error) {
 	cmd := exec.Command("bash", "-c", "gcloud config config-helper --format='value(credential.access_token)'")
