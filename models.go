@@ -338,8 +338,20 @@ type IstanzaMicro struct {
 	Autopilot                           string                 `json:"autopilot"`
 	CloudNet                            string                 `json:"cloudNet"`
 	DepEnv                              string                 `json:"depEnv"`
+	RefApp                              Refapp                 `json:"refapp"`
 }
-
+type Refapp struct {
+	RefAppName string   `json:"refAppName"`
+	Domini     []string `json:"domini"`
+	//Microservizi []string    `json:"microservizi"`
+	BaseRoute []BaseRoute `json:"baseRoute"`
+}
+type BaseRoute struct {
+	BaseRoute string `json:"baseRoute"`
+	Team      string `json:"team"`
+	Domino    string `json:"dominio"`
+	Env       string `json:"env"`
+}
 type AttributiMS struct {
 	Partner  string `json:"partner"`
 	Market   string `json:"market"`
