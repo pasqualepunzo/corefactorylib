@@ -226,10 +226,11 @@ type Branch struct {
 	Sha     string
 }
 type Mount struct {
-	Nome      string
-	Mount     string
-	Subpath   string
-	ClaimName string
+	Nome       string
+	Mount      string
+	Subpath    string
+	ClaimName  string
+	FromSecret bool
 }
 
 type Service struct {

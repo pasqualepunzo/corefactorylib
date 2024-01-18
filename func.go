@@ -683,7 +683,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 			Logga(ctx, os.Getenv("JsonLog"), "Getting KUBEDKRMOUNT")
 			argsMnt := make(map[string]string)
 			argsMnt["source"] = "devops-8"
-			argsMnt["$select"] = "XKUBEDKRMOUNT04,XKUBEDKRMOUNT05,XKUBEDKRMOUNT06,XKUBEDKRMOUNT07"
+			argsMnt["$select"] = "XKUBEDKRMOUNT04,XKUBEDKRMOUNT05,XKUBEDKRMOUNT06,XKUBEDKRMOUNT07,XKUBEDKRMOUNT08"
 			argsMnt["center_dett"] = "visualizza"
 			argsMnt["$filter"] = "equals(XKUBEDKRMOUNT03,'" + docker + "') "
 
@@ -702,6 +702,11 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 					mount.Mount = x["XKUBEDKRMOUNT05"].(string)
 					mount.Subpath = x["XKUBEDKRMOUNT06"].(string)
 					mount.ClaimName = x["XKUBEDKRMOUNT07"].(string)
+
+					if x["XKUBEDKRMOUNT08"] != nil {
+						fromSecretFloat := x["XKUBEDKRMOUNT08"].(float64)
+						mount.FromSecret = fromSecretFloat == 1
+					}
 
 					mounts = append(mounts, mount)
 				}
