@@ -352,6 +352,7 @@ type BaseRoute struct {
 	Team      string `json:"team"`
 	Domino    string `json:"dominio"`
 	Env       string `json:"env"`
+	Ip        string `json:"ip"`
 }
 type AttributiMS struct {
 	Partner  string `json:"partner"`

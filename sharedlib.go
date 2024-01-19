@@ -578,6 +578,8 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	//os.Exit(0)
 	return ims, erro
 }
+
+// questo metodo restituisce cio che serve in caso in cui il MS e di tipo REFAPP
 func fillRefapp(ctx context.Context, refappname, devopsToken, dominio, coreApiVersion string) (Refapp, error) {
 
 	var refapp Refapp
@@ -602,12 +604,20 @@ func fillRefapp(ctx context.Context, refappname, devopsToken, dominio, coreApiVe
 		erro := errors.New(errMsRes.Error())
 		return refapp, erro
 	}
-	var micros string
+	var micros, microsFullQ string
 	if len(MsRes.BodyArray) > 0 {
 		for _, x := range MsRes.BodyArray {
-			micros += "'" + x["XKUBEMICROSERV05"].(string) + "', "
+			_, errcast := x["XKUBEMICROSERV05"].(string)
+			if !errcast {
+				Logga(ctx, os.Getenv("JsonLog"), "XKUBEMICROSERV05 no cast")
+				erro := errors.New("XKUBEMICROSERV05 no cast")
+				return refapp, erro
+			}
+			micros += x["XKUBEMICROSERV05"].(string) + ","
+			microsFullQ += "'" + x["XKUBEMICROSERV05"].(string) + "', "
 		}
-		micros = micros[0 : len(micros)-2]
+		micros = "'" + micros[0:len(micros)-1] + "'"
+		microsFullQ = microsFullQ[0 : len(microsFullQ)-2]
 	}
 
 	// ottengo il codice della refapp per agganciarmi a app
@@ -617,7 +627,7 @@ func fillRefapp(ctx context.Context, refappname, devopsToken, dominio, coreApiVe
 	argsRefapp["center_dett"] = "dettaglio"
 	argsRefapp["$filter"] = "equals(XREFAPPNEW05,'" + refappname + "') "
 
-	RefappRes, errRefappRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsRefapp, "msdevops", "/devops/REFAPPNEW", devopsToken, dominio, coreApiVersion)
+	RefappRes, errRefappRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsRefapp, "msappman", "/appman/REFAPPNEW", devopsToken, dominio, coreApiVersion)
 	if errRefappRes != nil {
 		Logga(ctx, os.Getenv("JsonLog"), errRefappRes.Error())
 		erro := errors.New(errRefappRes.Error())
@@ -625,17 +635,23 @@ func fillRefapp(ctx context.Context, refappname, devopsToken, dominio, coreApiVe
 	}
 	appID := ""
 	if len(RefappRes.BodyJson) > 0 {
+		_, errcast := RefappRes.BodyJson["XREFAPPNEW03"].(string)
+		if !errcast {
+			Logga(ctx, os.Getenv("JsonLog"), "XREFAPPNEW03 no cast")
+			erro := errors.New("XREFAPPNEW03 no cast")
+			return refapp, erro
+		}
 		appID = RefappRes.BodyJson["XREFAPPNEW03"].(string)
 	}
 
 	// entro su refappcustomer ed ottengo i domini
 	argsRefappcustomer := make(map[string]string)
-	argsRefappcustomer["source"] = "devops-8"
+	argsRefappcustomer["source"] = "appman-8"
 	argsRefappcustomer["$select"] = "XREFAPPCUSTOMER12"
 	argsRefappcustomer["center_dett"] = "visualizza"
 	argsRefappcustomer["$filter"] = "equals(XREFAPPCUSTOMER09,'" + refappname + "') "
 
-	RefappcustomerRes, errRefappcustomerRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsRefappcustomer, "msdevops", "/devops/REFAPPCUSTOMER", devopsToken, dominio, coreApiVersion)
+	RefappcustomerRes, errRefappcustomerRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsRefappcustomer, "msappman", "/appman/REFAPPCUSTOMER", devopsToken, dominio, coreApiVersion)
 	if errRefappcustomerRes != nil {
 		Logga(ctx, os.Getenv("JsonLog"), errRefappcustomerRes.Error())
 		erro := errors.New(errRefappcustomerRes.Error())
@@ -644,6 +660,12 @@ func fillRefapp(ctx context.Context, refappname, devopsToken, dominio, coreApiVe
 	if len(RefappcustomerRes.BodyArray) > 0 {
 		var domini []string
 		for _, x := range RefappcustomerRes.BodyArray {
+			_, errcast := x["XREFAPPCUSTOMER12"].(string)
+			if !errcast {
+				Logga(ctx, os.Getenv("JsonLog"), "XREFAPPCUSTOMER12 no cast")
+				erro := errors.New("XREFAPPCUSTOMER12 no cast")
+				return refapp, erro
+			}
 			domini = append(domini, x["XREFAPPCUSTOMER12"].(string))
 		}
 		refapp.Domini = domini
@@ -651,29 +673,35 @@ func fillRefapp(ctx context.Context, refappname, devopsToken, dominio, coreApiVe
 
 	// ottengo il nome della refapp
 	argsApp := make(map[string]string)
-	argsApp["source"] = "devops-8"
+	argsApp["source"] = "appman-8"
 	argsApp["$select"] = "XAPP04"
 	argsApp["center_dett"] = "dettaglio"
 	argsApp["$filter"] = "equals(XAPP03,'" + appID + "') "
 
-	AppRes, errAppRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsApp, "msdevops", "/devops/APP", devopsToken, dominio, coreApiVersion)
+	AppRes, errAppRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsApp, "msappman", "/appman/APP", devopsToken, dominio, coreApiVersion)
 	if errAppRes != nil {
 		Logga(ctx, os.Getenv("JsonLog"), errAppRes.Error())
 		erro := errors.New(errAppRes.Error())
 		return refapp, erro
 	}
 	if len(AppRes.BodyJson) > 0 {
-		refapp.RefAppName = AppRes.BodyJson["XAPP03"].(string)
+		_, errcast := AppRes.BodyJson["XAPP04"].(string)
+		if !errcast {
+			Logga(ctx, os.Getenv("JsonLog"), "XAPP04 no cast")
+			erro := errors.New("XAPP04 no cast")
+			return refapp, erro
+		}
+		refapp.RefAppName = AppRes.BodyJson["XAPP04"].(string)
 	}
 
 	// entro su appbox per avere i box
 	argsAppbox := make(map[string]string)
-	argsAppbox["source"] = "devops-8"
+	argsAppbox["source"] = "appman-8"
 	argsAppbox["$select"] = "XAPPBOX04"
 	argsAppbox["center_dett"] = "visualizza"
 	argsAppbox["$filter"] = "equals(XAPPBOX03,'" + appID + "') "
 
-	AppboxRes, errAppboxRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsAppbox, "msdevops", "/devops/APPBOX", devopsToken, dominio, coreApiVersion)
+	AppboxRes, errAppboxRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsAppbox, "msappman", "/appman/APPBOX", devopsToken, dominio, coreApiVersion)
 	if errAppboxRes != nil {
 		Logga(ctx, os.Getenv("JsonLog"), errAppboxRes.Error())
 		erro := errors.New(errAppboxRes.Error())
@@ -682,20 +710,29 @@ func fillRefapp(ctx context.Context, refappname, devopsToken, dominio, coreApiVe
 	var boxes string
 	if len(AppboxRes.BodyArray) > 0 {
 		for _, x := range AppboxRes.BodyArray {
-			boxes += "'" + x["XAPPBOX04"].(string) + "', "
+			_, errcast := x["XAPPBOX04_COD"].(string)
+			if !errcast {
+				Logga(ctx, os.Getenv("JsonLog"), "XAPPBOX04_COD no cast")
+				erro := errors.New("XAPPBOX04_COD no cast")
+				return refapp, erro
+			}
+			boxes += x["XAPPBOX04_COD"].(string) + ","
 		}
-		boxes = boxes[0 : len(boxes)-2]
+		boxes = "'" + boxes[0:len(boxes)-1] + "'"
 	}
 
 	// entro su boxpkg per avere i microservizi
 	argsBoxpkg := make(map[string]string)
-	argsBoxpkg["source"] = "devops-8"
+
+	//argsBoxpkg["debug"] = "true"
+	argsBoxpkg["source"] = "appman-8"
 	argsBoxpkg["$select"] = "XBOXPKG04"
 	argsBoxpkg["center_dett"] = "visualizza"
-	argsBoxpkg["$filter"] += "in_s(XBOXPKG03," + boxes + ") "
-	argsBoxpkg["$filter"] += " and in_s(XBOXPKG04," + micros + ") "
+	filtro := "in_s(XBOXPKG03," + boxes + ") "
+	filtro += " and in_s(XBOXPKG04," + micros + ")"
+	argsBoxpkg["$filter"] = filtro
 
-	BoxpkgRes, errBoxpkgRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsBoxpkg, "msdevops", "/devops/BOXPKG", devopsToken, dominio, coreApiVersion)
+	BoxpkgRes, errBoxpkgRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsBoxpkg, "msappman", "/appman/BOXPKG", devopsToken, dominio, coreApiVersion)
 	if errBoxpkgRes != nil {
 		Logga(ctx, os.Getenv("JsonLog"), errBoxpkgRes.Error())
 		erro := errors.New(errBoxpkgRes.Error())
@@ -704,7 +741,13 @@ func fillRefapp(ctx context.Context, refappname, devopsToken, dominio, coreApiVe
 	var pkgs string
 	if len(BoxpkgRes.BodyArray) > 0 {
 		for _, x := range BoxpkgRes.BodyArray {
-			pkgs += "'" + x["XAPPBOX04"].(string) + "', "
+			_, errcast := x["XBOXPKG04_COD"].(string)
+			if !errcast {
+				Logga(ctx, os.Getenv("JsonLog"), "XBOXPKG04_COD no cast")
+				erro := errors.New("XBOXPKG04_COD no cast")
+				return refapp, erro
+			}
+			pkgs += "'" + x["XBOXPKG04_COD"].(string) + "', "
 		}
 		pkgs = pkgs[0 : len(pkgs)-2]
 	}
@@ -712,15 +755,13 @@ func fillRefapp(ctx context.Context, refappname, devopsToken, dominio, coreApiVe
 	// entro su microservice per avere i ms
 	argsBr := make(map[string]string)
 	argsBr["source"] = "devops-8"
-
-	argsBr["$fullquery"] = "select XKUBECLUSTER15,XKUBEIMICROSERV04,XKUBEIMICROSERV05, XKUBEIMICROSERV06, XKUBEMICROSERV07 from solito_devops_data.TB_ANAG_KUBEIMICROSERV00 "
-	argsBr["$fullquery"] += "join solito_devops_data.TB_ANAG_KUBEMICROSERV00 on (XKUBEMICROSERV05 = XKUBEIMICROSERV04) "
-	argsBr["$fullquery"] += "join solito_devops_data.TB_ANAG_KUBECLUSTER00 on (XKUBEIMICROSERV05 = XKUBECLUSTER03) "
-	argsBr["$fullquery"] += "where XKUBEIMICROSERV04 in (" + micros + ") "
-
-	argsMs["center_dett"] = "visualizza"
-
-	BrRes, errBrRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsMs, "msdevops", "/devops/custom/KUBEIMICROSERV/values", devopsToken, dominio, coreApiVersion)
+	argsBr["$fullquery"] = " select XKUBECLUSTER15,XKUBECLUSTER22,XKUBEIMICROSERV04,XKUBEIMICROSERV05, XKUBEIMICROSERV06, XKUBEMICROSERV07 "
+	argsBr["$fullquery"] += " from TB_ANAG_KUBEIMICROSERV00 "
+	argsBr["$fullquery"] += " join TB_ANAG_KUBEMICROSERV00 on (XKUBEMICROSERV05 = XKUBEIMICROSERV04) "
+	argsBr["$fullquery"] += " join TB_ANAG_KUBECLUSTER00 on (XKUBEIMICROSERV05 = XKUBECLUSTER03) "
+	argsBr["$fullquery"] += " where XKUBEIMICROSERV04 in (" + microsFullQ + ") "
+	Logga(ctx, os.Getenv("JsonLog"), argsBr["$fullquery"])
+	BrRes, errBrRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsBr, "msdevops", "/devops/custom/KUBEIMICROSERV/values", devopsToken, dominio, coreApiVersion)
 	if errBrRes != nil {
 		Logga(ctx, os.Getenv("JsonLog"), errBrRes.Error())
 		erro := errors.New(errBrRes.Error())
@@ -730,13 +771,54 @@ func fillRefapp(ctx context.Context, refappname, devopsToken, dominio, coreApiVe
 	if len(BrRes.BodyArray) > 0 {
 		for _, x := range BrRes.BodyArray {
 			var dme BaseRoute
+			dme.Domino = x["XKUBECLUSTER15"].(string)
+			dme.Env = x["XKUBEIMICROSERV06"].(string)
+			dme.Team = x["XKUBEMICROSERV07"].(string)
+			dme.Ip = x["XKUBECLUSTER22"].(string)
+			dme.BaseRoute = dme.Env + "-" + dme.Team + "." + dme.Domino
+			dmes = append(dmes, dme)
+		}
+	}
 
+	// sgrasso i doppioni
+	var dmesOK []BaseRoute
+	var dmeOK BaseRoute
+	for _, x := range dmes {
+		inArr := false
+		for _, y := range dmesOK {
+			if y.BaseRoute == x.BaseRoute {
+				inArr = true
+				break
+			}
+		}
+		if !inArr {
+			dmeOK.BaseRoute = x.BaseRoute
+			dmeOK.Domino = x.Domino
+			dmeOK.Env = x.Env
+			dmeOK.Team = x.Team
+			dmeOK.Ip = x.Ip
+			dmesOK = append(dmesOK, dmeOK)
+		}
+	}
+
+	// cambio il gruppo in team da GRU
+	var gruppiArr []string
+	gruteam := make(map[string]string)
+	for idx, x := range dmesOK {
+		inArr := false
+		for _, y := range gruppiArr {
+			if y == x.Team {
+				inArr = true
+				break
+			}
+		}
+		if !inArr {
 			// ottengo da gru il nome del team
 			argsGru := make(map[string]string)
 			argsGru["source"] = "devops-8"
 			argsGru["$select"] = "XGRU05"
 			argsGru["center_dett"] = "dettaglio"
-			argsGru["$filter"] = "equals(XGRU03,'" + x["XKUBEMICROSERV07"].(string) + "') "
+			argsGru["$filter"] = "equals(XGRU03,'" + x.Team + "') "
 
 			GruRes, errGruRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsGru, "msusers", "/users/GRU", devopsToken, dominio, coreApiVersion)
 			if errGruRes != nil {
@@ -744,19 +826,49 @@ func fillRefapp(ctx context.Context, refappname, devopsToken, dominio, coreApiVe
 				erro := errors.New(errGruRes.Error())
 				return refapp, erro
 			}
-			if len(GruRes.BodyJson) > 0 {
-				dme.Team = GruRes.BodyJson["XGRU05"].(string)
-			}
-			dme.Domino = x["XKUBECLUSTER15"].(string)
-			dme.Env = x["XKUBEIMICROSERV06"].(string)
-			dme.BaseRoute = dme.Env + "-" + dme.Team + "-" + dme.Domino
-			dmes = append(dmes, dme)
-		}
 
+			if len(GruRes.BodyJson) > 0 {
+				team, errcast := GruRes.BodyJson["XGRU05"].(string)
+				if !errcast {
+					Logga(ctx, os.Getenv("JsonLog"), "XGRU05 no cast")
+					erro := errors.New("XGRU05 no cast")
+					return refapp, erro
+				}
+				dmesOK[idx].Team = strings.ToLower(team)
+				gruteam[x.Team] = strings.ToLower(team)
+				dmesOK[idx].BaseRoute = x.Env + "-" + strings.ToLower(team) + "." + x.Domino
+				gruppiArr = append(gruppiArr, x.Team)
+			}
+
+		} else {
+			dmesOK[idx].Team = gruteam[x.Team]
+			dmesOK[idx].BaseRoute = x.Env + "-" + gruteam[x.Team] + "." + x.Domino
+		}
 	}
 
-	refapp.BaseRoute = dmes
+	fillMarketPlaceRoute(&dmesOK)
+	refapp.BaseRoute = dmesOK
 	return refapp, nil
+}
+
+// questo medoto è un harcoded di un futuro possibile MARKET PLACE
+func fillMarketPlaceRoute(dmesOK *[]BaseRoute) {
+	found := false
+	for _, x := range *dmesOK {
+		if x.Domino == "q01.io" {
+			found = true
+			break
+		}
+	}
+	if !found {
+		var dme BaseRoute
+		dme.BaseRoute = "prod-core.q01.io"
+		dme.Domino = "q01.io"
+		dme.Env = "prod"
+		dme.Team = "core"
+		dme.Ip = "" // lasciare vuoto indica che e un mondo esterno !!!! DNS
+		*dmesOK = append(*dmesOK, dme)
+	}
 }
 func GetIstanzaVersioni(ctx context.Context, iresReq IresRequest, istanza, enviro, devops, devopsTokenDst, dominio, coreApiVersion string) ([]IstanzaMicroVersioni, error) {
 	Logga(ctx, os.Getenv("JsonLog"), "Getting DEPLOYLOG")
