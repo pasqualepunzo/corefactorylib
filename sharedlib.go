@@ -436,7 +436,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 		isRefappFloat := restyKubeMSRes.BodyJson["XKUBEMICROSERV21"].(float64)
 		if isRefappFloat == 1 {
 			ims.RefApp.RefAppName = restyKubeMSRes.BodyJson["XKUBEMICROSERV22"].(string)
-			rfapp, errRefapp := fillRefapp(ctx, restyKubeMSRes.BodyJson["XKUBEMICROSERV22"].(string), devopsToken, dominio, coreApiVersion)
+			rfapp, errRefapp := fillRefapp(ctx, microservice, restyKubeMSRes.BodyJson["XKUBEMICROSERV22"].(string), devopsToken, dominio, coreApiVersion)
 			ims.RefApp = rfapp
 			if errRefapp != nil {
 				Logga(ctx, os.Getenv("JsonLog"), errRefapp.Error())
@@ -580,16 +580,9 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 }
 
 // questo metodo restituisce cio che serve in caso in cui il MS e di tipo REFAPP
-func fillRefapp(ctx context.Context, refappname, devopsToken, dominio, coreApiVersion string) (Refapp, error) {
+func fillRefapp(ctx context.Context, microservice, refappname, devopsToken, dominio, coreApiVersion string) (Refapp, error) {
 
 	var refapp Refapp
-
-	type DominioInterno struct {
-		Env     string `json:"env"`
-		Team    string `json:"team"`
-		Dominio string `json:"dominio"`
-	}
-
 	var dmes []BaseRoute
 
 	// entro su microservice per avere i ms
@@ -846,8 +839,40 @@ func fillRefapp(ctx context.Context, refappname, devopsToken, dominio, coreApiVe
 		}
 	}
 
+	// cerco eventuali rotte esterne
 	fillMarketPlaceRoute(&dmesOK)
 	refapp.BaseRoute = dmesOK
+
+	// leggo le porte da aprire sul GW
+	argsSr := make(map[string]string)
+	argsSr["source"] = "devops-8"
+	argsSr["$fullquery"] = " select XKUBESERVICEDKR04,XKUBESERVICEDKR05,XKUBESERVICEDKR06,XKUBESERVICEDKR07,XKUBESERVICEDKR08 "
+	argsSr["$fullquery"] += " from TB_ANAG_KUBEMICROSERVDKR00 "
+	argsSr["$fullquery"] += " join TB_ANAG_KUBEDKR00 on (XKUBEMICROSERVDKR04 = XKUBEDKR03) "
+	argsSr["$fullquery"] += " join TB_ANAG_KUBESERVICEDKR00 on (XKUBESERVICEDKR04 = XKUBEDKR03) "
+	argsSr["$fullquery"] += " where XKUBEMICROSERVDKR03 = '" + microservice + "' "
+
+	Logga(ctx, os.Getenv("JsonLog"), argsBr["$fullquery"])
+	SrRes, errSrRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsBr, "msdevops", "/devops/custom/KUBEIMICROSERV/values", devopsToken, dominio, coreApiVersion)
+	if errSrRes != nil {
+		Logga(ctx, os.Getenv("JsonLog"), errSrRes.Error())
+		erro := errors.New(errSrRes.Error())
+		return refapp, erro
+	}
+
+	var ports []Port
+	if len(SrRes.BodyArray) > 0 {
+		for _, x := range SrRes.BodyArray {
+			var port Port
+			port.Name = x["XKUBESERVICEDKR05"].(string)
+			port.Number = x["XKUBESERVICEDKR06"].(string)
+			port.Protocol = x["XKUBESERVICEDKR07"].(string)
+
+			ports = append(ports, port)
+		}
+	}
+	refapp.Ports = ports
+
 	return refapp, nil
 }
 
