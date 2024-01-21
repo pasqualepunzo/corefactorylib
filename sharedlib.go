@@ -650,8 +650,8 @@ func fillRefapp(ctx context.Context, microservice, refappname, devopsToken, domi
 		erro := errors.New(errRefappcustomerRes.Error())
 		return refapp, erro
 	}
+	var domini []string
 	if len(RefappcustomerRes.BodyArray) > 0 {
-		var domini []string
 		for _, x := range RefappcustomerRes.BodyArray {
 			_, errcast := x["XREFAPPCUSTOMER12"].(string)
 			if !errcast {
@@ -661,7 +661,6 @@ func fillRefapp(ctx context.Context, microservice, refappname, devopsToken, domi
 			}
 			domini = append(domini, x["XREFAPPCUSTOMER12"].(string))
 		}
-		refapp.Domini = domini
 	}
 
 	// ottengo il nome della refapp
@@ -860,18 +859,19 @@ func fillRefapp(ctx context.Context, microservice, refappname, devopsToken, domi
 		return refapp, erro
 	}
 
-	var ports []Port
+	var srvs []Server
 	if len(SrRes.BodyArray) > 0 {
 		for _, x := range SrRes.BodyArray {
-			var port Port
-			port.Name = x["XKUBESERVICEDKR05"].(string)
-			port.Number = x["XKUBESERVICEDKR06"].(string)
-			port.Protocol = x["XKUBESERVICEDKR07"].(string)
+			var srv Server
+			srv.Domini = domini
+			srv.Name = x["XKUBESERVICEDKR05"].(string)
+			srv.Number = x["XKUBESERVICEDKR06"].(string)
+			srv.Protocol = x["XKUBESERVICEDKR07"].(string)
 
-			ports = append(ports, port)
+			srvs = append(srvs, srv)
 		}
 	}
-	refapp.Ports = ports
+	refapp.Servers = srvs
 
 	return refapp, nil
 }

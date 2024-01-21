@@ -343,14 +343,14 @@ type IstanzaMicro struct {
 }
 type Refapp struct {
 	RefAppName string      `json:"refAppName"`
-	Domini     []string    `json:"domini"`
-	Ports      []Port      `json:"servers"`
+	Servers    []Server    `json:"servers"`
 	BaseRoute  []BaseRoute `json:"baseRoute"`
 }
-type Port struct {
-	Name     string `json:"name"`
-	Number   string `json:"number"`
-	Protocol string `json:"protocol"`
+type Server struct {
+	Domini   []string `json:"domini"`
+	Name     string   `json:"name"`
+	Number   string   `json:"number"`
+	Protocol string   `json:"protocol"`
 }
 type BaseRoute struct {
 	BaseRoute string `json:"baseRoute"`
