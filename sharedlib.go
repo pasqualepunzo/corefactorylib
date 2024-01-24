@@ -898,15 +898,16 @@ func fillMarketPlaceRoute(dmesOK *[]BaseRoute) {
 		*dmesOK = append(*dmesOK, dme)
 	}
 }
-func GetMsRoutes(ctx context.Context, deployJson DeployGetData, clusterHost, cluster string) ([]Endpoint, error) {
+func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]Endpoint, error) {
 
 	Logga(ctx, os.Getenv("JsonLog"), "GetMsRoutes")
 	var erro error
 	var eps []Endpoint
 
-	devopsToken := deployJson.DevopsToken
-	team := strings.ToLower(deployJson.Team)
-	namespace := deployJson.Enviro + "-" + team
+	devopsToken := routeJson.DevopsToken
+	team := strings.ToLower(routeJson.Team)
+	namespace := routeJson.Enviro + "-" + team
+	cluster := routeJson.Cluster
 
 	/* ************************************************************************************************ */
 	// DOCKER AND PORTS
@@ -1097,7 +1098,7 @@ func GetMsRoutes(ctx context.Context, deployJson DeployGetData, clusterHost, clu
 					ep.Partner = x["partner"].(string)
 					ep.Customer = x["customer"].(string)
 					if x["use_current_cluster_domain"].(string) == "1" {
-						ep.ClusterDomain = clusterHost
+						ep.ClusterDomain = routeJson.ClusterHost
 					} else {
 						ep.ClusterDomain = ""
 					}

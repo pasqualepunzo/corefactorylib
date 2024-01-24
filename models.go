@@ -649,22 +649,10 @@ type BuildArgs struct {
 type DockerStruct struct {
 	Microservizio, Docker, GitRepo, Branch, Version, Tag, Dockerfile, Namespace, TipoGitRepo, DockerArgs string
 }
-type DeployGetData struct {
-	JobID            string `json:"JobID"`
-	Istanza          string `json:"istanza"`
-	Microservice     string `json:"Microservice"`
-	CanaryProduction string `json:"canaryProduction"`
-	SwDevMaster      string `json:"swDevMaster"`
-	Version          string `json:"version"`
-	Tags             string `json:"tags"`
-	ProfileDeploy    string `json:"profileDeploy"`
-	DevopsToken      string `json:"devopsToken"`
-	Team             string `json:"team"`
-	User             string `json:"user"`
-	Enviro           string `json:"enviro"`
-	Tenant           string `json:"tenant"`
-	TenantDst        string `json:"tenantDst"`
-	ClusterDst       string `json:"clusterDst"`
-	EnviroDst        string `json:"enviroDst"`
-	IstanzaDst       string `json:"istanzaDst"`
+type RouteJson struct {
+	Team        string `json:"team"`
+	Enviro      string `json:"enviro"`
+	Cluster     string `json:"cluster"`
+	ClusterHost string `json:"clusterHost"`
+	DevopsToken string `json:"devopsToken"`
 }
