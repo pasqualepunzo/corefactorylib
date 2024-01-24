@@ -585,6 +585,7 @@ func fillRefapp(ctx context.Context, microservice, refappname, devopsToken, domi
 	var refapp Refapp
 	var dmes []BaseRoute
 
+	Logga(ctx, os.Getenv("JsonLog"), "CERCO I MICROSERVIZI SU KUBEIMICROSERV")
 	// entro su microservice per avere i ms
 	argsMs := make(map[string]string)
 	argsMs["source"] = "devops-8"
@@ -841,18 +842,20 @@ func fillRefapp(ctx context.Context, microservice, refappname, devopsToken, domi
 	// cerco eventuali rotte esterne
 	fillMarketPlaceRoute(&dmesOK)
 	refapp.BaseRoute = dmesOK
+	Logga(ctx, os.Getenv("JsonLog"), "FINE CERCO I MICROSERVIZI SU KUBEIMICROSERV")
 
+	Logga(ctx, os.Getenv("JsonLog"), "CERCO LE PORTE DEI MS PER GW")
 	// leggo le porte da aprire sul GW
 	argsSr := make(map[string]string)
 	argsSr["source"] = "devops-8"
-	argsSr["$fullquery"] = " select XKUBESERVICEDKR04,XKUBESERVICEDKR05,XKUBESERVICEDKR06,XKUBESERVICEDKR07,XKUBESERVICEDKR08 "
+	argsSr["$fullquery"] = " select XKUBESERVICEDKR04,XKUBESERVICEDKR05,XKUBESERVICEDKR06,XKUBESERVICEDKR07 "
 	argsSr["$fullquery"] += " from TB_ANAG_KUBEMICROSERVDKR00 "
 	argsSr["$fullquery"] += " join TB_ANAG_KUBEDKR00 on (XKUBEMICROSERVDKR04 = XKUBEDKR03) "
 	argsSr["$fullquery"] += " join TB_ANAG_KUBESERVICEDKR00 on (XKUBESERVICEDKR04 = XKUBEDKR03) "
 	argsSr["$fullquery"] += " where XKUBEMICROSERVDKR03 = '" + microservice + "' "
 
-	Logga(ctx, os.Getenv("JsonLog"), argsBr["$fullquery"])
-	SrRes, errSrRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsBr, "msdevops", "/devops/custom/KUBEIMICROSERV/values", devopsToken, dominio, coreApiVersion)
+	Logga(ctx, os.Getenv("JsonLog"), argsSr["$fullquery"])
+	SrRes, errSrRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsSr, "msdevops", "/devops/custom/KUBEIMICROSERV/values", devopsToken, dominio, coreApiVersion)
 	if errSrRes != nil {
 		Logga(ctx, os.Getenv("JsonLog"), errSrRes.Error())
 		erro := errors.New(errSrRes.Error())
@@ -865,7 +868,7 @@ func fillRefapp(ctx context.Context, microservice, refappname, devopsToken, domi
 			var srv Server
 			srv.Domini = domini
 			srv.Name = x["XKUBESERVICEDKR05"].(string)
-			srv.Number = x["XKUBESERVICEDKR06"].(string)
+			srv.Number = strconv.Itoa(int(x["XKUBESERVICEDKR06"].(float64)))
 			srv.Protocol = x["XKUBESERVICEDKR07"].(string)
 
 			srvs = append(srvs, srv)
@@ -894,6 +897,217 @@ func fillMarketPlaceRoute(dmesOK *[]BaseRoute) {
 		dme.Ip = "" // lasciare vuoto indica che e un mondo esterno !!!! DNS
 		*dmesOK = append(*dmesOK, dme)
 	}
+}
+func GetMsRoutes(ctx context.Context, deployJson DeployGetData, clusterHost, cluster string) ([]Endpoint, error) {
+
+	Logga(ctx, os.Getenv("JsonLog"), "GetMsRoutes")
+	var erro error
+	var eps []Endpoint
+
+	devopsToken := deployJson.DevopsToken
+	team := strings.ToLower(deployJson.Team)
+	namespace := deployJson.Enviro + "-" + team
+
+	/* ************************************************************************************************ */
+	// DOCKER AND PORTS
+
+	argsDoker := make(map[string]string)
+	argsDoker["source"] = "devops-8"
+
+	argsDoker["$fullquery"] = " select XKUBEMICROSERVDKR04,XKUBESERVICEDKR06 from TB_ANAG_KUBEIMICROSERV00 "
+	argsDoker["$fullquery"] += " join TB_ANAG_KUBEMICROSERVDKR00 on (XKUBEIMICROSERV04=XKUBEMICROSERVDKR03) "
+	argsDoker["$fullquery"] += " join TB_ANAG_KUBESERVICEDKR00 on (XKUBESERVICEDKR04=XKUBEMICROSERVDKR04) "
+	argsDoker["$fullquery"] += " where XKUBEIMICROSERV05 = '" + cluster + "'   and XKUBEIMICROSERV08 ='" + team + "' "
+	Logga(ctx, os.Getenv("JsonLog"), argsDoker["$fullquery"])
+	restyDokerRes, errDokerRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsDoker, "msdevops", "/core/custom/KUBEIMICROSERV/values", devopsToken, os.Getenv("loginApiHost"), os.Getenv("coreApiVersion"))
+
+	if errDokerRes != nil {
+		Logga(ctx, os.Getenv("JsonLog"), errDokerRes.Error())
+		return eps, errDokerRes
+	}
+	if restyDokerRes.Errore < 0 {
+		Logga(ctx, os.Getenv("JsonLog"), restyDokerRes.Log)
+		erro = errors.New(restyDokerRes.Log)
+		return eps, erro
+	}
+
+	if len(restyDokerRes.BodyArray) > 0 {
+		for _, x := range restyDokerRes.BodyArray {
+
+			docker := x["XKUBEMICROSERVDKR04"].(string)
+			port := strconv.FormatFloat(x["XKUBESERVICEDKR06"].(float64), 'f', 0, 64)
+
+			/* ************************************************************************************************ */
+			// ENDPOINTS
+
+			sqlEndpoint := ""
+
+			// per ogni servizio cerco gli endpoints
+			sqlEndpoint += "select "
+			sqlEndpoint += "ifnull(aa.XKUBEENDPOINT05, '') as microservice_src, "
+			sqlEndpoint += "ifnull(cc.XKUBESERVICEDKR04, '') as docker_src, "
+			sqlEndpoint += "ifnull(aa.XKUBEENDPOINT10, '') as type_src, "
+			sqlEndpoint += "ifnull(aa.XKUBEENDPOINT09, '') as route_src, "
+			sqlEndpoint += "ifnull(aa.XKUBEENDPOINT11, '') as rewrite_src, "
+			sqlEndpoint += "ifnull(cc.XKUBESERVICEDKR06, '') as port_src, "
+			sqlEndpoint += "ifnull(aa.XKUBEENDPOINT12, '') as priority, "
+			sqlEndpoint += "(case when ifnull(bb_ext.XKUBEENDPOINT05, '') != '' THEN ifnull(bb_ext.XKUBEENDPOINT05, '') ELSE ifnull(bb.XKUBEENDPOINT05, '') END) as microservice_dst, "
+			sqlEndpoint += "(case when ifnull(bb_ext.XKUBESERVICEDKR03, '') != '' THEN ifnull(bb_ext.XKUBESERVICEDKR03, '') ELSE ifnull(bb.XKUBESERVICEDKR03, '') END) as docker_dst, "
+			sqlEndpoint += "(case when ifnull(bb_ext.XKUBEENDPOINT10, '') != '' THEN ifnull(bb_ext.XKUBEENDPOINT10, '') ELSE ifnull(bb.XKUBEENDPOINT10, '') END) as type_dst, "
+			sqlEndpoint += "(case when ifnull(bb_ext.XKUBEENDPOINT09, '') != '' THEN ifnull(bb_ext.XKUBEENDPOINT09, '') ELSE ifnull(bb.XKUBEENDPOINT09, '') END) as route_dst, "
+			sqlEndpoint += "(case when ifnull(bb_ext.XKUBEENDPOINT11, '') != '' THEN ifnull(bb_ext.XKUBEENDPOINT11, '') ELSE ifnull(bb.XKUBEENDPOINT11, '') END) as rewrite_dst, "
+			sqlEndpoint += "(case when ifnull(bb_ext.XKUBEMICROSERV04, '') != '' THEN ifnull(bb_ext.XKUBEMICROSERV04, '') ELSE ifnull(bb.XKUBEMICROSERV04, '') END) as namespace_dst, "
+			sqlEndpoint += "(case when ifnull(bb_ext.XDEPLOYLOG05, '') != '' THEN ifnull(bb_ext.XDEPLOYLOG05, '') ELSE ifnull(bb.XDEPLOYLOG05, '') END) as version_dst, "
+			sqlEndpoint += "(case when ifnull(bb_ext.XKUBECLUSTER15, '') != '' THEN ifnull(bb_ext.XKUBECLUSTER15, '') ELSE ifnull(bb.XKUBECLUSTER15, '') END) as domain, "
+			sqlEndpoint += "(case when ifnull(bb_ext.XKUBEENDPOINTOVR06, '') != '' THEN ifnull(bb_ext.XKUBEENDPOINTOVR06, '') ELSE ifnull(bb.XKUBEENDPOINTOVR06, '') END) as market, "
+			sqlEndpoint += "(case when ifnull(bb_ext.XKUBEENDPOINTOVR07, '') != '' THEN ifnull(bb_ext.XKUBEENDPOINTOVR07, '') ELSE ifnull(bb.XKUBEENDPOINTOVR07, '') END) as partner, "
+			sqlEndpoint += "(case when ifnull(bb_ext.XKUBEENDPOINTOVR08, '') != '' THEN ifnull(bb_ext.XKUBEENDPOINTOVR08, '') ELSE ifnull(bb.XKUBEENDPOINTOVR08, '') END) as customer, "
+			sqlEndpoint += "(case when ifnull(bb_ext.XDEPLOYLOG05_CURRENT,'') != '' THEN '1' ELSE '0' END) as use_current_cluster_domain "
+			sqlEndpoint += "from "
+			sqlEndpoint += "TB_ANAG_KUBEENDPOINT00 aa "
+			sqlEndpoint += "JOIN TB_ANAG_KUBESERVICEDKR00 cc on "
+			sqlEndpoint += "(cc.XKUBESERVICEDKR03 = aa.XKUBEENDPOINT06) "
+			sqlEndpoint += "left join ( "
+			sqlEndpoint += "select "
+			sqlEndpoint += "XKUBECLUSTER15, "
+			sqlEndpoint += "XKUBEENDPOINT03, "
+			sqlEndpoint += "XKUBEENDPOINT09, "
+			sqlEndpoint += "XKUBEENDPOINT10, "
+			sqlEndpoint += "XKUBEENDPOINT11, "
+			sqlEndpoint += "XKUBEENDPOINT05, "
+			sqlEndpoint += "XKUBEMICROSERV05, "
+			sqlEndpoint += "XKUBEMICROSERV04, "
+			sqlEndpoint += "XKUBEENDPOINTOVR03, "
+			sqlEndpoint += "XKUBESERVICEDKR04, "
+			sqlEndpoint += "XKUBESERVICEDKR03, "
+			sqlEndpoint += "XDEPLOYLOG05, "
+			sqlEndpoint += "'' as XDEPLOYLOG05_CURRENT, "
+			sqlEndpoint += "XKUBEENDPOINTOVR06, "
+			sqlEndpoint += "XKUBEENDPOINTOVR07, "
+			sqlEndpoint += "XKUBEENDPOINTOVR08 "
+			sqlEndpoint += "from "
+			sqlEndpoint += "TB_ANAG_KUBEENDPOINT00 a "
+			sqlEndpoint += "join TB_ANAG_KUBEENDPOINTOVR00 b on "
+			sqlEndpoint += "(a.XKUBEENDPOINT03 = b.XKUBEENDPOINTOVR04) "
+			sqlEndpoint += "join TB_ANAG_KUBEMICROSERV00 on "
+			sqlEndpoint += "(XKUBEMICROSERV05 = XKUBEENDPOINT05) "
+			sqlEndpoint += "join TB_ANAG_KUBESERVICEDKR00 on "
+			sqlEndpoint += "(XKUBESERVICEDKR03 = XKUBEENDPOINT06) "
+			sqlEndpoint += "JOIN TB_ANAG_KUBEIMICROSERV00 on "
+			sqlEndpoint += "(XKUBEENDPOINT05 = XKUBEIMICROSERV04 and XKUBEIMICROSERV05 = '" + cluster + "' ) "
+			sqlEndpoint += "JOIN TB_ANAG_KUBECLUSTER00 on "
+			sqlEndpoint += "(XKUBECLUSTER03 = XKUBEIMICROSERV05) "
+			sqlEndpoint += "JOIN TB_ANAG_DEPLOYLOG00 on "
+			sqlEndpoint += "(XDEPLOYLOG04 = XKUBEIMICROSERV03 "
+			sqlEndpoint += "and XDEPLOYLOG09 = 'prod' "
+			sqlEndpoint += "and XDEPLOYLOG03 = 'production' "
+			sqlEndpoint += "and XDEPLOYLOG06 = 1 "
+			sqlEndpoint += "and XDEPLOYLOG07 = 0) ) bb on "
+			sqlEndpoint += "(aa.XKUBEENDPOINT03 = bb.XKUBEENDPOINTOVR03 ) "
+			sqlEndpoint += "left join ( "
+			sqlEndpoint += "select "
+			sqlEndpoint += "XKUBECLUSTER15, "
+			sqlEndpoint += "XKUBEENDPOINT03, "
+			sqlEndpoint += "XKUBEENDPOINT09, "
+			sqlEndpoint += "XKUBEENDPOINT10, "
+			sqlEndpoint += "XKUBEENDPOINT11, "
+			sqlEndpoint += "XKUBEENDPOINT05, "
+			sqlEndpoint += "XKUBEMICROSERV05, "
+			sqlEndpoint += "XKUBEMICROSERV04, "
+			sqlEndpoint += "XKUBEENDPOINTOVR03, "
+			sqlEndpoint += "XKUBESERVICEDKR04, "
+			sqlEndpoint += "XKUBESERVICEDKR03, "
+			sqlEndpoint += "Q01_DEPLOYLOG.XDEPLOYLOG05, "
+			sqlEndpoint += "CURRENT_DEPLOYLOG.XDEPLOYLOG05 as XDEPLOYLOG05_CURRENT, "
+			sqlEndpoint += "XKUBEENDPOINTOVR06, "
+			sqlEndpoint += "XKUBEENDPOINTOVR07, "
+			sqlEndpoint += "XKUBEENDPOINTOVR08 "
+			sqlEndpoint += "from "
+			sqlEndpoint += "TB_ANAG_KUBEENDPOINT00 a_ext "
+			sqlEndpoint += "join TB_ANAG_KUBEENDPOINTOVR00 b_ext on "
+			sqlEndpoint += "(a_ext.XKUBEENDPOINT03 = b_ext.XKUBEENDPOINTOVR04) "
+			sqlEndpoint += "join devops_data.TB_ANAG_KUBEMICROSERV00 on "
+			sqlEndpoint += "(XKUBEMICROSERV05 = XKUBEENDPOINT05) "
+			sqlEndpoint += "join devops_data.TB_ANAG_KUBESERVICEDKR00 on "
+			sqlEndpoint += "(XKUBESERVICEDKR03 = XKUBEENDPOINT06) "
+			sqlEndpoint += "JOIN devops_data.TB_ANAG_KUBEIMICROSERV00 on "
+			sqlEndpoint += "(XKUBEENDPOINT05 = XKUBEIMICROSERV04 and XKUBEIMICROSERV05 = '" + os.Getenv("clusterKube8") + "' ) "
+			sqlEndpoint += "JOIN devops_data.TB_ANAG_KUBECLUSTER00 on "
+			sqlEndpoint += "(XKUBECLUSTER03 = XKUBEIMICROSERV05) "
+			sqlEndpoint += "JOIN devops_data.TB_ANAG_DEPLOYLOG00 Q01_DEPLOYLOG on "
+			sqlEndpoint += "(Q01_DEPLOYLOG.XDEPLOYLOG04 = XKUBEIMICROSERV03 "
+			sqlEndpoint += "and Q01_DEPLOYLOG.XDEPLOYLOG09 = 'prod' "
+			sqlEndpoint += "and Q01_DEPLOYLOG.XDEPLOYLOG03 = 'production' "
+			sqlEndpoint += "and Q01_DEPLOYLOG.XDEPLOYLOG06 = 1 "
+			sqlEndpoint += "and Q01_DEPLOYLOG.XDEPLOYLOG07 = 0)  "
+			sqlEndpoint += "LEFT JOIN TB_ANAG_DEPLOYLOG00 CURRENT_DEPLOYLOG on "
+			sqlEndpoint += "(CURRENT_DEPLOYLOG.XDEPLOYLOG04 = REPLACE(XKUBEIMICROSERV03, '" + os.Getenv("clusterKube8") + "', '" + cluster + "') "
+			sqlEndpoint += "and CURRENT_DEPLOYLOG.XDEPLOYLOG09 = 'prod' "
+			sqlEndpoint += "and CURRENT_DEPLOYLOG.XDEPLOYLOG03 = 'production' "
+			sqlEndpoint += "and CURRENT_DEPLOYLOG.XDEPLOYLOG06 = 1 "
+			sqlEndpoint += "and CURRENT_DEPLOYLOG.XDEPLOYLOG07 = 0)  "
+			sqlEndpoint += ") bb_ext on "
+			sqlEndpoint += "(aa.XKUBEENDPOINT03 = bb_ext.XKUBEENDPOINTOVR03 ) "
+			sqlEndpoint += "having "
+			sqlEndpoint += "1>0 "
+			sqlEndpoint += "and docker_src = '" + docker + "' "
+			sqlEndpoint += "and port_src = '" + port + "' "
+			sqlEndpoint += "order by "
+			sqlEndpoint += "length(priority), "
+			sqlEndpoint += "priority, "
+			sqlEndpoint += "route_src, "
+			sqlEndpoint += "customer desc , "
+			sqlEndpoint += "partner desc , "
+			sqlEndpoint += "market desc "
+
+			argsEndpoint := make(map[string]string)
+			argsEndpoint["source"] = "devops-8"
+			argsEndpoint["$fullquery"] = sqlEndpoint
+
+			restyKubeEndpointRes, erroEnd := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsEndpoint, "msdevops", "/core/custom/KUBEENDPOINT/values", devopsToken, os.Getenv("loginApiHost"), os.Getenv("coreApiVersion"))
+			if erroEnd != nil {
+				Logga(ctx, os.Getenv("JsonLog"), erroEnd.Error())
+				return eps, erroEnd
+			}
+
+			if len(restyKubeEndpointRes.BodyArray) > 0 {
+				for _, x := range restyKubeEndpointRes.BodyArray {
+
+					var ep Endpoint
+					ep.Priority = x["priority"].(string)
+
+					ep.MicroserviceDst = x["microservice_dst"].(string)
+					ep.DockerDst = x["docker_dst"].(string)
+					ep.TypeSrvDst = x["type_dst"].(string)
+					ep.RouteDst = x["route_dst"].(string)
+					ep.RewriteDst = x["rewrite_dst"].(string)
+					ep.NamespaceDst = x["namespace_dst"].(string)
+					ep.VersionDst = x["version_dst"].(string)
+
+					ep.MicroserviceSrc = x["microservice_src"].(string)
+					ep.DockerSrc = x["docker_src"].(string)
+					ep.TypeSrvSrc = x["type_src"].(string)
+					ep.RouteSrc = x["route_src"].(string)
+					ep.RewriteSrc = x["rewrite_src"].(string)
+					ep.NamespaceSrc = namespace
+					ep.VersionSrc = ""
+
+					ep.Domain = x["domain"].(string)
+					ep.Market = x["market"].(string)
+					ep.Partner = x["partner"].(string)
+					ep.Customer = x["customer"].(string)
+					if x["use_current_cluster_domain"].(string) == "1" {
+						ep.ClusterDomain = clusterHost
+					} else {
+						ep.ClusterDomain = ""
+					}
+					eps = append(eps, ep)
+				}
+			}
+			/* ************************************************************************************************ */
+		}
+	}
+	return eps, erro
 }
 func GetIstanzaVersioni(ctx context.Context, iresReq IresRequest, istanza, enviro, devops, devopsTokenDst, dominio, coreApiVersion string) ([]IstanzaMicroVersioni, error) {
 	Logga(ctx, os.Getenv("JsonLog"), "Getting DEPLOYLOG")
