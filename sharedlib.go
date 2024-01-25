@@ -18,6 +18,7 @@ import (
 
 	"cloud.google.com/go/storage"
 	"github.com/go-resty/resty/v2"
+	"github.com/mozillazg/go-slugify"
 )
 
 func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction, dominio, coreApiVersion string) (IstanzaMicro, error) {
@@ -435,7 +436,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 
 		isRefappFloat := restyKubeMSRes.BodyJson["XKUBEMICROSERV21"].(float64)
 		if isRefappFloat == 1 {
-			ims.RefApp.RefAppName = restyKubeMSRes.BodyJson["XKUBEMICROSERV22"].(string)
+			ims.RefApp.RefAppName = strings.ToLower(slugify.Slugify(restyKubeMSRes.BodyJson["XKUBEMICROSERV22"].(string)))
 			rfapp, errRefapp := fillRefapp(ctx, microservice, restyKubeMSRes.BodyJson["XKUBEMICROSERV22"].(string), devopsToken, dominio, coreApiVersion)
 			ims.RefApp = rfapp
 			if errRefapp != nil {
