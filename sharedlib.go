@@ -769,7 +769,7 @@ func fillRefapp(ctx context.Context, microservice, refappname, devopsToken, domi
 			dme.Env = x["XKUBEIMICROSERV06"].(string)
 			dme.Team = x["XKUBEMICROSERV07"].(string)
 			dme.Ip = x["XKUBECLUSTER22"].(string)
-			dme.BaseRoute = dme.Env + "-" + dme.Team + "." + dme.Domino
+			dme.BaseRoute = dme.Env + "-" + strings.ToLower(dme.Team) + "." + dme.Domino
 			dmes = append(dmes, dme)
 		}
 	}
@@ -846,17 +846,16 @@ func fillRefapp(ctx context.Context, microservice, refappname, devopsToken, domi
 	Logga(ctx, os.Getenv("JsonLog"), "FINE CERCO I MICROSERVIZI SU KUBEIMICROSERV")
 
 	Logga(ctx, os.Getenv("JsonLog"), "CERCO LE PORTE DEI MS PER GW")
+
 	// leggo le porte da aprire sul GW
 	argsSr := make(map[string]string)
-	argsSr["source"] = "devops-8"
-	argsSr["$fullquery"] = " select XKUBESERVICEDKR04,XKUBESERVICEDKR05,XKUBESERVICEDKR06,XKUBESERVICEDKR07 "
-	argsSr["$fullquery"] += " from TB_ANAG_KUBEMICROSERVDKR00 "
-	argsSr["$fullquery"] += " join TB_ANAG_KUBEDKR00 on (XKUBEMICROSERVDKR04 = XKUBEDKR03) "
-	argsSr["$fullquery"] += " join TB_ANAG_KUBESERVICEDKR00 on (XKUBESERVICEDKR04 = XKUBEDKR03) "
-	argsSr["$fullquery"] += " where XKUBEMICROSERVDKR03 = '" + microservice + "' "
+	argsSr["source"] = "appman-8"
+	argsSr["$select"] = "XAPPSRV04,XAPPSRV05,XAPPSRV06"
+	argsSr["center_dett"] = "visualizza"
+	argsSr["$filter"] = "equals(XAPPSRV03,'" + appID + "') "
 
 	Logga(ctx, os.Getenv("JsonLog"), argsSr["$fullquery"])
-	SrRes, errSrRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsSr, "msdevops", "/devops/custom/KUBEIMICROSERV/values", devopsToken, dominio, coreApiVersion)
+	SrRes, errSrRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsSr, "msappman", "/appman/APPSRV", devopsToken, dominio, coreApiVersion)
 	if errSrRes != nil {
 		Logga(ctx, os.Getenv("JsonLog"), errSrRes.Error())
 		erro := errors.New(errSrRes.Error())
@@ -868,10 +867,9 @@ func fillRefapp(ctx context.Context, microservice, refappname, devopsToken, domi
 		for _, x := range SrRes.BodyArray {
 			var srv Server
 			srv.Domini = domini
-			srv.Name = x["XKUBESERVICEDKR05"].(string)
-			srv.Number = strconv.Itoa(int(x["XKUBESERVICEDKR06"].(float64)))
-			srv.Protocol = x["XKUBESERVICEDKR07"].(string)
-
+			srv.Name = x["XAPPSRV04"].(string)
+			srv.Number = strconv.Itoa(int(x["XAPPSRV05"].(float64)))
+			srv.Protocol = x["XAPPSRV06"].(string)
 			srvs = append(srvs, srv)
 		}
 	}
