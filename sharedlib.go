@@ -668,7 +668,7 @@ func fillRefapp(ctx context.Context, microservice, refappname, devopsToken, domi
 	// ottengo il nome della refapp
 	argsApp := make(map[string]string)
 	argsApp["source"] = "appman-8"
-	argsApp["$select"] = "XAPP04"
+	argsApp["$select"] = "XAPP17"
 	argsApp["center_dett"] = "dettaglio"
 	argsApp["$filter"] = "equals(XAPP03,'" + appID + "') "
 
@@ -685,7 +685,7 @@ func fillRefapp(ctx context.Context, microservice, refappname, devopsToken, domi
 			erro := errors.New("XAPP04 no cast")
 			return refapp, erro
 		}
-		refapp.RefAppName = AppRes.BodyJson["XAPP04"].(string)
+		refapp.RefAppName = strings.ToLower(slugify.Slugify(AppRes.BodyJson["XAPP17"].(string)))
 	}
 
 	// entro su appbox per avere i box
