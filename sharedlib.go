@@ -679,10 +679,10 @@ func fillRefapp(ctx context.Context, microservice, refappname, devopsToken, domi
 		return refapp, erro
 	}
 	if len(AppRes.BodyJson) > 0 {
-		_, errcast := AppRes.BodyJson["XAPP04"].(string)
+		_, errcast := AppRes.BodyJson["XAPP17"].(string)
 		if !errcast {
-			Logga(ctx, os.Getenv("JsonLog"), "XAPP04 no cast")
-			erro := errors.New("XAPP04 no cast")
+			Logga(ctx, os.Getenv("JsonLog"), "XAPP17 no cast")
+			erro := errors.New("XAP17 no cast")
 			return refapp, erro
 		}
 		refapp.RefAppName = strings.ToLower(slugify.Slugify(AppRes.BodyJson["XAPP17"].(string)))
