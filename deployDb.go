@@ -950,7 +950,7 @@ func RenameDatabases(ctx context.Context, dbMetaName DbMetaConnMs, masterDb Mast
 		fmt.Println(err)
 	}
 }
-func GetMasterConn(ctx context.Context, gruppoDeveloper, cluster, devopsToken, devopsTokenDst, enviro, dominio, coreApiVersion string, monolith int32) (MasterConn, LoggaErrore) {
+func GetMasterConn(ctx context.Context, gruppoDeveloper, cluster, devopsToken, devopsTokenDst, enviro, dominio, coreApiVersion string, monolith int32) (MasterConn, error) {
 
 	Logga(ctx, os.Getenv("JsonLog"), "getMasterConn")
 	Logga(ctx, os.Getenv("JsonLog"), "Cluster: "+cluster)
@@ -967,8 +967,7 @@ func GetMasterConn(ctx context.Context, gruppoDeveloper, cluster, devopsToken, d
 		//os.Exit(0)
 	}
 
-	var erro LoggaErrore
-	erro.Errore = 0
+	var erro error
 
 	var master MasterConn
 
@@ -998,9 +997,7 @@ func GetMasterConn(ctx context.Context, gruppoDeveloper, cluster, devopsToken, d
 
 	restyKubeCluRes, errKubeCluRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsClu, "ms"+devops, "/"+devops+"/KUBECLUSTER", devopsTokenDst, dominio, coreApiVersion)
 	if errKubeCluRes != nil {
-		erro.Errore = -1
-		erro.Log = errKubeCluRes.Error()
-		return master, erro
+		return master, errKubeCluRes
 
 	}
 
@@ -1032,9 +1029,7 @@ func GetMasterConn(ctx context.Context, gruppoDeveloper, cluster, devopsToken, d
 
 		restyKubeCluEnvRes, errKubeCluEnvRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsCluEnv, "ms"+devops, "/"+devops+"/KUBECLUSTERENV", devopsTokenDst, dominio, coreApiVersion)
 		if errKubeCluEnvRes != nil {
-			erro.Errore = -1
-			erro.Log = errKubeCluEnvRes.Error()
-			return master, erro
+			return master, errKubeCluEnvRes
 		}
 
 		if len(restyKubeCluEnvRes.BodyJson) > 0 {
