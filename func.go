@@ -288,10 +288,9 @@ func GetUserGroup(ctx context.Context, token, gruppo, dominio, coreApiVersion st
 
 	return gru, erro
 }
-func GetNextVersion(ctx context.Context, masterBranch, nomeDocker, tenant, accessToken, loginApiDomain, coreApiVersion string) (string, LoggaErrore) {
+func GetNextVersion(ctx context.Context, masterBranch, nomeDocker, tenant, accessToken, loginApiDomain, coreApiVersion string) (string, error) {
 
-	var loggaErrore LoggaErrore
-	loggaErrore.Errore = 0
+	var erro error
 
 	// cerco il token di Corefactory
 	Logga(ctx, os.Getenv("JsonLog"), "", "Getting token")
@@ -318,9 +317,7 @@ func GetNextVersion(ctx context.Context, masterBranch, nomeDocker, tenant, acces
 	restyKubeImicroservRes, errImicroservRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsImicro, "msdevops", "/devops/KUBEDKRBUILD", devopsToken, loginApiDomain, coreApiVersion)
 	if errImicroservRes != nil {
 		Logga(ctx, os.Getenv("JsonLog"), errImicroservRes.Error())
-		loggaErrore.Errore = -1
-		loggaErrore.Log = errImicroservRes.Error()
-		return "", loggaErrore
+		return "", errImicroservRes
 	}
 
 	if len(restyKubeImicroservRes.BodyJson) > 0 {
@@ -351,7 +348,7 @@ func GetNextVersion(ctx context.Context, masterBranch, nomeDocker, tenant, acces
 		ver = prefix + num
 	}
 
-	return ver, loggaErrore
+	return ver, erro
 }
 func Times(str string, n int) string {
 	if n <= 0 {
@@ -526,7 +523,6 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 			Logga(ctx, os.Getenv("JsonLog"), "   !!!   KUBEMICROSERVHPA MISSING")
 			erro := errors.New("KUBEMICROSERVHPA MISSING")
 			return microservices, erro
-			//return microservices, loggaErrore
 		}
 		Logga(ctx, os.Getenv("JsonLog"), "")
 
@@ -1112,23 +1108,14 @@ func GetProfileInfo(ctx context.Context, token, dominio, coreApiVersion string) 
 
 	return info, erro
 }
-func GetBuildLastTag(ctx context.Context, team, docker, tipo, tenant, accessToken, loginApiDomain, coreApiVersion string) (string, LoggaErrore) {
+func GetBuildLastTag(ctx context.Context, team, docker, tipo, tenant, accessToken, loginApiDomain, coreApiVersion, devopsToken string) (string, error) {
 
-	sprint, erro := GetCurrentBranchSprint(ctx, team, tipo, tenant, accessToken, loginApiDomain, coreApiVersion)
-	if erro.Errore < 0 {
-		Logga(ctx, os.Getenv("JsonLog"), erro.Log)
-	}
+	//var erro error
 
-	var loggaErrore LoggaErrore
-	loggaErrore.Errore = 0
-
-	// cerco il token di Corefactory
-	Logga(ctx, os.Getenv("JsonLog"), "Getting token")
-	devopsToken, erroT := GetCoreFactoryToken(ctx, tenant, accessToken, loginApiDomain, coreApiVersion, os.Getenv("RestyDebug"))
-	if erroT != nil {
-		Logga(ctx, os.Getenv("JsonLog"), erroT.Error())
-	} else {
-		Logga(ctx, os.Getenv("JsonLog"), "Token OK")
+	sprint, erroGCBS := GetCurrentBranchSprint(ctx, team, tipo, tenant, accessToken, loginApiDomain, coreApiVersion, devopsToken)
+	if erroGCBS != nil {
+		Logga(ctx, os.Getenv("JsonLog"), erroGCBS.Error())
+		return "", erroGCBS
 	}
 
 	/* ************************************************************************************************ */
@@ -1147,14 +1134,11 @@ func GetBuildLastTag(ctx context.Context, team, docker, tipo, tenant, accessToke
 	restyKubeImicroservRes, errKubeImicroservRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsImicro, "msdevops", "/devops/KUBEDKRBUILD", devopsToken, loginApiDomain, coreApiVersion)
 	if errKubeImicroservRes != nil {
 		Logga(ctx, os.Getenv("JsonLog"), errKubeImicroservRes.Error())
-		loggaErrore.Errore = -1
-		loggaErrore.Log = errKubeImicroservRes.Error()
-		return "", loggaErrore
+		return "", errKubeImicroservRes
 	}
 
 	tag := ""
 	if len(restyKubeImicroservRes.BodyJson) > 0 {
-
 		tag = restyKubeImicroservRes.BodyJson["XKUBEDKRBUILD09"].(string)
 		Logga(ctx, os.Getenv("JsonLog"), "KUBEDKRBUILD OK")
 	} else {
@@ -1164,21 +1148,12 @@ func GetBuildLastTag(ctx context.Context, team, docker, tipo, tenant, accessToke
 	//	fmt.Println(tag)
 	/* ************************************************************************************************ */
 
-	return tag, loggaErrore
+	return tag, nil
 }
-func GetCurrentBranchSprint(ctx context.Context, team, tipo, tenant, accessToken, loginApiDomain, coreApiVersion string) (string, LoggaErrore) {
-
-	var loggaErrore LoggaErrore
-	loggaErrore.Errore = 0
+func GetCurrentBranchSprint(ctx context.Context, team, tipo, tenant, accessToken, loginApiDomain, coreApiVersion, devopsToken string) (string, error) {
 
 	// cerco il token di Corefactory
 	Logga(ctx, os.Getenv("JsonLog"), "Getting token")
-	devopsToken, erroT := GetCoreFactoryToken(ctx, tenant, accessToken, loginApiDomain, coreApiVersion, os.Getenv("RestyDebug"))
-	if erroT != nil {
-		Logga(ctx, os.Getenv("JsonLog"), erroT.Error())
-	} else {
-		Logga(ctx, os.Getenv("JsonLog"), "Token OK")
-	}
 
 	/* ************************************************************************************************ */
 	// KUBEIMICROSERV
@@ -1192,9 +1167,7 @@ func GetCurrentBranchSprint(ctx context.Context, team, tipo, tenant, accessToken
 
 	restyKubeImicroservRes, errKubeImicroservRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsImicro, "msdevops", "/devops/KUBETEAMBRANCH", devopsToken, loginApiDomain, coreApiVersion)
 	if errKubeImicroservRes != nil {
-		loggaErrore.Errore = -1
-		loggaErrore.Log = errKubeImicroservRes.Error()
-		return "", loggaErrore
+		return "", errKubeImicroservRes
 	}
 
 	sprintBranch := ""
@@ -1207,7 +1180,7 @@ func GetCurrentBranchSprint(ctx context.Context, team, tipo, tenant, accessToken
 	Logga(ctx, os.Getenv("JsonLog"), "")
 	/* ************************************************************************************************ */
 
-	return sprintBranch, loggaErrore
+	return sprintBranch, nil
 }
 func CreateTag(ctx context.Context, buildArgs BuildArgs, tag, repo string) error {
 
@@ -1290,10 +1263,7 @@ func CreateTag(ctx context.Context, buildArgs BuildArgs, tag, repo string) error
 	return nil
 }
 
-func GetEnvironmentStatus(ctx context.Context, cluster, enviro, microserice, customer, tenant, accessToken, loginApiDomain, coreApiVersion string) LoggaErrore {
-
-	var loggaErrore LoggaErrore
-	loggaErrore.Errore = 0
+func GetEnvironmentStatus(ctx context.Context, cluster, enviro, microserice, customer, tenant, accessToken, loginApiDomain, coreApiVersion string) error {
 
 	status := ""
 
@@ -1327,34 +1297,30 @@ func GetEnvironmentStatus(ctx context.Context, cluster, enviro, microserice, cus
 	restyEsRes, errEsRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsEs, "msdevops", "/core/KUBEENVSTATUS", devopsToken, loginApiDomain, coreApiVersion)
 	if errEsRes != nil {
 		Logga(ctx, os.Getenv("JsonLog"), restyEsRes.Log)
-		loggaErrore.Errore = -1
-		loggaErrore.Log = errEsRes.Error()
+		return errEsRes
 	}
 
+	var erro error
 	if len(restyEsRes.BodyJson) > 0 {
 		status = strconv.Itoa(int(restyEsRes.BodyJson["XKUBEENVSTATUS07"].(float64)))
-		loggaErrore.Log = status
+		erro = errors.New(status)
 		Logga(ctx, os.Getenv("JsonLog"), "KUBEENVSTATUS OK")
 	} else {
-		loggaErrore.Log = ""
 		Logga(ctx, os.Getenv("JsonLog"), "KUBEENVSTATUS MISSING")
 	}
 	Logga(ctx, os.Getenv("JsonLog"), "")
 	/* ************************************************************************************************ */
 
-	return loggaErrore
+	return erro
 }
-func SetEnvironmentStatus(ctx context.Context, cluster, enviro, microserice, customer, user, toggle, tenant, accessToken, loginApiDomain, coreApiVersion string) LoggaErrore {
+func SetEnvironmentStatus(ctx context.Context, cluster, enviro, microserice, customer, user, toggle, tenant, accessToken, loginApiDomain, coreApiVersion string) error {
 
-	var loggaErrore LoggaErrore
-	loggaErrore.Errore = 0
-
+	var erro error
 	// cerco il token di Corefactory
 	devopsToken, erroT := GetCoreFactoryToken(ctx, tenant, accessToken, loginApiDomain, coreApiVersion, os.Getenv("RestyDebug"))
 	if erroT != nil {
 		Logga(ctx, os.Getenv("JsonLog"), erroT.Error())
-		loggaErrore.Errore = -1
-		loggaErrore.Log = erroT.Error()
+		return erroT
 	}
 
 	/* ************************************************************************************************ */
@@ -1387,19 +1353,20 @@ func SetEnvironmentStatus(ctx context.Context, cluster, enviro, microserice, cus
 
 	if res.Errore < 0 {
 		Logga(ctx, os.Getenv("JsonLog"), res.Log)
-		loggaErrore.Errore = res.Errore
-		loggaErrore.Log = res.Log
+		erro = errors.New(res.Log)
+		return erro
+
 	} else {
 		if toggle == "ON" {
-			loggaErrore.Log = "Environment set to LOCK"
+			erro = errors.New("Environment set to LOCK")
 		} else {
-			loggaErrore.Log = "Environment set to UNLOCK"
+			erro = errors.New("Environment set to UNLOCK")
 		}
 	}
 
 	/* ************************************************************************************************ */
 
-	return loggaErrore
+	return erro
 }
 
 func GetAccessCluster(ctx context.Context, cluster, devopsToken, loginApiDomain, coreApiVersion string, monolith bool) ClusterAccess {
@@ -1439,11 +1406,10 @@ func GetAccessCluster(ctx context.Context, cluster, devopsToken, loginApiDomain,
 
 	return cluAcc
 }
-func GetJsonDatabases(ctx context.Context, stage, developer string, market int32, arrConn MasterConn, tenant, accessToken, loginApiDomain, coreApiVersion string, monolith bool) (map[string]interface{}, LoggaErrore) {
+func GetJsonDatabases(ctx context.Context, stage, developer string, market int32, arrConn MasterConn, tenant, accessToken, loginApiDomain, coreApiVersion string, monolith bool) (map[string]interface{}, error) {
 	Logga(ctx, os.Getenv("JsonLog"), "Getting Json Db")
 
-	var erro LoggaErrore
-	erro.Errore = 0
+	var erro error
 	callResponse := map[string]interface{}{}
 
 	if monolith {
@@ -1487,25 +1453,23 @@ func GetJsonDatabases(ctx context.Context, stage, developer string, market int32
 		Post(dominio + "/api/" + os.Getenv("coreApiVersion") + "/appman/getDeveloperMsList")
 
 	if err != nil { // HTTP ERRORE
-		erro.Errore = -1
-		erro.Log = err.Error()
+		return callResponse, err
 	} else {
 		if res.StatusCode() != 200 {
-			erro.Errore = -1
-			erro.Log = err.Error()
+			erro = errors.New("ERROR CODE: " + strconv.Itoa(res.StatusCode()))
+			return callResponse, erro
 		} else {
 
 			err1 := json.Unmarshal(res.Body(), &callResponse)
 			if err1 != nil {
-				erro.Errore = -1
-				erro.Log = err1.Error()
+				return callResponse, err1
 			}
 		}
 	}
 
 	return callResponse, erro
 }
-func GetCustomerToken(ctx context.Context, accessToken, refappCustomer, resource, dominio, coreApiVersion string) (string, LoggaErrore) {
+func GetCustomerToken(ctx context.Context, accessToken, refappCustomer, resource, dominio, coreApiVersion string) (string, error) {
 
 	Logga(ctx, os.Getenv("JsonLog"), "getCustomerToken")
 	Logga(ctx, os.Getenv("JsonLog"), "Customer Token "+dominio)
@@ -1513,8 +1477,7 @@ func GetCustomerToken(ctx context.Context, accessToken, refappCustomer, resource
 	Logga(ctx, os.Getenv("JsonLog"), "resource "+resource)
 	Logga(ctx, os.Getenv("JsonLog"), "accessToken "+accessToken)
 
-	var erro LoggaErrore
-	erro.Errore = 0
+	var erro error
 
 	ct := time.Now()
 	now := ct.Format("20060102150405")
@@ -1530,16 +1493,13 @@ func GetCustomerToken(ctx context.Context, accessToken, refappCustomer, resource
 
 	restyAuthResponse, restyAuthErr := ApiCallLOGIN(ctx, os.Getenv("RestyDebug"), argsAuth, "msauth", "/auth/login", dominio, coreApiVersion)
 	if restyAuthErr.Errore < 0 {
-		// QUI ERRORE
-		erro.Errore = -1
-		erro.Log = restyAuthErr.Log
+		erro = errors.New(restyAuthErr.Log)
 		return "", erro
 	}
 	if len(restyAuthResponse) > 0 {
 		return restyAuthResponse["idToken"].(string), erro
 	} else {
-		erro.Errore = -1
-		erro.Log = "token MISSING"
+		erro = errors.New("token MISSING")
 		return "", erro
 	}
 }
@@ -1593,15 +1553,14 @@ func GetCfToolEnv(ctx context.Context, token, dominio, tenant, coreApiVersion st
 	return tntEnv, erro
 
 }
-func GetDeploymentApi(namespace, apiHost, apiToken string, scaleToZero bool) (DeploymntStatus, LoggaErrore) {
+func GetDeploymentApi(namespace, apiHost, apiToken string, scaleToZero, debug bool) (DeploymntStatus, error) {
 
-	var erro LoggaErrore
-	erro.Errore = 0
+	var erro error
 
 	var deploy DeploymntStatus
 
 	clientKUBE := resty.New()
-	clientKUBE.Debug = false
+	clientKUBE.Debug = debug
 	clientKUBE.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 
 	endPoint := "https://" + apiHost + "/apis/apps/v1/namespaces/" + namespace + "/deployments"
@@ -1614,61 +1573,53 @@ func GetDeploymentApi(namespace, apiHost, apiToken string, scaleToZero bool) (De
 		Get(endPoint)
 
 	if errKUBE != nil {
-		erro.Errore = -1
-		erro.Log = errKUBE.Error()
-		return deploy, erro
+		return deploy, errKUBE
 	}
 
 	if resKUBE.StatusCode() != 200 {
-		erro.Errore = -1
-		erro.Log = "API Res Status: " + resKUBE.Status()
+		erro = errors.New("API Res Status: " + resKUBE.Status())
 		return deploy, erro
 	}
 
 	a := map[string]interface{}{}
 	errUm := json.Unmarshal(resKUBE.Body(), &a)
 	if errUm != nil {
-		erro.Errore = -1
-		erro.Log = errUm.Error()
-		return deploy, erro
+		return deploy, errUm
 	}
 
 	jsonStr, errMa := json.Marshal(a)
 	if errMa != nil {
-		erro.Errore = -1
-		erro.Log = errMa.Error()
-		return deploy, erro
+		return deploy, errMa
 	}
 
 	errUm2 := json.Unmarshal(jsonStr, &deploy)
 	if errUm2 != nil {
-		erro.Errore = -1
-		erro.Log = errUm2.Error()
-		return deploy, erro
+		return deploy, errUm2
 	}
 
 	return deploy, erro
 }
 
-func CheckPodHealth(microservice, versione, namespace, apiHost, apiToken string, scaleToZero bool) (bool, LoggaErrore) {
+func CheckPodHealth(microservice, versione, namespace, apiHost, apiToken string, scaleToZero bool, debug string) (bool, error) {
 
-	var erro LoggaErrore
-	erro.Errore = 0
+	var erro error
+
+	debool, errBool := strconv.ParseBool(debug)
+	if errBool != nil {
+		return false, errBool
+	}
 
 	msDeploy := microservice + "-v" + versione
 	msMatch := false
 	i := 0
 	for {
-		item, err := GetDeploymentApi(namespace, apiHost, apiToken, scaleToZero)
-		if err.Errore < 0 {
-			erro.Errore = -1
-			erro.Log = err.Log
-			return false, erro
+		item, errDpl := GetDeploymentApi(namespace, apiHost, apiToken, scaleToZero, debool)
+		if errDpl != nil {
+			return false, errDpl
 		} else {
 
 			if len(item.Items) == 0 {
-				erro.Errore = -1
-				erro.Log = "No Deployment Found in Namespace"
+				erro = errors.New("No Deployment Found in Namespace")
 				return false, erro
 			}
 
@@ -1692,8 +1643,7 @@ func CheckPodHealth(microservice, versione, namespace, apiHost, apiToken string,
 
 				// sto girando a vuoto perche nessun item risponde a cio che cerco
 				if i >= 1 && !msMatch {
-					erro.Errore = -1
-					erro.Log = "nessun item risponde a cio che cerco"
+					erro = errors.New("nessun item risponde a cio che cerco")
 					return false, erro
 				}
 
@@ -1702,14 +1652,13 @@ func CheckPodHealth(microservice, versione, namespace, apiHost, apiToken string,
 			i++
 			time.Sleep(10 * time.Second)
 			if i > 150 { // superati 5 minuti direi che stann e plobble'
-				erro.Errore = -1
-				erro.Log = "Time Out. Pod is not Running"
+				erro = errors.New("Time Out. Pod is not Running")
 				return false, erro
 			}
 		}
 	}
 }
-func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, canaryProduction, namespace, enviro, tenant, devopsToken, dominio, coreApiVersion string) error {
+func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, canaryProduction, namespace, enviro, tenant, devopsToken, dominio, coreApiVersion string, debug string) error {
 
 	var erro error
 	istanza := ires.Istanza
@@ -1718,6 +1667,11 @@ func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, can
 		microservice = ires.Microservice
 	} else {
 		microservice = ires.PodName
+	}
+
+	debool, errBool := strconv.ParseBool(debug)
+	if errBool != nil {
+		return errBool
 	}
 
 	Logga(ctx, os.Getenv("JsonLog"), "****************************************************************************************")
@@ -1777,11 +1731,10 @@ func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, can
 	//msDeploy := microservice + "-v" + versione
 
 	//LogJson(ires)
-	item, err := GetDeploymentApi(namespace, ires.ApiHost, ires.ApiToken, ires.ScaleToZero)
+	item, errDepl := GetDeploymentApi(namespace, ires.ApiHost, ires.ApiToken, ires.ScaleToZero, debool)
 	//LogJson(item)
-	if err.Errore < 0 {
-		erro = errors.New(err.Log)
-		return erro
+	if errDepl != nil {
+		return errDepl
 	} else {
 
 		if len(item.Items) == 0 {
@@ -1818,12 +1771,12 @@ func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, can
 					Logga(ctx, os.Getenv("JsonLog"), "I DO KILL: "+deployment)
 
 					if ires.ScaleToZero {
-						DeleteObjectsApi(namespace, ires.ApiHost, ires.ApiToken, deployment, "knservice")
+						DeleteObjectsApi(namespace, ires.ApiHost, ires.ApiToken, deployment, "knservice", debool)
 					} else {
 						// delete deployment
-						DeleteObjectsApi(namespace, ires.ApiHost, ires.ApiToken, deployment, "deployment")
+						DeleteObjectsApi(namespace, ires.ApiHost, ires.ApiToken, deployment, "deployment", debool)
 						// delete HPA
-						DeleteObjectsApi(namespace, ires.ApiHost, ires.ApiToken, deployment, "hpa")
+						DeleteObjectsApi(namespace, ires.ApiHost, ires.ApiToken, deployment, "hpa", debool)
 					}
 
 				}
@@ -1834,7 +1787,7 @@ func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, can
 	}
 	return erro
 }
-func DeleteObjectsApi(namespace, apiHost, apiToken, object, kind string) LoggaErrore {
+func DeleteObjectsApi(namespace, apiHost, apiToken, object, kind string, debug bool) error {
 
 	/* *************************************** */
 	// LEGGIMI
@@ -1863,8 +1816,7 @@ func DeleteObjectsApi(namespace, apiHost, apiToken, object, kind string) LoggaEr
 		name = "services"
 	}
 
-	var erro LoggaErrore
-	erro.Errore = 0
+	var erro error
 
 	args := make(map[string]string)
 	args["kind"] = "DeleteOptions"
@@ -1872,7 +1824,7 @@ func DeleteObjectsApi(namespace, apiHost, apiToken, object, kind string) LoggaEr
 	args["apiVerpropagationPolicysion"] = "Foreground"
 
 	clientKUBE := resty.New()
-	clientKUBE.Debug = false
+	clientKUBE.Debug = debug
 	clientKUBE.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 
 	resKUBE, errKUBE := clientKUBE.R().
@@ -1882,23 +1834,18 @@ func DeleteObjectsApi(namespace, apiHost, apiToken, object, kind string) LoggaEr
 		Delete("https://" + apiHost + "/apis/" + apiversion + "/namespaces/" + namespace + "/" + name + "/" + object)
 
 	if errKUBE != nil {
-		erro.Errore = -1
-		erro.Log = errKUBE.Error()
-		return erro
+		return errKUBE
 	}
 
 	if resKUBE.StatusCode() != 200 {
-		erro.Errore = -1
-		erro.Log = "API Res Status: " + resKUBE.Status()
+		erro = errors.New("API Res Status: " + resKUBE.Status())
 		return erro
 	}
 
 	a := map[string]interface{}{}
 	errUm := json.Unmarshal(resKUBE.Body(), &a)
 	if errUm != nil {
-		erro.Errore = -1
-		erro.Log = errUm.Error()
-		return erro
+		return errUm
 	}
 
 	return erro

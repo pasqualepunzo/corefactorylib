@@ -27,9 +27,6 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	Logga(ctx, os.Getenv("JsonLog"), " + + + + + + + + + + + + + + + + + + + +")
 	Logga(ctx, os.Getenv("JsonLog"), "getIstanceDetail begin")
 
-	var LoggaErrore LoggaErrore
-	LoggaErrore.Errore = 0
-
 	var erro error
 
 	devopsToken := iresReq.TokenSrc
@@ -765,11 +762,11 @@ func fillRefapp(ctx context.Context, microservice, refappname, devopsToken, domi
 	if len(BrRes.BodyArray) > 0 {
 		for _, x := range BrRes.BodyArray {
 			var dme BaseRoute
-			dme.Domino = x["XKUBECLUSTER15"].(string)
+			dme.Domino = x["XKUBEIMICROSERV06"].(string) + "." + strings.ToLower(x["XKUBEMICROSERV07"].(string)) + "." + x["XKUBECLUSTER15"].(string)
 			dme.Env = x["XKUBEIMICROSERV06"].(string)
 			dme.Team = x["XKUBEMICROSERV07"].(string)
 			dme.Ip = x["XKUBECLUSTER22"].(string)
-			dme.BaseRoute = dme.Env + "-" + strings.ToLower(dme.Team) + "." + dme.Domino
+			dme.BaseRoute = "/" + x["XKUBEIMICROSERV06"].(string) + "-" + strings.ToLower(x["XKUBEMICROSERV07"].(string)) + "/"
 			dmes = append(dmes, dme)
 		}
 	}
@@ -830,13 +827,13 @@ func fillRefapp(ctx context.Context, microservice, refappname, devopsToken, domi
 				}
 				dmesOK[idx].Team = strings.ToLower(team)
 				gruteam[x.Team] = strings.ToLower(team)
-				dmesOK[idx].BaseRoute = x.Env + "-" + strings.ToLower(team) + "." + x.Domino
+				dmesOK[idx].BaseRoute = "/" + x.Env + "-" + strings.ToLower(team) + "/"
 				gruppiArr = append(gruppiArr, x.Team)
 			}
 
 		} else {
 			dmesOK[idx].Team = gruteam[x.Team]
-			dmesOK[idx].BaseRoute = x.Env + "-" + gruteam[x.Team] + "." + x.Domino
+			dmesOK[idx].BaseRoute = "/" + x.Env + "-" + gruteam[x.Team] + "/"
 		}
 	}
 
@@ -1150,10 +1147,7 @@ func GetIstanzaVersioni(ctx context.Context, iresReq IresRequest, istanza, envir
 
 	return istanzaMicroVersioni, erro
 }
-func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMicroservizio string, istanza IstanzaMicro, micros Microservice, utente, enviro, devopsToken, dominio, coreApiVersion, microfrontendJson string) LoggaErrore {
-
-	var LoggaErrore LoggaErrore
-	LoggaErrore.Errore = 0
+func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMicroservizio string, istanza IstanzaMicro, micros Microservice, utente, enviro, devopsToken, dominio, coreApiVersion, microfrontendJson string) error {
 
 	Logga(ctx, os.Getenv("JsonLog"), "")
 	Logga(ctx, os.Getenv("JsonLog"), " + + + + + + + + + + + + + + + + + + + + ")
@@ -1197,9 +1191,7 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 				_, erro := ApiCallPUT(ctx, os.Getenv("RestyDebug"), keyvalueslice, "ms"+devops, "/"+devops+"/DEPLOYLOG/"+filter, devopsToken, dominio, coreApiVersion)
 
 				if erro != nil {
-					LoggaErrore.Errore = -1
-					LoggaErrore.Log = erro.Error()
-					return LoggaErrore
+					return erro
 				}
 			}
 
@@ -1226,9 +1218,7 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 
 				_, erro := ApiCallPUT(ctx, os.Getenv("RestyDebug"), keyvalueslice, "ms"+devops, "/"+devops+"/DEPLOYLOG/"+filter, devopsToken, dominio, coreApiVersion)
 				if erro != nil {
-					LoggaErrore.Errore = -1
-					LoggaErrore.Log = erro.Error()
-					return LoggaErrore
+					return erro
 				}
 
 			case "canary", "Canary":
@@ -1243,9 +1233,7 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 
 				_, erro := ApiCallPUT(ctx, os.Getenv("RestyDebug"), keyvalueslice, "ms"+devops, "/"+devops+"/DEPLOYLOG/"+filter, devopsToken, dominio, coreApiVersion)
 				if erro != nil {
-					LoggaErrore.Errore = -1
-					LoggaErrore.Log = erro.Error()
-					return LoggaErrore
+					return erro
 				}
 
 				break
@@ -1313,15 +1301,15 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 
 	resPOST := ApiCallPOST(ctx, os.Getenv("RestyDebug"), keyvalueslices, "ms"+devops, "/"+devops+"/DEPLOYLOG", devopsToken, dominio, coreApiVersion)
 	if resPOST.Errore < 0 {
-		LoggaErrore.Log = resPOST.Log
-		return LoggaErrore
+		erro := errors.New(resPOST.Log)
+		return erro
 	}
 
 	Logga(ctx, os.Getenv("JsonLog"), "updateIstanzaMicroservice end")
 	Logga(ctx, os.Getenv("JsonLog"), " - - - - - - - - - - - - - - - - - - - ")
 
 	//os.Exit(0)
-	return LoggaErrore
+	return nil
 }
 func UploadFileBucket(bucket, object, filename string) error {
 	// bucket := "bucket-name"

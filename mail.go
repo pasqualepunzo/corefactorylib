@@ -109,7 +109,7 @@ func SendMail(mailer Mailer) error {
 		return err
 	}
 }
-func TelegramSendMessage(botToken, cftoolDevopsChatID, text string) LoggaErrore {
+func TelegramSendMessage(botToken, cftoolDevopsChatID, text string) error {
 	type telegramResStruct struct {
 		Ok     bool `json:"ok"`
 		Result struct {
@@ -131,8 +131,7 @@ func TelegramSendMessage(botToken, cftoolDevopsChatID, text string) LoggaErrore 
 		} `json:"result"`
 	}
 
-	var erro LoggaErrore
-	erro.Errore = 0
+	var erro error
 
 	clientTelegram := resty.New()
 	clientTelegram.Debug = false
@@ -142,8 +141,7 @@ func TelegramSendMessage(botToken, cftoolDevopsChatID, text string) LoggaErrore 
 
 	var telegramRes telegramResStruct
 	if errTelegram != nil {
-		erro.Errore = -1
-		erro.Log = errTelegram.Error()
+		return errTelegram
 	} else {
 		err1 := json.Unmarshal(resTelegram.Body(), &telegramRes)
 		if err1 != nil {
@@ -154,9 +152,8 @@ func TelegramSendMessage(botToken, cftoolDevopsChatID, text string) LoggaErrore 
 	// LogJson(telegramRes)
 
 	if !telegramRes.Ok {
-		erro.Errore = -1
-		erro.Log = telegramRes.Result.Text
+		erro = errors.New(telegramRes.Result.Text)
+		return erro
 	}
-
-	return erro
+	return nil
 }
