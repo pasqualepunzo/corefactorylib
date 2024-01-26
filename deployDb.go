@@ -15,38 +15,26 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func DropMetadato(ctx context.Context, dbMetaName DbMetaConnMs, db *sql.DB) LoggaErrore {
-
-	var loggaErrore LoggaErrore
-	loggaErrore.Errore = 0
+func DropMetadato(ctx context.Context, dbMetaName DbMetaConnMs, db *sql.DB) error {
 
 	Logga(ctx, os.Getenv("JsonLog"), "Drop metadata :"+dbMetaName.MetaName)
 
 	_, err := db.Exec("drop database if exists " + dbMetaName.MetaName)
 	if err != nil {
-		loggaErrore.Log = err.Error()
-		loggaErrore.Errore = -1
-		return loggaErrore
+		return err
 	} else {
 		Logga(ctx, os.Getenv("JsonLog"), "Database "+dbMetaName.MetaName+" dropped")
 	}
 
-	loggaErrore.Log = ""
-	loggaErrore.Errore = 1
-	return loggaErrore
+	return nil
 }
-func CreateDbMeta(ctx context.Context, dbMetaName DbMetaConnMs, db *sql.DB) LoggaErrore {
-
-	var loggaErrore LoggaErrore
-	loggaErrore.Errore = 0
+func CreateDbMeta(ctx context.Context, dbMetaName DbMetaConnMs, db *sql.DB) error {
 
 	query := "CREATE DATABASE " + dbMetaName.MetaName
 	Logga(ctx, os.Getenv("JsonLog"), query)
 	_, err := db.Exec(query)
 	if err != nil {
-		loggaErrore.Log = err.Error()
-		loggaErrore.Errore = -1
-		return loggaErrore
+		return err
 	} else {
 		Logga(ctx, os.Getenv("JsonLog"), "Database "+dbMetaName.MetaName+" instance done")
 	}
@@ -54,18 +42,15 @@ func CreateDbMeta(ctx context.Context, dbMetaName DbMetaConnMs, db *sql.DB) Logg
 	// creo gli user
 	CreateUser(ctx, dbMetaName, db)
 
-	return loggaErrore
+	return nil
 }
-func CreateDbData(ctx context.Context, dbDataName DbDataConnMs, db *sql.DB) LoggaErrore {
+func CreateDbData(ctx context.Context, dbDataName DbDataConnMs, db *sql.DB) error {
 
 	// creazione dei DATABASE
-	var loggaErrore LoggaErrore
 
 	_, err := db.Exec("CREATE DATABASE IF NOT EXISTS " + dbDataName.DataName)
 	if err != nil {
-		loggaErrore.Log = err.Error()
-		loggaErrore.Errore = -1
-		return loggaErrore
+		return err
 	} else {
 		Logga(ctx, os.Getenv("JsonLog"), "Create Database "+dbDataName.DataName+" instance done")
 	}
@@ -76,23 +61,19 @@ func CreateDbData(ctx context.Context, dbDataName DbDataConnMs, db *sql.DB) Logg
 	cons.MetaName = dbDataName.DataName
 	cons.MetaPass = dbDataName.DataPass
 	cons.MetaUser = dbDataName.DataUser
-	CreateUser(ctx, cons, db)
+	erro := CreateUser(ctx, cons, db)
+	if erro != nil {
+		return erro
+	}
 
-	//os.Exit(0)
-
-	loggaErrore.Log = ""
-	loggaErrore.Errore = 1
-	return loggaErrore
+	return nil
 }
-func CreateUser(ctx context.Context, dbMetaName DbMetaConnMs, db *sql.DB) LoggaErrore {
-
-	var loggaErrore LoggaErrore
-	loggaErrore.Errore = 0
+func CreateUser(ctx context.Context, dbMetaName DbMetaConnMs, db *sql.DB) error {
 
 	// FAC-753
 	var _user string
 	query := "SELECT user as _user FROM mysql.user where user = '" + dbMetaName.MetaUser + "'"
-	fmt.Println(query)
+
 	row := db.QueryRow(query)
 	errUser := row.Scan(&_user)
 
@@ -105,9 +86,7 @@ func CreateUser(ctx context.Context, dbMetaName DbMetaConnMs, db *sql.DB) LoggaE
 			Logga(ctx, os.Getenv("JsonLog"), query)
 			_, err := db.Exec(query)
 			if err != nil {
-				loggaErrore.Log = err.Error()
-				loggaErrore.Errore = -1
-				return loggaErrore
+				return err
 			} else {
 				Logga(ctx, os.Getenv("JsonLog"), "CREATE USER    "+dbMetaName.MetaUser+" done")
 			}
@@ -118,9 +97,7 @@ func CreateUser(ctx context.Context, dbMetaName DbMetaConnMs, db *sql.DB) LoggaE
 			_, err = db.Exec(query)
 			//Logga(ctx, os.Getenv("JsonLog"), "GRANT ALL PRIVILEGES ON " + ires.MetaName + ".* TO '" + ires.MetaUser + "'@'%'")
 			if err != nil {
-				loggaErrore.Log = err.Error()
-				loggaErrore.Errore = -1
-				return loggaErrore
+				return err
 			} else {
 				Logga(ctx, os.Getenv("JsonLog"), "GRANT ON "+dbMetaName.MetaName+" created")
 			}
@@ -130,16 +107,12 @@ func CreateUser(ctx context.Context, dbMetaName DbMetaConnMs, db *sql.DB) LoggaE
 			Logga(ctx, os.Getenv("JsonLog"), query)
 			_, err = db.Exec(query)
 			if err != nil {
-				loggaErrore.Log = err.Error()
-				loggaErrore.Errore = -1
-				return loggaErrore
+				return err
 			} else {
 				Logga(ctx, os.Getenv("JsonLog"), "FLUSH PRIVILEGES "+dbMetaName.MetaName+" done")
 			}
 		} else {
-			loggaErrore.Log = errUser.Error()
-			loggaErrore.Errore = -1
-			return loggaErrore
+			return errUser
 		}
 
 	} else {
@@ -147,25 +120,17 @@ func CreateUser(ctx context.Context, dbMetaName DbMetaConnMs, db *sql.DB) LoggaE
 		Logga(ctx, os.Getenv("JsonLog"), "User: "+dbMetaName.MetaUser+" already exists")
 	}
 
-	loggaErrore.Log = ""
-	loggaErrore.Errore = 0
-	return loggaErrore
+	return nil
 }
-func DropDbData(ctx context.Context, dbDataName DbDataConnMs, db *sql.DB) LoggaErrore {
-
-	var loggaErrore LoggaErrore
+func DropDbData(ctx context.Context, dbDataName DbDataConnMs, db *sql.DB) error {
 
 	_, err := db.Exec("drop database if exists " + dbDataName.DataName)
 	if err != nil {
-		loggaErrore.Log = err.Error()
-		loggaErrore.Errore = -1
-		return loggaErrore
+		return err
 	} else {
 		Logga(ctx, os.Getenv("JsonLog"), "Database "+dbDataName.DataName+" dropped")
 	}
-	loggaErrore.Log = ""
-	loggaErrore.Errore = 1
-	return loggaErrore
+	return nil
 }
 
 func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, db *sql.DB, db2 *sql.DB, doQueryExec bool) ([]string, []string, error) {
@@ -448,9 +413,6 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 	fmt.Println()
 	fmt.Println("Compare Index")
 
-	var loggaErrore LoggaErrore
-	loggaErrore.Errore = 0
-
 	var allCompareIdx []string
 	var allCompareIdxError []string
 
@@ -502,8 +464,6 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 				for selDB2.Next() {
 					err = selDB2.Scan(&NAME_IDX, &UNIQUE_IDX, &COLUMN_NAME, &tbIndex)
 					if err != nil {
-						loggaErrore.Log = err.Error()
-						loggaErrore.Errore = -1
 						return allCompareIdx, allCompareIdxError, err
 					}
 
@@ -670,7 +630,6 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 						_, err = db2.Exec(dropIdx)
 						if err != nil {
 							allCompareIdxError = append(allCompareIdxError, dropIdx)
-							//return loggaErrore, allCompareIdx
 						} else {
 							//	fmt.Println(dropIdx + "  ok")
 						}
@@ -839,7 +798,6 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 						_, err = db.Exec(dropIdx)
 						if err != nil {
 							allCompareIdxError = append(allCompareIdxError, err.Error()+" - "+dropIdx)
-							//return loggaErrore, allCompareIdx
 						} else {
 							//	fmt.Println(dropIdx + "  ok")
 						}
