@@ -762,7 +762,7 @@ func fillRefapp(ctx context.Context, microservice, refappname, devopsToken, domi
 	if len(BrRes.BodyArray) > 0 {
 		for _, x := range BrRes.BodyArray {
 			var dme BaseRoute
-			dme.Domino = x["XKUBEIMICROSERV06"].(string) + "." + strings.ToLower(x["XKUBEMICROSERV07"].(string)) + "." + x["XKUBECLUSTER15"].(string)
+			dme.Domino = x["XKUBECLUSTER15"].(string)
 			dme.Env = x["XKUBEIMICROSERV06"].(string)
 			dme.Team = x["XKUBEMICROSERV07"].(string)
 			dme.Ip = x["XKUBECLUSTER22"].(string)
@@ -828,12 +828,14 @@ func fillRefapp(ctx context.Context, microservice, refappname, devopsToken, domi
 				dmesOK[idx].Team = strings.ToLower(team)
 				gruteam[x.Team] = strings.ToLower(team)
 				dmesOK[idx].BaseRoute = "/" + x.Env + "-" + strings.ToLower(team) + "/"
+				dmesOK[idx].Domino = x.Env + "-" + strings.ToLower(team) + "." + x.Domino
 				gruppiArr = append(gruppiArr, x.Team)
 			}
 
 		} else {
 			dmesOK[idx].Team = gruteam[x.Team]
 			dmesOK[idx].BaseRoute = "/" + x.Env + "-" + gruteam[x.Team] + "/"
+			dmesOK[idx].Domino = x.Env + "-" + gruteam[x.Team] + "." + x.Domino
 		}
 	}
 

@@ -1294,7 +1294,7 @@ func GetEnvironmentStatus(ctx context.Context, cluster, enviro, microserice, cus
 		args["$filter"] += " and equals(XKUBEENVSTATUS06,'" + customer + "') "
 	}
 
-	restyEsRes, errEsRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsEs, "msdevops", "/core/KUBEENVSTATUS", devopsToken, loginApiDomain, coreApiVersion)
+	restyEsRes, errEsRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsEs, "msdevops", "/devops/KUBEENVSTATUS", devopsToken, loginApiDomain, coreApiVersion)
 	if errEsRes != nil {
 		Logga(ctx, os.Getenv("JsonLog"), restyEsRes.Log)
 		return errEsRes
