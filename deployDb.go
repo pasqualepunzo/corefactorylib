@@ -145,8 +145,8 @@ func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, 
 
 	// se facciamo il compare sui monoliti
 	if ires.Monolith == 1 {
-		dbDataSrc = dbDataName.DataName + "_ccd_nuovo_monolith"
-		dbDataDst = dbDataName.DataName + "_ccd_prod_monolith"
+		dbDataSrc = dbDataName.DataName + "_ccd_nuovo"
+		dbDataDst = dbDataName.DataName + "_ccd_prod"
 	}
 
 	Logga(ctx, os.Getenv("JsonLog"), "")
