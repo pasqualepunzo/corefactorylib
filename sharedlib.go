@@ -896,7 +896,7 @@ func fillMarketPlaceRoute(dmesOK *[]BaseRoute) {
 		*dmesOK = append(*dmesOK, dme)
 	}
 }
-func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]Endpoint, error) {
+func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]Service, error) {
 
 	Logga(ctx, os.Getenv("JsonLog"), "GetMsRoutes")
 	var erro error
@@ -907,6 +907,7 @@ func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]Endpoint, error) {
 	namespace := routeJson.Enviro + "-" + team
 	cluster := routeJson.Cluster
 
+	var services []Service
 	/* ************************************************************************************************ */
 	// DOCKER AND PORTS
 
@@ -922,19 +923,20 @@ func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]Endpoint, error) {
 
 	if errDokerRes != nil {
 		Logga(ctx, os.Getenv("JsonLog"), errDokerRes.Error())
-		return eps, errDokerRes
+		return services, errDokerRes
 	}
 	if restyDokerRes.Errore < 0 {
 		Logga(ctx, os.Getenv("JsonLog"), restyDokerRes.Log)
 		erro = errors.New(restyDokerRes.Log)
-		return eps, erro
+		return services, erro
 	}
 
 	if len(restyDokerRes.BodyArray) > 0 {
+		var port, tipo string
 		for _, x := range restyDokerRes.BodyArray {
 
 			docker := x["XKUBEMICROSERVDKR04"].(string)
-			port := strconv.FormatFloat(x["XKUBESERVICEDKR06"].(float64), 'f', 0, 64)
+			port = strconv.FormatFloat(x["XKUBESERVICEDKR06"].(float64), 'f', 0, 64)
 
 			/* ************************************************************************************************ */
 			// ENDPOINTS
@@ -1066,7 +1068,7 @@ func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]Endpoint, error) {
 			restyKubeEndpointRes, erroEnd := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsEndpoint, "msdevops", "/core/custom/KUBEENDPOINT/values", devopsToken, os.Getenv("loginApiHost"), os.Getenv("coreApiVersion"))
 			if erroEnd != nil {
 				Logga(ctx, os.Getenv("JsonLog"), erroEnd.Error())
-				return eps, erroEnd
+				return services, erroEnd
 			}
 
 			if len(restyKubeEndpointRes.BodyArray) > 0 {
@@ -1105,8 +1107,14 @@ func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]Endpoint, error) {
 			}
 			/* ************************************************************************************************ */
 		}
+		var service Service
+		service.Port = port
+		service.Tipo = tipo
+		service.Endpoint = eps
+
+		services = append(services, service)
 	}
-	return eps, erro
+	return services, erro
 }
 func GetIstanzaVersioni(ctx context.Context, iresReq IresRequest, istanza, enviro, devops, devopsTokenDst, dominio, coreApiVersion string) ([]IstanzaMicroVersioni, error) {
 	Logga(ctx, os.Getenv("JsonLog"), "Getting DEPLOYLOG")
