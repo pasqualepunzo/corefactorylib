@@ -11,7 +11,7 @@ import (
 	"github.com/briandowns/spinner"
 )
 
-func CloneRepo(loginRes LoginRes, dirRepo, newBranchName, actionGit string, repo RepoListStruct) {
+func CloneRepo(loginRes LoginRes, dirRepo, newBranchName, actionGit string, repo RepoListStruct, swmono bool) {
 	err := os.RemoveAll(dirRepo)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -26,7 +26,9 @@ func CloneRepo(loginRes LoginRes, dirRepo, newBranchName, actionGit string, repo
 	fmt.Println(" + Checking out: " + repo.Repo + " to " + newBranchName)
 	GitCheckout(dirRepo, newBranchName)
 
-	writeStIgnore(dirRepo)
+	if swmono {
+		writeStIgnore(dirRepo)
+	}
 }
 func writeStIgnore(dirRepo string) {
 
