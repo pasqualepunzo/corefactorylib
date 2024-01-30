@@ -914,9 +914,11 @@ func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]Service, error) {
 	argsDoker := make(map[string]string)
 	argsDoker["source"] = "devops-8"
 
-	argsDoker["$fullquery"] = " select XKUBEMICROSERVDKR04,XKUBESERVICEDKR06 from TB_ANAG_KUBEIMICROSERV00 "
+	argsDoker["$fullquery"] = " select XKUBEMICROSERVDKR04,XKUBESERVICEDKR06,XDEPLOYLOG03,XDEPLOYLOG05 "
+	argsDoker["$fullquery"] += " from TB_ANAG_KUBEIMICROSERV00 "
 	argsDoker["$fullquery"] += " join TB_ANAG_KUBEMICROSERVDKR00 on (XKUBEIMICROSERV04=XKUBEMICROSERVDKR03) "
 	argsDoker["$fullquery"] += " join TB_ANAG_KUBESERVICEDKR00 on (XKUBESERVICEDKR04=XKUBEMICROSERVDKR04) "
+	argsDoker["$fullquery"] += " join TB_ANAG_DEPLOYLOG00 on (XDEPLOYLOG04=XKUBEIMICROSERV03 and XDEPLOYLOG06 = 1 and XDEPLOYLOG09 = '" + routeJson.Enviro + "') "
 	argsDoker["$fullquery"] += " where XKUBEIMICROSERV05 = '" + cluster + "'   and XKUBEIMICROSERV08 ='" + team + "' "
 	Logga(ctx, os.Getenv("JsonLog"), argsDoker["$fullquery"])
 	restyDokerRes, errDokerRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsDoker, "msdevops", "/core/custom/KUBEIMICROSERV/values", devopsToken, os.Getenv("loginApiHost"), os.Getenv("coreApiVersion"))
