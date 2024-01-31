@@ -914,7 +914,7 @@ func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]Service, error) {
 	argsDoker := make(map[string]string)
 	argsDoker["source"] = "devops-8"
 
-	argsDoker["$fullquery"] = " select XKUBEMICROSERVDKR04,XKUBESERVICEDKR06,XDEPLOYLOG03,XDEPLOYLOG05 "
+	argsDoker["$fullquery"] = " select XKUBEMICROSERVDKR04,XKUBESERVICEDKR05,XKUBESERVICEDKR06,XDEPLOYLOG03,XDEPLOYLOG05 "
 	argsDoker["$fullquery"] += " from TB_ANAG_KUBEIMICROSERV00 "
 	argsDoker["$fullquery"] += " join TB_ANAG_KUBEMICROSERVDKR00 on (XKUBEIMICROSERV04=XKUBEMICROSERVDKR03) "
 	argsDoker["$fullquery"] += " join TB_ANAG_KUBESERVICEDKR00 on (XKUBESERVICEDKR04=XKUBEMICROSERVDKR04) "
@@ -934,11 +934,14 @@ func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]Service, error) {
 	}
 
 	if len(restyDokerRes.BodyArray) > 0 {
-		var port, tipo string
+		var port, tipo, versione, tipoDeploy string
 		for _, x := range restyDokerRes.BodyArray {
 
 			docker := x["XKUBEMICROSERVDKR04"].(string)
 			port = strconv.FormatFloat(x["XKUBESERVICEDKR06"].(float64), 'f', 0, 64)
+			tipo = x["XKUBESERVICEDKR05"].(string)
+			versione = x["XDEPLOYLOG05"].(string)
+			tipoDeploy = x["XDEPLOYLOG03"].(string)
 
 			/* ************************************************************************************************ */
 			// ENDPOINTS
@@ -1063,6 +1066,8 @@ func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]Service, error) {
 			sqlEndpoint += "partner desc , "
 			sqlEndpoint += "market desc "
 
+			// fmt.Println("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
+			// fmt.Println(sqlEndpoint)
 			argsEndpoint := make(map[string]string)
 			argsEndpoint["source"] = "devops-8"
 			argsEndpoint["$fullquery"] = sqlEndpoint
@@ -1105,16 +1110,22 @@ func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]Service, error) {
 						ep.ClusterDomain = ""
 					}
 					eps = append(eps, ep)
-				}
-			}
-			/* ************************************************************************************************ */
-		}
-		var service Service
-		service.Port = port
-		service.Tipo = tipo
-		service.Endpoint = eps
 
-		services = append(services, service)
+				}
+
+				var service Service
+				service.Port = port
+				service.Tipo = tipo
+				service.TipoDeploy = tipoDeploy
+				service.Versione = versione
+				service.Endpoint = eps
+
+				services = append(services, service)
+				eps = nil
+			}
+			LogJson(services)
+		}
+
 	}
 	return services, erro
 }

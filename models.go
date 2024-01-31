@@ -234,9 +234,11 @@ type Mount struct {
 }
 
 type Service struct {
-	Tipo     string
-	Port     string
-	Endpoint []Endpoint
+	Tipo       string
+	Port       string
+	Versione   string
+	TipoDeploy string
+	Endpoint   []Endpoint
 }
 
 type Endpoint struct {
