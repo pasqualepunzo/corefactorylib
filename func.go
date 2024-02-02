@@ -1631,7 +1631,7 @@ func CheckPodHealth(microservice, versione, namespace, apiHost, apiToken string,
 
 					if !scaleToZero {
 						var ctx context.Context
-						Logga(ctx, os.Getenv("JsonLog"), item.Metadata.Name+" desired: ", strconv.Itoa(item.Spec.Replicas), " - aviable: ", strconv.Itoa(item.Status.ReadyReplicas))
+						Logga(ctx, os.Getenv("JsonLog"), item.Metadata.Name+" desired: "+strconv.Itoa(item.Spec.Replicas)+" - aviable: "+strconv.Itoa(item.Status.ReadyReplicas))
 
 						if item.Spec.Replicas == item.Status.ReadyReplicas {
 							return true, erro
