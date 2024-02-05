@@ -1066,8 +1066,7 @@ func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]Service, error) {
 			sqlEndpoint += "partner desc , "
 			sqlEndpoint += "market desc "
 
-			// fmt.Println("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
-			// fmt.Println(sqlEndpoint)
+			Logga(ctx, os.Getenv("JsonLog"), sqlEndpoint)
 			argsEndpoint := make(map[string]string)
 			argsEndpoint["source"] = "devops-8"
 			argsEndpoint["$fullquery"] = sqlEndpoint
@@ -1123,8 +1122,8 @@ func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]Service, error) {
 				services = append(services, service)
 				eps = nil
 			}
-			LogJson(services)
 		}
+		LogJson(services)
 
 	}
 	return services, erro
