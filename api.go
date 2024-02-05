@@ -127,7 +127,7 @@ func ApiCallPOST(ctx context.Context, debug string, args []map[string]interface{
 	} else {
 		if res.StatusCode() != 201 {
 			resStruct.Errore = -1
-			resStruct.Log = "Cannot update the record"
+			resStruct.Log = "Cannot update the record - Error code: " + strconv.Itoa(res.StatusCode()) + " " + string(res.Body())
 
 		} else {
 
