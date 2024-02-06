@@ -462,6 +462,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 			br.Team = strings.ToLower(gruppo)
 			brs = append(brs, br)
 			rfapp.BaseRoute = brs
+			ims.RefApp = rfapp
 		}
 
 		var scaleToZero bool
