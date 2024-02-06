@@ -409,7 +409,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 
 	argsMS := make(map[string]string)
 	argsMS["source"] = "devops-8"
-	argsMS["$select"] = "XKUBEMICROSERV09,XKUBEMICROSERV15,XKUBEMICROSERV18,XKUBEMICROSERV20,XKUBEMICROSERV21,XKUBEMICROSERV22"
+	argsMS["$select"] = "XKUBEMICROSERV07,XKUBEMICROSERV09,XKUBEMICROSERV15,XKUBEMICROSERV18,XKUBEMICROSERV20,XKUBEMICROSERV21,XKUBEMICROSERV22"
 	argsMS["center_dett"] = "dettaglio"
 	argsMS["$filter"] = "equals(XKUBEMICROSERV05,'" + microservice + "') "
 	restyKubeMSRes, errKubeMSRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsMS, "ms"+devops, "/"+devops+"/KUBEMICROSERV", devopsToken, dominio, coreApiVersion)
@@ -442,6 +442,26 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 				erro = errors.New(errRefapp.Error())
 				return ims, erro
 			}
+		} else {
+			// in caso di deploy di MS no refapp popolo rfapp per costruire il GW del NS del TEAM
+			var rfapp Refapp
+			var br BaseRoute
+			var brs []BaseRoute
+
+			// recupero il TEAM dal GRUPPO
+			teamGroup, erroreGroup := GetUserGroup(ctx, devopsToken, restyKubeMSRes.BodyJson["XKUBEMICROSERV07"].(string), os.Getenv("loginApiHost"), os.Getenv("coreApiVersion"))
+			if erroreGroup != nil {
+				Logga(ctx, os.Getenv("JsonLog"), erroreGroup.Error())
+				return ims, erroreGroup
+			}
+			gruppo := teamGroup["gruppo"]
+
+			br.Ip = clu.RefappID
+			br.Domino = ims.ClusterDomainProd
+			br.Env = enviro
+			br.Team = strings.ToLower(gruppo)
+			brs = append(brs, br)
+			rfapp.BaseRoute = brs
 		}
 
 		var scaleToZero bool
