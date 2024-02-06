@@ -558,16 +558,22 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	// os.Exit(0)
 	Logga(ctx, os.Getenv("JsonLog"), "")
 
-	/* ************************************************************************************************ */
-	// DEPLOYLOG
-	var erroIstanzaVersioni error
-	ims.IstanzaMicroVersioni, erroIstanzaVersioni = GetIstanzaVersioni(ctx, iresReq, istanza, enviro, devops, devopsTokenDst, dominio, coreApiVersion)
-	if erroIstanzaVersioni != nil {
-		Logga(ctx, os.Getenv("JsonLog"), erroIstanzaVersioni.Error())
-		return ims, erroIstanzaVersioni
-	}
-	// DEPLOYLOG
-	/* ************************************************************************************************ */
+	//
+	//
+	// questa parte viene eseguita quando parte il subprocess delivery canary e production
+	// senno caca
+	//
+	//
+	// /* ************************************************************************************************ */
+	// // DEPLOYLOG
+	// var erroIstanzaVersioni error
+	// ims.IstanzaMicroVersioni, erroIstanzaVersioni = GetIstanzaVersioni(ctx, iresReq, istanza, enviro, devops, devopsTokenDst, dominio, coreApiVersion)
+	// if erroIstanzaVersioni != nil {
+	// 	Logga(ctx, os.Getenv("JsonLog"), erroIstanzaVersioni.Error())
+	// 	return ims, erroIstanzaVersioni
+	// }
+	// // DEPLOYLOG
+	// /* ************************************************************************************************ */
 
 	//Logga(ctx, os.Getenv("JsonLog"), ims)
 	Logga(ctx, os.Getenv("JsonLog"), "", "getIstanceDetail end")
@@ -1128,8 +1134,8 @@ func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]Service, error) {
 	}
 	return services, erro
 }
-func GetIstanzaVersioni(ctx context.Context, iresReq IresRequest, istanza, enviro, devops, devopsTokenDst, dominio, coreApiVersion string) ([]IstanzaMicroVersioni, error) {
-	Logga(ctx, os.Getenv("JsonLog"), "Getting DEPLOYLOG")
+func GetIstanzaVersioni(ctx context.Context, istanza, enviro, devopsTokenDst, dominio, coreApiVersion string) ([]IstanzaMicroVersioni, error) {
+	Logga(ctx, os.Getenv("JsonLog"), "GetIstanzaVersioni - Getting DEPLOYLOG")
 	var erro error
 	var istanzaMicroVersioni []IstanzaMicroVersioni
 
@@ -1137,15 +1143,11 @@ func GetIstanzaVersioni(ctx context.Context, iresReq IresRequest, istanza, envir
 	argsDeploy["source"] = "devops-8"
 	argsDeploy["$select"] = "XDEPLOYLOG03,XDEPLOYLOG05"
 	argsDeploy["center_dett"] = "visualizza"
-	if iresReq.SwDest { // MIGRAZIONE MS
-		argsDeploy["$filter"] = "equals(XDEPLOYLOG04,'" + iresReq.IstanzaDst + "') "
-	} else {
-		argsDeploy["$filter"] = "equals(XDEPLOYLOG04,'" + istanza + "') "
-	}
+	argsDeploy["$filter"] = "equals(XDEPLOYLOG04,'" + istanza + "') "
 	argsDeploy["$filter"] += " and equals(XDEPLOYLOG09,'" + enviro + "') "
 	argsDeploy["$filter"] += " and equals(XDEPLOYLOG06,'1') "
 
-	restyDeployRes, errDeployRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsDeploy, "ms"+devops, "/"+devops+"/DEPLOYLOG", devopsTokenDst, dominio, coreApiVersion)
+	restyDeployRes, errDeployRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsDeploy, "msdevops", "/devops/DEPLOYLOG", devopsTokenDst, dominio, coreApiVersion)
 	if errDeployRes != nil {
 		Logga(ctx, os.Getenv("JsonLog"), errDeployRes.Error())
 		erro = errors.New(errDeployRes.Error())
