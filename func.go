@@ -1603,6 +1603,7 @@ func GetDeploymentApi(namespace, apiHost, apiToken string, scaleToZero, debug bo
 func CheckPodHealth(microservice, versione, namespace, apiHost, apiToken string, scaleToZero bool, debug string) (bool, error) {
 
 	var erro error
+	var c context.Context
 
 	debool, errBool := strconv.ParseBool(debug)
 	if errBool != nil {
@@ -1625,7 +1626,7 @@ func CheckPodHealth(microservice, versione, namespace, apiHost, apiToken string,
 
 			for _, item := range item.Items {
 
-				//fmt.Println(item.Metadata.Name, "-", msDeploy)
+				Logga(c, os.Getenv("JsonLog"), item.Metadata.Name+"-"+msDeploy)
 				if item.Metadata.Name == msDeploy {
 					msMatch = true
 
@@ -1643,6 +1644,7 @@ func CheckPodHealth(microservice, versione, namespace, apiHost, apiToken string,
 
 				// sto girando a vuoto perche nessun item risponde a cio che cerco
 				if i >= 1 && !msMatch {
+					Logga(c, os.Getenv("JsonLog"), "nessun item risponde a cio che cerco")
 					erro = errors.New("nessun item risponde a cio che cerco")
 					return false, erro
 				}
@@ -1694,6 +1696,7 @@ func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, can
 	argsDeploy["$filter"] += " and (equals(XDEPLOYLOG03,'canary') OR equals(XDEPLOYLOG03,'production'))  "
 	argsDeploy["$filter"] += " and equals(XDEPLOYLOG06,'1') "
 	argsDeploy["$filter"] += " and equals(XDEPLOYLOG09,'" + enviro + "') "
+	argsDeploy["$orderby"] = " XDEPLOYLOG05 desc"
 
 	restyDeployRes, errDeployRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsDeploy, "ms"+devops, "/"+devops+"/DEPLOYLOG", devopsToken, dominio, coreApiVersion)
 	if errDeployRes != nil {
@@ -1704,13 +1707,18 @@ func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, can
 
 	versioneProductionDb := ""
 	versioneCanaryDb := ""
+
+	canFound := false
+	prodFound := false
 	if len(restyDeployRes.BodyArray) > 0 {
 		for _, x := range restyDeployRes.BodyArray {
 
-			if x["XDEPLOYLOG03"].(string) == "canary" {
+			if x["XDEPLOYLOG03"].(string) == "canary" && !canFound {
+				canFound = true
 				versioneCanaryDb = "v" + x["XDEPLOYLOG05"].(string)
 			}
-			if x["XDEPLOYLOG03"].(string) == "production" {
+			if x["XDEPLOYLOG03"].(string) == "production" && !prodFound {
+				prodFound = true
 				versioneProductionDb = "v" + x["XDEPLOYLOG05"].(string)
 			}
 

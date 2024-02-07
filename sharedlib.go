@@ -454,12 +454,12 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 				Logga(ctx, os.Getenv("JsonLog"), erroreGroup.Error())
 				return ims, erroreGroup
 			}
-			gruppo := teamGroup["gruppo"]
+			team := teamGroup["gruppo"]
 
 			br.Ip = clu.RefappID
-			br.Domino = ims.ClusterDomainProd
+			br.Domino = enviro + "-" + strings.ToLower(team) + "." + ims.ClusterDomainProd
 			br.Env = enviro
-			br.Team = strings.ToLower(gruppo)
+			br.Team = strings.ToLower(team)
 			brs = append(brs, br)
 			rfapp.BaseRoute = brs
 			ims.RefApp = rfapp
@@ -1192,13 +1192,13 @@ func GetIstanzaVersioni(ctx context.Context, istanza, enviro, devopsTokenDst, do
 
 	return istanzaMicroVersioni, erro
 }
-func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMicroservizio string, istanza IstanzaMicro, micros Microservice, utente, enviro, devopsToken, dominio, coreApiVersion, microfrontendJson string) error {
+func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMicroservizio string, istanza IstanzaMicro, micros Microservice, istanzaMicroVersioni []IstanzaMicroVersioni, utente, enviro, devopsToken, dominio, coreApiVersion, microfrontendJson string) error {
 
 	Logga(ctx, os.Getenv("JsonLog"), "")
 	Logga(ctx, os.Getenv("JsonLog"), " + + + + + + + + + + + + + + + + + + + + ")
 	Logga(ctx, os.Getenv("JsonLog"), "updateIstanzaMicroservice begin")
 	Logga(ctx, os.Getenv("JsonLog"), "versioneMicroservizio "+versioneMicroservizio)
-	for _, ccc := range istanza.IstanzaMicroVersioni {
+	for _, ccc := range istanzaMicroVersioni {
 		Logga(ctx, os.Getenv("JsonLog"), ccc.TipoVersione+" "+ccc.Versione)
 	}
 
@@ -1213,7 +1213,7 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 	// se canary devo rendere obsoleto il vecchio canarino  se esiste e inserire il nuovo canarino
 	// se production devo rendere obsoleto la vecchia produzione e rendere il canarino produzione
 
-	for _, versioni := range istanza.IstanzaMicroVersioni {
+	for _, versioni := range istanzaMicroVersioni {
 
 		switch canaryProduction {
 		case "canary", "Canary":
