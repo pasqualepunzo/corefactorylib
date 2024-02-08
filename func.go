@@ -1504,7 +1504,7 @@ func GetCustomerToken(ctx context.Context, accessToken, refappCustomer, resource
 	}
 }
 
-func GetCfToolEnv(ctx context.Context, token, dominio, tenant, coreApiVersion string, monolith bool) (TenantEnv, error) {
+func GetCfToolEnv(ctx context.Context, token, dominio, tenant, coreApiVersion, enviro string, monolith bool) (TenantEnv, error) {
 
 	Logga(ctx, os.Getenv("JsonLog"), "Getting KUBECFTOOLENV")
 
@@ -1519,6 +1519,7 @@ func GetCfToolEnv(ctx context.Context, token, dominio, tenant, coreApiVersion st
 	args["source"] = "devops-8"
 	args["$filter"] = "equals(XKUBECFTOOLENV03,'" + dominio + "') "
 	args["$filter"] += " and equals(XKUBECFTOOLENV19,'" + tenant + "') "
+	args["$filter"] += " and equals(XKUBECFTOOLENV18,'" + enviro + "') "
 
 	envRes, _ := ApiCallGET(ctx, os.Getenv("RestyDebug"), args, "ms"+devops, "/"+devops+"/KUBECFTOOLENV", token, dominio, coreApiVersion)
 
