@@ -1935,7 +1935,7 @@ func GetOverrideTenantEnv(ctx context.Context, bearerToken, team string, tntEnv 
 	}
 	return tntEnv, erro
 }
-func GetApiHostAndToken(ctx context.Context, enviro, cluster, token, loginApiHost, coreApiVersion, swmono string) (string, string, error) {
+func GetApiHostAndToken(ctx context.Context, enviro, cluster, token, apiDomain, coreApiVersion, swmono string) (string, string, error) {
 	var erro error
 
 	args := make(map[string]string)
@@ -1947,9 +1947,9 @@ func GetApiHostAndToken(ctx context.Context, enviro, cluster, token, loginApiHos
 	var endpointRes CallGetResponse
 	var errendpointRes error
 	if swmono == "mono" {
-		endpointRes, errendpointRes = ApiCallGET(ctx, os.Getenv("RestyDebug"), args, "msdevopsmono", "/devopsmono/KUBECLUSTER", token, loginApiHost, coreApiVersion)
+		endpointRes, errendpointRes = ApiCallGET(ctx, os.Getenv("RestyDebug"), args, "msdevopsmono", "/devopsmono/KUBECLUSTER", token, apiDomain, coreApiVersion)
 	} else {
-		endpointRes, errendpointRes = ApiCallGET(ctx, os.Getenv("RestyDebug"), args, "msdevops", "/devops/KUBECLUSTER", token, loginApiHost, coreApiVersion)
+		endpointRes, errendpointRes = ApiCallGET(ctx, os.Getenv("RestyDebug"), args, "msdevops", "/devops/KUBECLUSTER", token, apiDomain, coreApiVersion)
 	}
 
 	if errendpointRes != nil {

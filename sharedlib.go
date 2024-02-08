@@ -443,13 +443,14 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 				return ims, erro
 			}
 		} else {
-			// in caso di deploy di MS no refapp popolo rfapp per costruire il GW del NS del TEAM
+
+			// in caso di deploy di MS no refapp popolo rfapp per costruire il dominio del GW del NS del TEAM
 			var rfapp Refapp
 			var br BaseRoute
 			var brs []BaseRoute
 
 			// recupero il TEAM dal GRUPPO
-			teamGroup, erroreGroup := GetUserGroup(ctx, devopsToken, restyKubeMSRes.BodyJson["XKUBEMICROSERV07"].(string), os.Getenv("loginApiHost"), os.Getenv("coreApiVersion"))
+			teamGroup, erroreGroup := GetUserGroup(ctx, devopsToken, restyKubeMSRes.BodyJson["XKUBEMICROSERV07"].(string), os.Getenv("apiDomain"), os.Getenv("coreApiVersion"))
 			if erroreGroup != nil {
 				Logga(ctx, os.Getenv("JsonLog"), erroreGroup.Error())
 				return ims, erroreGroup
@@ -461,8 +462,41 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 			br.Env = enviro
 			br.Team = strings.ToLower(team)
 			brs = append(brs, br)
+
 			rfapp.BaseRoute = brs
 			ims.RefApp = rfapp
+
+			if strings.ToLower(team) == "devops" {
+
+				var srvs []Server
+				var srv Server
+				var dmn []string
+				dmn = append(dmn, "q01.io")
+
+				// PROD
+				srv.Domini = dmn
+				srv.Name = "grpc-prod"
+				srv.Number = "50051"
+				srv.Protocol = "TCP"
+				srvs = append(srvs, srv)
+
+				// INT
+				srv.Domini = dmn
+				srv.Name = "grpc-int"
+				srv.Number = "51051"
+				srv.Protocol = "TCP"
+				srvs = append(srvs, srv)
+
+				// QA
+				srv.Domini = dmn
+				srv.Name = "grpc-qa"
+				srv.Number = "52051"
+				srv.Protocol = "TCP"
+				srvs = append(srvs, srv)
+
+				rfapp.Servers = srvs
+				ims.RefApp = rfapp
+			}
 		}
 
 		var scaleToZero bool
@@ -948,7 +982,7 @@ func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]Service, error) {
 	argsDoker["$fullquery"] += " join TB_ANAG_DEPLOYLOG00 on (XDEPLOYLOG04=XKUBEIMICROSERV03 and XDEPLOYLOG06 = 1 and XDEPLOYLOG09 = '" + routeJson.Enviro + "') "
 	argsDoker["$fullquery"] += " where XKUBEIMICROSERV05 = '" + cluster + "'   and XKUBEIMICROSERV08 ='" + team + "' "
 	Logga(ctx, os.Getenv("JsonLog"), argsDoker["$fullquery"])
-	restyDokerRes, errDokerRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsDoker, "msdevops", "/core/custom/KUBEIMICROSERV/values", devopsToken, os.Getenv("loginApiHost"), os.Getenv("coreApiVersion"))
+	restyDokerRes, errDokerRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsDoker, "msdevops", "/core/custom/KUBEIMICROSERV/values", devopsToken, os.Getenv("apiDomain"), os.Getenv("coreApiVersion"))
 
 	if errDokerRes != nil {
 		Logga(ctx, os.Getenv("JsonLog"), errDokerRes.Error())
@@ -1098,7 +1132,7 @@ func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]Service, error) {
 			argsEndpoint["source"] = "devops-8"
 			argsEndpoint["$fullquery"] = sqlEndpoint
 
-			restyKubeEndpointRes, erroEnd := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsEndpoint, "msdevops", "/core/custom/KUBEENDPOINT/values", devopsToken, os.Getenv("loginApiHost"), os.Getenv("coreApiVersion"))
+			restyKubeEndpointRes, erroEnd := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsEndpoint, "msdevops", "/core/custom/KUBEENDPOINT/values", devopsToken, os.Getenv("apiDomain"), os.Getenv("coreApiVersion"))
 			if erroEnd != nil {
 				Logga(ctx, os.Getenv("JsonLog"), erroEnd.Error())
 				return services, erroEnd
