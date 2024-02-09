@@ -116,7 +116,7 @@ func ApiCallPOST(ctx context.Context, debug string, args []map[string]interface{
 		SetHeader("microservice", microservice).
 		SetAuthToken(token).
 		SetBody(args).
-		Post(dominio + "/" + routing)
+		Post(dominio + routing)
 
 	// fmt.Println(res)
 	// LogJson(res)
@@ -257,7 +257,7 @@ func ApiCallGET(ctx context.Context, debug string, args map[string]string, micro
 					val, ok := callResponse["data"]
 					if ok {
 						if val == nil {
-							erro := errors.New(dominio + "/" + routing + " -> ***** NO CONTENT *****")
+							erro := errors.New(dominio + routing + " -> ***** NO CONTENT *****")
 							return resStruct, erro
 						}
 					}
@@ -294,7 +294,7 @@ func ApiCallGET(ctx context.Context, debug string, args map[string]string, micro
 
 					message, ok2 := val["message"].(string)
 					if ok2 {
-						erro := errors.New(dominio + "/" + routing + " -> " + message)
+						erro := errors.New(dominio + routing + " -> " + message)
 						return resStruct, erro
 					}
 				}
@@ -350,7 +350,7 @@ func ApiCallLOGIN(ctx context.Context, debug string, args map[string]interface{}
 		Logga(ctx, os.Getenv("JsonLog"), string(jsonString))
 
 		Logga(ctx, os.Getenv("JsonLog"), "Microservice : "+microservice)
-		Logga(ctx, os.Getenv("JsonLog"), "Url : "+dominio+"/api/"+coreApiVersion+routing)
+		Logga(ctx, os.Getenv("JsonLog"), "Url : "+dominio+routing)
 	}
 
 	client := resty.New()
@@ -368,7 +368,7 @@ func ApiCallLOGIN(ctx context.Context, debug string, args map[string]interface{}
 		//SetHeader("canary-mode", "on").
 		SetHeader("microservice", microservice).
 		SetBody(args).
-		Post(dominio + "/api/" + coreApiVersion + routing)
+		Post(dominio + routing)
 
 	if err != nil { // HTTP ERRORE
 		return nil, err
@@ -412,7 +412,7 @@ func ApiCallPUT(ctx context.Context, debug string, args map[string]interface{}, 
 		//SetHeader("canary-mode", "on").
 		SetAuthToken(token).
 		SetBody(args).
-		Put(dominio + "/" + routing)
+		Put(dominio + routing)
 
 	if res.StatusCode() != 200 {
 		erro = errors.New("Update error - CODE: " + strconv.Itoa(res.StatusCode()))
@@ -452,7 +452,7 @@ func GetCoreFactoryToken(ctx context.Context, tenant, accessToken, loginApiDomai
 	argsAuth["resource"] = urlDevopsStripped
 	argsAuth["uuid"] = "devops-" + sha
 
-	restyAuthResponse, restyAuthErr := ApiCallLOGIN(ctx, debug, argsAuth, "msauth", "/"+os.Getenv("CORE_API_ENVIRONMENT")+"-core/"+os.Getenv("API_VERSION")+"/auth/login", loginApiDomain, coreApiVersion)
+	restyAuthResponse, restyAuthErr := ApiCallLOGIN(ctx, debug, argsAuth, "msauth", "/"+os.Getenv("CORE_API_ENVIRONMENT")+"-core/api/"+os.Getenv("API_VERSION")+"/auth/login", loginApiDomain, coreApiVersion)
 	if restyAuthErr != nil {
 		return "", restyAuthErr
 	}
@@ -506,7 +506,7 @@ func ApiCallDELETE(ctx context.Context, debug string, args map[string]string, mi
 		SetHeader("microservice", microservice).
 		SetAuthToken(token).
 		SetQueryParams(args).
-		Delete(dominio + "/" + routing)
+		Delete(dominio + routing)
 
 	if err != nil { // HTTP ERRORE
 		resStruct.Errore = -1
