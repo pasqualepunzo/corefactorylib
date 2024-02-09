@@ -61,7 +61,7 @@ func ApiCallPOST(ctx context.Context, debug string, args []map[string]interface{
 
 	var resStruct CallGetResponse
 
-	Logga(ctx, os.Getenv("JsonLog"), dominio+"/api/"+coreApiVersion+routing+" - "+microservice)
+	Logga(ctx, os.Getenv("JsonLog"), dominio+"/"+routing+" - "+microservice)
 
 	var LoggaErrore LoggaErrore
 	LoggaErrore.Errore = 0
@@ -116,7 +116,7 @@ func ApiCallPOST(ctx context.Context, debug string, args []map[string]interface{
 		SetHeader("microservice", microservice).
 		SetAuthToken(token).
 		SetBody(args).
-		Post(dominio + "/api/" + coreApiVersion + routing)
+		Post(dominio + "/" + routing)
 
 	// fmt.Println(res)
 	// LogJson(res)
@@ -191,7 +191,7 @@ func ApiCallGET(ctx context.Context, debug string, args map[string]string, micro
 	args["JobID"] = JobID
 
 	if debool {
-		Logga(ctx, os.Getenv("JsonLog"), dominio+"/api/"+coreApiVersion+routing+" - "+microservice)
+		Logga(ctx, os.Getenv("JsonLog"), dominio+"/"+routing+" - "+microservice)
 	}
 
 	client := resty.New()
@@ -257,7 +257,7 @@ func ApiCallGET(ctx context.Context, debug string, args map[string]string, micro
 					val, ok := callResponse["data"]
 					if ok {
 						if val == nil {
-							erro := errors.New(dominio + "/api/" + coreApiVersion + routing + " -> ***** NO CONTENT *****")
+							erro := errors.New(dominio + "/" + routing + " -> ***** NO CONTENT *****")
 							return resStruct, erro
 						}
 					}
@@ -294,7 +294,7 @@ func ApiCallGET(ctx context.Context, debug string, args map[string]string, micro
 
 					message, ok2 := val["message"].(string)
 					if ok2 {
-						erro := errors.New(dominio + "/api/" + coreApiVersion + routing + " -> " + message)
+						erro := errors.New(dominio + "/" + routing + " -> " + message)
 						return resStruct, erro
 					}
 				}
@@ -311,7 +311,7 @@ func ApiCallGET(ctx context.Context, debug string, args map[string]string, micro
 	return resStruct, nil
 }
 
-func ApiCallLOGIN(ctx context.Context, debug string, args map[string]interface{}, microservice, routing, dominio, coreApiVersion string) (map[string]interface{}, LoggaErrore) {
+func ApiCallLOGIN(ctx context.Context, debug string, args map[string]interface{}, microservice, routing, dominio, coreApiVersion string) (map[string]interface{}, error) {
 
 	if !strings.Contains(dominio, "http") {
 		dominio = "https://" + dominio
@@ -338,9 +338,7 @@ func ApiCallLOGIN(ctx context.Context, debug string, args map[string]interface{}
 
 	debool, errBool := strconv.ParseBool(debug)
 	if errBool != nil {
-		LoggaErrore.Errore = -1
-		LoggaErrore.Log = errBool.Error()
-		return callResponse, LoggaErrore
+		return callResponse, errBool
 	}
 	if debool {
 		Logga(ctx, os.Getenv("JsonLog"), "")
@@ -373,25 +371,22 @@ func ApiCallLOGIN(ctx context.Context, debug string, args map[string]interface{}
 		Post(dominio + "/api/" + coreApiVersion + routing)
 
 	if err != nil { // HTTP ERRORE
-		LoggaErrore.Errore = -1
-		LoggaErrore.Log = err.Error()
+		return nil, err
 	} else {
 
 		if res.StatusCode() != 200 {
-			LoggaErrore.Errore = -1
-			LoggaErrore.Log = "Login failed - Access Denied"
-
+			erro := errors.New("Login failed - Access Denied")
+			return nil, erro
 		} else {
 
 			err1 := json.Unmarshal(res.Body(), &callResponse)
 			if err1 != nil {
-				LoggaErrore.Errore = -1
-				LoggaErrore.Log = err1.Error()
+				return nil, err1
 			}
 		}
 
 	}
-	return callResponse, LoggaErrore
+	return callResponse, nil
 }
 func ApiCallPUT(ctx context.Context, debug string, args map[string]interface{}, microservice, routing, token, dominio, coreApiVersion string) ([]byte, error) {
 
@@ -415,10 +410,9 @@ func ApiCallPUT(ctx context.Context, debug string, args map[string]interface{}, 
 		SetHeader("Content-Type", "application/json").
 		SetHeader("Accept", "application/json").
 		//SetHeader("canary-mode", "on").
-		SetHeader("microservice", microservice).
 		SetAuthToken(token).
 		SetBody(args).
-		Put(dominio + "/api/" + coreApiVersion + routing)
+		Put(dominio + "/" + routing)
 
 	if res.StatusCode() != 200 {
 		erro = errors.New("Update error - CODE: " + strconv.Itoa(res.StatusCode()))
@@ -458,10 +452,9 @@ func GetCoreFactoryToken(ctx context.Context, tenant, accessToken, loginApiDomai
 	argsAuth["resource"] = urlDevopsStripped
 	argsAuth["uuid"] = "devops-" + sha
 
-	restyAuthResponse, restyAuthErr := ApiCallLOGIN(ctx, debug, argsAuth, "msauth", "/auth/login", loginApiDomain, coreApiVersion)
-	if restyAuthErr.Errore < 0 {
-		erro = errors.New(restyAuthErr.Log)
-		return "", erro
+	restyAuthResponse, restyAuthErr := ApiCallLOGIN(ctx, debug, argsAuth, "msauth", "/int-core/"+os.Getenv("API_VERSION")+"/auth/login", loginApiDomain, coreApiVersion)
+	if restyAuthErr != nil {
+		return "", restyAuthErr
 	}
 
 	if len(restyAuthResponse) > 0 {
@@ -491,7 +484,7 @@ func ApiCallDELETE(ctx context.Context, debug string, args map[string]string, mi
 
 	var resStruct CallGetResponse
 
-	Logga(ctx, os.Getenv("JsonLog"), dominio+"/api/"+coreApiVersion+routing+" - "+microservice)
+	Logga(ctx, os.Getenv("JsonLog"), dominio+"/"+routing+" - "+microservice)
 
 	debool, errBool := strconv.ParseBool(debug)
 	if errBool != nil {
@@ -513,7 +506,7 @@ func ApiCallDELETE(ctx context.Context, debug string, args map[string]string, mi
 		SetHeader("microservice", microservice).
 		SetAuthToken(token).
 		SetQueryParams(args).
-		Delete(dominio + "/api/" + coreApiVersion + routing)
+		Delete(dominio + "/" + routing)
 
 	if err != nil { // HTTP ERRORE
 		resStruct.Errore = -1

@@ -1492,9 +1492,8 @@ func GetCustomerToken(ctx context.Context, accessToken, refappCustomer, resource
 	argsAuth["uuid"] = "devops-" + sha
 
 	restyAuthResponse, restyAuthErr := ApiCallLOGIN(ctx, os.Getenv("RestyDebug"), argsAuth, "msauth", "/auth/login", dominio, coreApiVersion)
-	if restyAuthErr.Errore < 0 {
-		erro = errors.New(restyAuthErr.Log)
-		return "", erro
+	if restyAuthErr != nil {
+		return "", restyAuthErr
 	}
 	if len(restyAuthResponse) > 0 {
 		return restyAuthResponse["idToken"].(string), erro
