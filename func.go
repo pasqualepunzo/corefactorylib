@@ -536,7 +536,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 	argsDkr["center_dett"] = "visualizza"
 	argsDkr["$filter"] = "equals(XSELKUBEDKRLIST10,'" + microservices.Nome + "') "
 
-	restyDkrLstRes, errDkrLstRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsDkr, "/"+os.Getenv("APP_ENV")+"-devops/api/"+os.Getenv("API_VERSION")+"ms"+devops, "/core/custom/SELKUBEDKRLIST/values", devopsToken, dominio, coreApiVersion)
+	restyDkrLstRes, errDkrLstRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsDkr, "/"+os.Getenv("APP_ENV")+"-devops/api/"+os.Getenv("API_VERSION")+"ms"+devops, "/devops/custom/SELKUBEDKRLIST/values", devopsToken, dominio, coreApiVersion)
 	if errDkrLstRes != nil {
 		Logga(ctx, os.Getenv("JsonLog"), errDkrLstRes.Error())
 		return microservices, errDkrLstRes
@@ -634,7 +634,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 				argsBld["$fullquery"] += " limit 1 "
 				fmt.Println(argsBld["$fullquery"])
 
-				restyKubeBldRes, errKubeBldRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsBld, "/"+os.Getenv("APP_ENV")+"-devops/api/"+os.Getenv("API_VERSION")+"ms"+devops, "/core/custom/KUBEDKRBUILD/values", devopsToken, dominio, coreApiVersion)
+				restyKubeBldRes, errKubeBldRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsBld, "/"+os.Getenv("APP_ENV")+"-devops/api/"+os.Getenv("API_VERSION")+"ms"+devops, "/devops/custom/KUBEDKRBUILD/values", devopsToken, dominio, coreApiVersion)
 
 				//fmt.Println(restyKubeBldRes)
 				if errKubeBldRes != nil {
@@ -961,7 +961,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 					argsEndpoint["source"] = "devops-8"
 					argsEndpoint["$fullquery"] = sqlEndpoint
 
-					restyKubeEndpointRes, _ := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsEndpoint, "ms"+devops, "/"+os.Getenv("APP_ENV")+"-devops/api/"+os.Getenv("API_VERSION")+"/core/custom/KUBEENDPOINT/values", devopsToken, dominio, coreApiVersion)
+					restyKubeEndpointRes, _ := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsEndpoint, "ms"+devops, "/"+os.Getenv("APP_ENV")+"-devops/api/"+os.Getenv("API_VERSION")+"/devops/custom/KUBEENDPOINT/values", devopsToken, dominio, coreApiVersion)
 					if restyKubeEndpointRes.Errore < 0 {
 
 					}

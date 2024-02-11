@@ -191,7 +191,7 @@ func ApiCallGET(ctx context.Context, debug string, args map[string]string, micro
 	args["JobID"] = JobID
 
 	if debool {
-		Logga(ctx, os.Getenv("JsonLog"), dominio+"/"+routing+" - "+microservice)
+		Logga(ctx, os.Getenv("JsonLog"), dominio+routing+" - "+microservice)
 	}
 
 	client := resty.New()
@@ -238,7 +238,7 @@ func ApiCallGET(ctx context.Context, debug string, args map[string]string, micro
 		SetHeader("microservice", microservice).
 		SetAuthToken(token).
 		SetQueryParams(args).
-		Get(dominio + "/api/" + coreApiVersion + routing)
+		Get(dominio + routing)
 
 	if err != nil { // HTTP ERRORE
 		return resStruct, err

@@ -982,7 +982,7 @@ func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]Service, error) {
 	argsDoker["$fullquery"] += " join TB_ANAG_DEPLOYLOG00 on (XDEPLOYLOG04=XKUBEIMICROSERV03 and XDEPLOYLOG06 = 1 and XDEPLOYLOG09 = '" + routeJson.Enviro + "') "
 	argsDoker["$fullquery"] += " where XKUBEIMICROSERV05 = '" + cluster + "'   and XKUBEIMICROSERV08 ='" + team + "' "
 	Logga(ctx, os.Getenv("JsonLog"), argsDoker["$fullquery"])
-	restyDokerRes, errDokerRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsDoker, "msdevops", "/"+os.Getenv("APP_ENV")+"-devops/api/"+os.Getenv("API_VERSION")+"/core/custom/KUBEIMICROSERV/values", devopsToken, os.Getenv("apiDomain"), os.Getenv("coreApiVersion"))
+	restyDokerRes, errDokerRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsDoker, "msdevops", "/"+os.Getenv("APP_ENV")+"-devops/api/"+os.Getenv("API_VERSION")+"/devops/custom/KUBEIMICROSERV/values", devopsToken, os.Getenv("apiDomain"), os.Getenv("coreApiVersion"))
 
 	if errDokerRes != nil {
 		Logga(ctx, os.Getenv("JsonLog"), errDokerRes.Error())
@@ -1132,7 +1132,7 @@ func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]Service, error) {
 			argsEndpoint["source"] = "devops-8"
 			argsEndpoint["$fullquery"] = sqlEndpoint
 
-			restyKubeEndpointRes, erroEnd := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsEndpoint, "msdevops", "/"+os.Getenv("APP_ENV")+"-devops/api/"+os.Getenv("API_VERSION")+"/core/custom/KUBEENDPOINT/values", devopsToken, os.Getenv("apiDomain"), os.Getenv("coreApiVersion"))
+			restyKubeEndpointRes, erroEnd := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsEndpoint, "msdevops", "/"+os.Getenv("APP_ENV")+"-devops/api/"+os.Getenv("API_VERSION")+"/devops/custom/KUBEENDPOINT/values", devopsToken, os.Getenv("apiDomain"), os.Getenv("coreApiVersion"))
 			if erroEnd != nil {
 				Logga(ctx, os.Getenv("JsonLog"), erroEnd.Error())
 				return services, erroEnd
