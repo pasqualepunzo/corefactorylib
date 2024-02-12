@@ -536,7 +536,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 	argsDkr["center_dett"] = "visualizza"
 	argsDkr["$filter"] = "equals(XSELKUBEDKRLIST10,'" + microservices.Nome + "') "
 
-	restyDkrLstRes, errDkrLstRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsDkr, "/"+os.Getenv("APP_ENV")+"-devops/api/"+os.Getenv("API_VERSION")+"ms"+devops, "/devops/custom/SELKUBEDKRLIST/values", devopsToken, dominio, coreApiVersion)
+	restyDkrLstRes, errDkrLstRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsDkr, "ms"+devops, "/"+os.Getenv("APP_ENV")+"-devops/api/"+os.Getenv("API_VERSION")+"/devops/custom/SELKUBEDKRLIST/values", devopsToken, dominio, coreApiVersion)
 	if errDkrLstRes != nil {
 		Logga(ctx, os.Getenv("JsonLog"), errDkrLstRes.Error())
 		return microservices, errDkrLstRes
