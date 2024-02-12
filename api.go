@@ -410,6 +410,7 @@ func ApiCallPUT(ctx context.Context, debug string, args map[string]interface{}, 
 		SetHeader("Content-Type", "application/json").
 		SetHeader("Accept", "application/json").
 		//SetHeader("canary-mode", "on").
+		SetHeader("Microservice", microservice).
 		SetAuthToken(token).
 		SetBody(args).
 		Put(dominio + routing)
