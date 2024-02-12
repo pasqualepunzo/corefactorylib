@@ -842,6 +842,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 					// per ogni servizio cerco gli endpoints
 					sqlEndpoint += "select "
 					sqlEndpoint += "ifnull(aa.XKUBEENDPOINT05, '') as microservice_src, "
+					sqlEndpoint += "ifnull(aa.XKUBEENDPOINT07, '') as allowed_method, "
 					sqlEndpoint += "ifnull(cc.XKUBESERVICEDKR04, '') as docker_src, "
 					sqlEndpoint += "ifnull(aa.XKUBEENDPOINT10, '') as type_src, "
 					sqlEndpoint += "ifnull(aa.XKUBEENDPOINT09, '') as route_src, "
@@ -868,6 +869,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 					sqlEndpoint += "select "
 					sqlEndpoint += "XKUBECLUSTER15, "
 					sqlEndpoint += "XKUBEENDPOINT03, "
+					sqlEndpoint += "XKUBEENDPOINT07, "
 					sqlEndpoint += "XKUBEENDPOINT09, "
 					sqlEndpoint += "XKUBEENDPOINT10, "
 					sqlEndpoint += "XKUBEENDPOINT11, "
@@ -905,6 +907,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 					sqlEndpoint += "select "
 					sqlEndpoint += "XKUBECLUSTER15, "
 					sqlEndpoint += "XKUBEENDPOINT03, "
+					sqlEndpoint += "XKUBEENDPOINT07, "
 					sqlEndpoint += "XKUBEENDPOINT09, "
 					sqlEndpoint += "XKUBEENDPOINT10, "
 					sqlEndpoint += "XKUBEENDPOINT11, "
@@ -974,6 +977,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 
 							endpoint.Priority = x["priority"].(string)
 
+							endpoint.AllowedMethod = x["allowed_method"].(string)
 							endpoint.MicroserviceDst = x["microservice_dst"].(string)
 							endpoint.DockerDst = x["docker_dst"].(string)
 							endpoint.TypeSrvDst = x["type_dst"].(string)

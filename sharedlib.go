@@ -1012,6 +1012,7 @@ func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]Service, error) {
 			// per ogni servizio cerco gli endpoints
 			sqlEndpoint += "select "
 			sqlEndpoint += "ifnull(aa.XKUBEENDPOINT05, '') as microservice_src, "
+			sqlEndpoint += "ifnull(aa.XKUBEENDPOINT05, '') as allowed_method, "
 			sqlEndpoint += "ifnull(cc.XKUBESERVICEDKR04, '') as docker_src, "
 			sqlEndpoint += "ifnull(aa.XKUBEENDPOINT10, '') as type_src, "
 			sqlEndpoint += "ifnull(aa.XKUBEENDPOINT09, '') as route_src, "
@@ -1038,6 +1039,7 @@ func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]Service, error) {
 			sqlEndpoint += "select "
 			sqlEndpoint += "XKUBECLUSTER15, "
 			sqlEndpoint += "XKUBEENDPOINT03, "
+			sqlEndpoint += "XKUBEENDPOINT07, "
 			sqlEndpoint += "XKUBEENDPOINT09, "
 			sqlEndpoint += "XKUBEENDPOINT10, "
 			sqlEndpoint += "XKUBEENDPOINT11, "
@@ -1075,6 +1077,7 @@ func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]Service, error) {
 			sqlEndpoint += "select "
 			sqlEndpoint += "XKUBECLUSTER15, "
 			sqlEndpoint += "XKUBEENDPOINT03, "
+			sqlEndpoint += "XKUBEENDPOINT07, "
 			sqlEndpoint += "XKUBEENDPOINT09, "
 			sqlEndpoint += "XKUBEENDPOINT10, "
 			sqlEndpoint += "XKUBEENDPOINT11, "
@@ -1144,6 +1147,7 @@ func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]Service, error) {
 					var ep Endpoint
 					ep.Priority = x["priority"].(string)
 
+					ep.AllowedMethod = x["allowed_method"].(string)
 					ep.MicroserviceDst = x["microservice_dst"].(string)
 					ep.DockerDst = x["docker_dst"].(string)
 					ep.TypeSrvDst = x["type_dst"].(string)
