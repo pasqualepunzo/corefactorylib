@@ -449,7 +449,7 @@ func GetCoreFactoryToken(ctx context.Context, tenant, accessToken, loginApiDomai
 	argsAuth := make(map[string]interface{})
 	argsAuth["access_token"] = accessToken
 	argsAuth["refappCustomer"] = tenant
-	argsAuth["resource"] = resource
+	argsAuth["resource"] = strings.Replace(resource, "https://", "", -1)
 	argsAuth["uuid"] = "devops-" + sha
 
 	restyAuthResponse, restyAuthErr := ApiCallLOGIN(ctx, debug, argsAuth, "msauth", "/"+os.Getenv("CORE_API_ENVIRONMENT")+"-core/api/"+os.Getenv("API_VERSION")+"/auth/login", loginApiDomain, coreApiVersion)
