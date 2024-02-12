@@ -423,7 +423,7 @@ func ApiCallPUT(ctx context.Context, debug string, args map[string]interface{}, 
 	}
 	return res.Body(), erro
 }
-func GetCoreFactoryToken(ctx context.Context, tenant, accessToken, loginApiDomain, coreApiVersion string, debug string) (string, error) {
+func GetCoreFactoryToken(ctx context.Context, tenant, accessToken, loginApiDomain, coreApiVersion, resource string, debug string) (string, error) {
 	/* ************************************************************************************************ */
 	// cerco il token di devops
 	var erro error
@@ -437,8 +437,8 @@ func GetCoreFactoryToken(ctx context.Context, tenant, accessToken, loginApiDomai
 		Logga(ctx, os.Getenv("JsonLog"), "Core factory Token")
 	}
 
-	urlDevops := loginApiDomain
-	urlDevopsStripped := strings.Replace(urlDevops, "https://", "", -1)
+	//urlDevops := loginApiDomain
+	//urlDevopsStripped := strings.Replace(urlDevops, "https://", "", -1)
 
 	ct := time.Now()
 	now := ct.Format("20060102150405")
@@ -449,7 +449,7 @@ func GetCoreFactoryToken(ctx context.Context, tenant, accessToken, loginApiDomai
 	argsAuth := make(map[string]interface{})
 	argsAuth["access_token"] = accessToken
 	argsAuth["refappCustomer"] = tenant
-	argsAuth["resource"] = urlDevopsStripped
+	argsAuth["resource"] = resource
 	argsAuth["uuid"] = "devops-" + sha
 
 	restyAuthResponse, restyAuthErr := ApiCallLOGIN(ctx, debug, argsAuth, "msauth", "/"+os.Getenv("CORE_API_ENVIRONMENT")+"-core/api/"+os.Getenv("API_VERSION")+"/auth/login", loginApiDomain, coreApiVersion)

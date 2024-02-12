@@ -288,13 +288,13 @@ func GetUserGroup(ctx context.Context, token, gruppo, dominio, coreApiVersion st
 
 	return gru, erro
 }
-func GetNextVersion(ctx context.Context, masterBranch, nomeDocker, tenant, accessToken, loginApiDomain, coreApiVersion string) (string, error) {
+func GetNextVersion(ctx context.Context, masterBranch, nomeDocker, tenant, accessToken, loginApiDomain, coreApiVersion, resource string) (string, error) {
 
 	var erro error
 
 	// cerco il token di Corefactory
 	Logga(ctx, os.Getenv("JsonLog"), "", "Getting token")
-	devopsToken, erro := GetCoreFactoryToken(ctx, tenant, accessToken, loginApiDomain, coreApiVersion, os.Getenv("RestyDebug"))
+	devopsToken, erro := GetCoreFactoryToken(ctx, tenant, accessToken, loginApiDomain, coreApiVersion, resource, os.Getenv("RestyDebug"))
 	if erro != nil {
 		Logga(ctx, os.Getenv("JsonLog"), "", erro.Error())
 	} else {
@@ -1263,12 +1263,12 @@ func CreateTag(ctx context.Context, buildArgs BuildArgs, tag, repo string) error
 	return nil
 }
 
-func GetEnvironmentStatus(ctx context.Context, cluster, enviro, microserice, customer, tenant, accessToken, loginApiDomain, coreApiVersion string) error {
+func GetEnvironmentStatus(ctx context.Context, cluster, enviro, microserice, customer, tenant, accessToken, loginApiDomain, coreApiVersion, resource string) error {
 
 	status := ""
 
 	// cerco il token di Corefactory
-	devopsToken, erroT := GetCoreFactoryToken(ctx, tenant, accessToken, loginApiDomain, coreApiVersion, os.Getenv("RestyDebug"))
+	devopsToken, erroT := GetCoreFactoryToken(ctx, tenant, accessToken, loginApiDomain, coreApiVersion, resource, os.Getenv("RestyDebug"))
 	if erroT != nil {
 		Logga(ctx, os.Getenv("JsonLog"), erroT.Error())
 	}
@@ -1313,11 +1313,11 @@ func GetEnvironmentStatus(ctx context.Context, cluster, enviro, microserice, cus
 
 	return erro
 }
-func SetEnvironmentStatus(ctx context.Context, cluster, enviro, microserice, customer, user, toggle, tenant, accessToken, loginApiDomain, coreApiVersion string) error {
+func SetEnvironmentStatus(ctx context.Context, cluster, enviro, microserice, customer, user, toggle, tenant, accessToken, loginApiDomain, coreApiVersion, resource string) error {
 
 	var erro error
 	// cerco il token di Corefactory
-	devopsToken, erroT := GetCoreFactoryToken(ctx, tenant, accessToken, loginApiDomain, coreApiVersion, os.Getenv("RestyDebug"))
+	devopsToken, erroT := GetCoreFactoryToken(ctx, tenant, accessToken, loginApiDomain, coreApiVersion, resource, os.Getenv("RestyDebug"))
 	if erroT != nil {
 		Logga(ctx, os.Getenv("JsonLog"), erroT.Error())
 		return erroT
@@ -1406,7 +1406,7 @@ func GetAccessCluster(ctx context.Context, cluster, devopsToken, loginApiDomain,
 
 	return cluAcc
 }
-func GetJsonDatabases(ctx context.Context, stage, developer string, market int32, arrConn MasterConn, tenant, accessToken, loginApiDomain, coreApiVersion string, monolith bool) (map[string]interface{}, error) {
+func GetJsonDatabases(ctx context.Context, stage, developer string, market int32, arrConn MasterConn, tenant, accessToken, loginApiDomain, coreApiVersion, resource string, monolith bool) (map[string]interface{}, error) {
 	Logga(ctx, os.Getenv("JsonLog"), "Getting Json Db")
 
 	var erro error
@@ -1417,7 +1417,7 @@ func GetJsonDatabases(ctx context.Context, stage, developer string, market int32
 		return callResponse, erro
 	}
 
-	devopsToken, erroT := GetCoreFactoryToken(ctx, tenant, accessToken, loginApiDomain, coreApiVersion, os.Getenv("RestyDebug"))
+	devopsToken, erroT := GetCoreFactoryToken(ctx, tenant, accessToken, loginApiDomain, coreApiVersion, resource, os.Getenv("RestyDebug"))
 	if erroT != nil {
 		Logga(ctx, os.Getenv("JsonLog"), erroT.Error())
 	} else {
@@ -1516,7 +1516,7 @@ func GetCfToolEnv(ctx context.Context, token, dominio, tenant, coreApiVersion, e
 	args := make(map[string]string)
 	args["center_dett"] = "dettaglio"
 	args["source"] = "devops-8"
-	args["$filter"] = "equals(XKUBECFTOOLENV03,'" + dominio + "') "
+	args["$filter"] = "equals(XKUBECFTOOLENV03,'" + strings.Replace(dominio, "https://", "", -1) + "') "
 	args["$filter"] += " and equals(XKUBECFTOOLENV19,'" + tenant + "') "
 	args["$filter"] += " and equals(XKUBECFTOOLENV18,'" + enviro + "') "
 
