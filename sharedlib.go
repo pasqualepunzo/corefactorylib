@@ -1012,7 +1012,7 @@ func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]Service, error) {
 			// per ogni servizio cerco gli endpoints
 			sqlEndpoint += "select "
 			sqlEndpoint += "ifnull(aa.XKUBEENDPOINT05, '') as microservice_src, "
-			sqlEndpoint += "ifnull(aa.XKUBEENDPOINT05, '') as allowed_method, "
+			sqlEndpoint += "ifnull(aa.XKUBEENDPOINT07, '') as allowed_method, "
 			sqlEndpoint += "ifnull(cc.XKUBESERVICEDKR04, '') as docker_src, "
 			sqlEndpoint += "ifnull(aa.XKUBEENDPOINT10, '') as type_src, "
 			sqlEndpoint += "ifnull(aa.XKUBEENDPOINT09, '') as route_src, "

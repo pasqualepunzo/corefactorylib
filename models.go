@@ -621,6 +621,7 @@ type BuildArgs struct {
 	Docker       string `json:"docker"`
 	Tenant       string `json:"tenant"`
 	SprintBranch string `json:"sprintBranch"`
+	DevopsToken  string `json:"devopsToken"`
 
 	CustomSettings   string `json:"customSettings"`
 	AppID            string `json:"appID"`
