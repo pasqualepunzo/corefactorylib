@@ -933,7 +933,7 @@ func GetCurrentBranchSprint(ctx context.Context, team, tipo, tenant, accessToken
 func CreateTag(ctx context.Context, buildArgs BuildArgs, tag, repo string) error {
 
 	Logga(ctx, os.Getenv("JsonLog"), "Create tag: "+tag)
-	Logga(ctx, os.Getenv("JsonLog"), "git repo: "+buildArgs.TypeGit)
+	Logga(ctx, os.Getenv("JsonLog"), "git repo: "+repo)
 
 	debool, errBool := strconv.ParseBool(os.Getenv("RestyDebug"))
 	if errBool != nil {
@@ -1003,6 +1003,16 @@ func CreateTag(ctx context.Context, buildArgs BuildArgs, tag, repo string) error
 				Post(buildArgs.ApiHostGit + "/repos/" + buildArgs.UserGit + "/" + repo + "/git/tags")
 		}
 	}
+
+	/*
+		{
+		   "type": "error",
+		   "error": {
+		      "message": "tag \"CORE-202201023-tag\" already exists"
+		   }
+		}
+
+	*/
 
 	if errTag != nil {
 		Logga(ctx, os.Getenv("JsonLog"), errTag.Error())
