@@ -429,7 +429,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 		microservices.Namespace = restyKubeMSRes.BodyJson["XKUBEMICROSERV04_COD"].(string)
 		microservices.Virtualservice = strconv.FormatFloat(restyKubeMSRes.BodyJson["XKUBEMICROSERV08"].(float64), 'f', 0, 64)
 
-		microservices.DatabasebEnable = strconv.FormatFloat(restyKubeImicroservRes.BodyJson["XKUBEMICROSERV15"].(float64), 'f', 0, 64)
+		microservices.DatabasebEnable = strconv.FormatFloat(restyKubeMSRes.BodyJson["XKUBEMICROSERV15"].(float64), 'f', 0, 64)
 
 		hpaTmpl = restyKubeMSRes.BodyJson["XKUBEMICROSERV16_COD"].(string)
 		Logga(ctx, os.Getenv("JsonLog"), "KUBEMICROSERV OK")
