@@ -1299,7 +1299,7 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 
 				filter := "equals(XDEPLOYLOG04,'" + istanza.Istanza + "') and equals(XDEPLOYLOG03,'production') and XDEPLOYLOG06 eq 1"
 
-				_, erro := ApiCallPUT(ctx, os.Getenv("RestyDebug"), keyvalueslice, "ms"+devops, "/"+os.Getenv("APP_ENV")+"-devops/"+os.Getenv("API_VERSION")+"/"+devops+"/DEPLOYLOG/"+filter, devopsToken, dominio, coreApiVersion)
+				_, erro := ApiCallPUT(ctx, os.Getenv("RestyDebug"), keyvalueslice, "ms"+devops, "/"+os.Getenv("APP_ENV")+"-devops/api/"+os.Getenv("API_VERSION")+"/"+devops+"/DEPLOYLOG/"+filter, devopsToken, dominio, coreApiVersion)
 				if erro != nil {
 					return erro
 				}
