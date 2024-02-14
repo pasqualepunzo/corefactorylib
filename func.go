@@ -777,6 +777,45 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 
 			/* ************************************************************************************************ */
 
+			/* ************************************************************************************************ */
+			// KUBESERVICEDKR
+			Logga(ctx, os.Getenv("JsonLog"), "Getting KUBESERVICEDKR")
+			argsSrvDkr := make(map[string]string)
+			argsSrvDkr["source"] = "devops-8"
+			argsSrvDkr["$select"] = "XKUBESERVICEDKR06,XKUBESERVICEDKR05"
+			argsSrvDkr["center_dett"] = "visualizza"
+			argsSrvDkr["$filter"] = "equals(XKUBESERVICEDKR04,'" + docker + "') "
+
+			restyKubeSrvDkrRes, errKubeSrvDkrRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsSrvDkr, "ms"+devops, "/"+os.Getenv("APP_ENV")+"-devops/api/"+os.Getenv("API_VERSION")+"/"+devops+"/KUBESERVICEDKR", devopsToken, dominio, coreApiVersion)
+			if errKubeSrvDkrRes != nil {
+				Logga(ctx, os.Getenv("JsonLog"), errKubeSrvDkrRes.Error())
+				return microservices, errKubeSrvDkrRes
+			}
+
+			if len(restyKubeSrvDkrRes.BodyArray) > 0 {
+				var port, tipo string
+				var services []Service
+				for _, x := range restyKubeSrvDkrRes.BodyArray {
+
+					port = strconv.FormatFloat(x["XKUBESERVICEDKR06"].(float64), 'f', 0, 64)
+					tipo = x["XKUBESERVICEDKR05"].(string)
+
+					var service Service
+					service.Port = port
+					service.Tipo = tipo
+					// service.Endpoint = endpoints
+
+					services = append(services, service)
+
+				}
+
+				pod.Service = services
+
+				Logga(ctx, os.Getenv("JsonLog"), "KUBESERVICEDKR OK")
+			} else {
+				erro := errors.New("KUBESERVICEDKR MISSING")
+				return microservices, erro
+			}
 			// aggiungo pod corrente a pods
 			pods = append(pods, pod)
 
