@@ -356,11 +356,11 @@ type Server struct {
 	Protocol string   `json:"protocol"`
 }
 type BaseRoute struct {
-	BaseRoute string `json:"baseRoute"`
-	Team      string `json:"team"`
-	Domino    string `json:"dominio"`
-	Env       string `json:"env"`
-	Ip        string `json:"ip"`
+	BaseRoute     string `json:"baseRoute"`
+	Team          string `json:"team"`
+	DominoCluster string `json:"dominioCluster"`
+	Env           string `json:"env"`
+	Ip            string `json:"ip"`
 }
 type AttributiMS struct {
 	Partner  string `json:"partner"`

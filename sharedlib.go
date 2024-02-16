@@ -104,7 +104,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 		argsImicro["center_dett"] = "dettaglio"
 		argsImicro["$filter"] = "equals(XKUBEIMICROSERV03,'" + istanza + "') "
 
-		restyKubeImicroservRes, errKubeImicroservRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsImicro, "ms"+devops, "/"+os.Getenv("APP_ENV")+"-devops/api/"+os.Getenv("API_VERSION")+"/"+devops+"/KUBEIMICROSERV", devopsToken, dominio, coreApiVersion)
+		restyKubeImicroservRes, errKubeImicroservRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsImicro, "ms"+devops, "/api/"+os.Getenv("API_VERSION")+"/"+devops+"/KUBEIMICROSERV", devopsToken, dominio, coreApiVersion)
 		if errKubeImicroservRes != nil {
 			Logga(ctx, os.Getenv("JsonLog"), errKubeImicroservRes.Error())
 			erro = errors.New(errKubeImicroservRes.Error())
@@ -150,7 +150,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 
 				keyvalueslices = append(keyvalueslices, keyvalueslice)
 
-				resKubeims := ApiCallPOST(ctx, os.Getenv("RestyDebug"), keyvalueslices, "ms"+devops, "/"+os.Getenv("APP_ENV")+"-devops/api/"+os.Getenv("API_VERSION")+"/"+devops+"/KUBEIMICROSERV", devopsToken, dominio, coreApiVersion)
+				resKubeims := ApiCallPOST(ctx, os.Getenv("RestyDebug"), keyvalueslices, "ms"+devops, "/api/"+os.Getenv("API_VERSION")+"/"+devops+"/KUBEIMICROSERV", devopsToken, dominio, coreApiVersion)
 
 				if resKubeims.Errore < 0 {
 					Logga(ctx, os.Getenv("JsonLog"), "")
@@ -186,7 +186,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	argsStage["$filter"] += " and equals(XKUBESTAGE04,'" + enviro + "') "
 
 	//$filter=contains(XART20,'(kg)') or contains(XART20,'pizza')
-	restyStageRes, _ := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsStage, "ms"+devops, "/"+os.Getenv("APP_ENV")+"-devops/api/"+os.Getenv("API_VERSION")+"/"+devops+"/KUBESTAGE", devopsTokenDst, dominio, coreApiVersion)
+	restyStageRes, _ := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsStage, "ms"+devops, "/api/"+os.Getenv("API_VERSION")+"/"+devops+"/KUBESTAGE", devopsTokenDst, dominio, coreApiVersion)
 	if restyStageRes.Errore < 0 {
 		Logga(ctx, os.Getenv("JsonLog"), restyStageRes.Log)
 	}
@@ -214,7 +214,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	argsClu["center_dett"] = "allviews"
 	argsClu["$filter"] = " equals(XKUBECLUSTER03,'" + ims.Cluster + "')"
 
-	restyKubeCluRes, errKubeCluRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsClu, "ms"+devops, "/"+os.Getenv("APP_ENV")+"-devops/api/"+os.Getenv("API_VERSION")+"/"+devops+"/KUBECLUSTER", devopsTokenDst, dominio, coreApiVersion)
+	restyKubeCluRes, errKubeCluRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsClu, "ms"+devops, "/api/"+os.Getenv("API_VERSION")+"/"+devops+"/KUBECLUSTER", devopsTokenDst, dominio, coreApiVersion)
 	if errKubeCluRes != nil {
 		Logga(ctx, os.Getenv("JsonLog"), errKubeCluRes.Error())
 
@@ -292,7 +292,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 			argsCluEnv["$filter"] += " and XKUBECLUSTERENV05 eq " + strconv.Itoa(int(ambienteFloat)) + " "
 			argsCluEnv["$filter"] += " and equals(XKUBECLUSTERENV06,'" + enviro + "') "
 
-			restyKubeCluEnvRes, errKubeCluEnvRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsCluEnv, "ms"+devops, "/"+os.Getenv("APP_ENV")+"-devops/api/"+os.Getenv("API_VERSION")+"/"+devops+"/KUBECLUSTERENV", devopsToken, dominio, coreApiVersion)
+			restyKubeCluEnvRes, errKubeCluEnvRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsCluEnv, "ms"+devops, "/api/"+os.Getenv("API_VERSION")+"/"+devops+"/KUBECLUSTERENV", devopsToken, dominio, coreApiVersion)
 			if errKubeCluEnvRes != nil {
 				Logga(ctx, os.Getenv("JsonLog"), errKubeCluEnvRes.Error())
 
@@ -381,7 +381,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	argsAmbdomain["$select"] = "XAMBDOMAIN05,XAMBDOMAIN07,XAMBDOMAIN08,XAMBDOMAIN09,XAMBDOMAIN10,XAMBDOMAIN11"
 	argsAmbdomain["center_dett"] = "dettaglio"
 	argsAmbdomain["$filter"] += "  equals(XAMBDOMAIN04,'" + customerDomain + "') "
-	restyAmbdomainRes, errAmbdomainRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsAmbdomain, "msauth", "/"+os.Getenv("CORE_API_ENVIRONMENT")+"-core/api/"+os.Getenv("API_VERSION")+"/core/AMBDOMAIN", devopsToken, dominio, coreApiVersion)
+	restyAmbdomainRes, errAmbdomainRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsAmbdomain, "msauth", "/api/"+os.Getenv("API_VERSION")+"/core/AMBDOMAIN", devopsToken, dominio, coreApiVersion)
 	if errAmbdomainRes != nil {
 		Logga(ctx, os.Getenv("JsonLog"), errAmbdomainRes.Error())
 
@@ -412,7 +412,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	argsMS["$select"] = "XKUBEMICROSERV07,XKUBEMICROSERV09,XKUBEMICROSERV15,XKUBEMICROSERV18,XKUBEMICROSERV20,XKUBEMICROSERV21,XKUBEMICROSERV22"
 	argsMS["center_dett"] = "dettaglio"
 	argsMS["$filter"] = "equals(XKUBEMICROSERV05,'" + microservice + "') "
-	restyKubeMSRes, errKubeMSRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsMS, "ms"+devops, "/"+os.Getenv("APP_ENV")+"-devops/api/"+os.Getenv("API_VERSION")+"/"+devops+"/KUBEMICROSERV", devopsToken, dominio, coreApiVersion)
+	restyKubeMSRes, errKubeMSRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsMS, "ms"+devops, "/api/"+os.Getenv("API_VERSION")+"/"+devops+"/KUBEMICROSERV", devopsToken, dominio, coreApiVersion)
 	if errKubeMSRes != nil {
 		Logga(ctx, os.Getenv("JsonLog"), errKubeMSRes.Error())
 
@@ -434,7 +434,11 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 		isRefappFloat := restyKubeMSRes.BodyJson["XKUBEMICROSERV21"].(float64)
 		if isRefappFloat == 1 {
 			ims.RefApp.RefAppName = strings.ToLower(slugify.Slugify(restyKubeMSRes.BodyJson["XKUBEMICROSERV22"].(string)))
-			rfapp, errRefapp := fillRefapp(ctx, microservice, restyKubeMSRes.BodyJson["XKUBEMICROSERV22"].(string), devopsToken, dominio, coreApiVersion)
+
+			/*
+				============ REFAPP DETAIL =============================
+			*/
+			rfapp, errRefapp := GetRefappDetails(ctx, microservice, restyKubeMSRes.BodyJson["XKUBEMICROSERV22"].(string), devopsToken, dominio, coreApiVersion)
 			ims.RefApp = rfapp
 			if errRefapp != nil {
 				Logga(ctx, os.Getenv("JsonLog"), errRefapp.Error())
@@ -458,7 +462,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 			team := teamGroup["gruppo"]
 
 			br.Ip = clu.RefappID
-			br.Domino = enviro + "-" + strings.ToLower(team) + "." + ims.ClusterDomainProd
+			br.DominoCluster = enviro + "-" + strings.ToLower(team) + "." + ims.ClusterDomainProd
 			br.Env = enviro
 			br.Team = strings.ToLower(team)
 			brs = append(brs, br)
@@ -471,7 +475,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 				var srvs []Server
 				var srv Server
 				var dmn []string
-				dmn = append(dmn, "q01.io")
+				dmn = append(dmn, br.DominoCluster)
 
 				// PROD
 				srv.Domini = dmn
@@ -543,7 +547,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	argsAmb["public"] = strconv.Itoa(microservicePublic)
 	//argsAmb["swMultiEnvironment"] = ims.SwMultiEnvironment
 
-	restyKubeAmbRes, errKubeAmbRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsAmb, "msauth", "/"+os.Getenv("CORE_API_ENVIRONMENT")+"-core/api/"+os.Getenv("API_VERSION")+"/"+auth+"/getAmbDomainMs", devopsTokenDst, dominio, coreApiVersion)
+	restyKubeAmbRes, errKubeAmbRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsAmb, "msauth", "/api/"+os.Getenv("API_VERSION")+"/"+auth+"/getAmbDomainMs", devopsTokenDst, dominio, coreApiVersion)
 	if errKubeAmbRes != nil {
 		Logga(ctx, os.Getenv("JsonLog"), errKubeAmbRes.Error())
 
@@ -639,19 +643,21 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 }
 
 // questo metodo restituisce cio che serve in caso in cui il MS e di tipo REFAPP
-func fillRefapp(ctx context.Context, microservice, refappname, devopsToken, dominio, coreApiVersion string) (Refapp, error) {
+func GetRefappDetails(ctx context.Context, microservice, refappname, devopsToken, dominio, coreApiVersion string) (Refapp, error) {
 
 	var refapp Refapp
 	var dmes []BaseRoute
 
 	Logga(ctx, os.Getenv("JsonLog"), "CERCO I MICROSERVIZI SU KUBEIMICROSERV")
 	// entro su microservice per avere i ms
+
+	// CERCO TUTTI I MS
 	argsMs := make(map[string]string)
 	argsMs["source"] = "devops-8"
 	argsMs["$select"] = "XKUBEMICROSERV05"
 	argsMs["center_dett"] = "visualizza"
 
-	MsRes, errMsRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsMs, "msdevops", "/"+os.Getenv("APP_ENV")+"-devops/api/"+os.Getenv("API_VERSION")+"/devops/KUBEMICROSERV", devopsToken, dominio, coreApiVersion)
+	MsRes, errMsRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsMs, "msdevops", "/api/"+os.Getenv("API_VERSION")+"/devops/KUBEMICROSERV", devopsToken, dominio, coreApiVersion)
 	if errMsRes != nil {
 		Logga(ctx, os.Getenv("JsonLog"), errMsRes.Error())
 		erro := errors.New(errMsRes.Error())
@@ -680,7 +686,7 @@ func fillRefapp(ctx context.Context, microservice, refappname, devopsToken, domi
 	argsRefapp["center_dett"] = "dettaglio"
 	argsRefapp["$filter"] = "equals(XREFAPPNEW05,'" + refappname + "') "
 
-	RefappRes, errRefappRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsRefapp, "msappman", "/"+os.Getenv("CORE_API_ENVIRONMENT")+"-core/api/"+os.Getenv("API_VERSION")+"/appman/REFAPPNEW", devopsToken, dominio, coreApiVersion)
+	RefappRes, errRefappRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsRefapp, "msappman", "/api/"+os.Getenv("API_VERSION")+"/appman/REFAPPNEW", devopsToken, dominio, coreApiVersion)
 	if errRefappRes != nil {
 		Logga(ctx, os.Getenv("JsonLog"), errRefappRes.Error())
 		erro := errors.New(errRefappRes.Error())
@@ -704,7 +710,7 @@ func fillRefapp(ctx context.Context, microservice, refappname, devopsToken, domi
 	argsRefappcustomer["center_dett"] = "visualizza"
 	argsRefappcustomer["$filter"] = "equals(XREFAPPCUSTOMER09,'" + refappname + "') "
 
-	RefappcustomerRes, errRefappcustomerRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsRefappcustomer, "msappman", "/"+os.Getenv("CORE_API_ENVIRONMENT")+"-core/api/"+os.Getenv("API_VERSION")+"/appman/REFAPPCUSTOMER", devopsToken, dominio, coreApiVersion)
+	RefappcustomerRes, errRefappcustomerRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsRefappcustomer, "msappman", "/api/"+os.Getenv("API_VERSION")+"/appman/REFAPPCUSTOMER", devopsToken, dominio, coreApiVersion)
 	if errRefappcustomerRes != nil {
 		Logga(ctx, os.Getenv("JsonLog"), errRefappcustomerRes.Error())
 		erro := errors.New(errRefappcustomerRes.Error())
@@ -730,7 +736,7 @@ func fillRefapp(ctx context.Context, microservice, refappname, devopsToken, domi
 	argsApp["center_dett"] = "dettaglio"
 	argsApp["$filter"] = "equals(XAPP03,'" + appID + "') "
 
-	AppRes, errAppRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsApp, "msappman", "/"+os.Getenv("CORE_API_ENVIRONMENT")+"-core/api/"+os.Getenv("API_VERSION")+"/appman/APP", devopsToken, dominio, coreApiVersion)
+	AppRes, errAppRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsApp, "msappman", "/api/"+os.Getenv("API_VERSION")+"/appman/APP", devopsToken, dominio, coreApiVersion)
 	if errAppRes != nil {
 		Logga(ctx, os.Getenv("JsonLog"), errAppRes.Error())
 		erro := errors.New(errAppRes.Error())
@@ -753,7 +759,7 @@ func fillRefapp(ctx context.Context, microservice, refappname, devopsToken, domi
 	argsAppbox["center_dett"] = "visualizza"
 	argsAppbox["$filter"] = "equals(XAPPBOX03,'" + appID + "') "
 
-	AppboxRes, errAppboxRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsAppbox, "msappman", "/"+os.Getenv("CORE_API_ENVIRONMENT")+"-core/api/"+os.Getenv("API_VERSION")+"/appman/APPBOX", devopsToken, dominio, coreApiVersion)
+	AppboxRes, errAppboxRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsAppbox, "msappman", "/api/"+os.Getenv("API_VERSION")+"/appman/APPBOX", devopsToken, dominio, coreApiVersion)
 	if errAppboxRes != nil {
 		Logga(ctx, os.Getenv("JsonLog"), errAppboxRes.Error())
 		erro := errors.New(errAppboxRes.Error())
@@ -784,7 +790,7 @@ func fillRefapp(ctx context.Context, microservice, refappname, devopsToken, domi
 	filtro += " and in_s(XBOXPKG04," + micros + ")"
 	argsBoxpkg["$filter"] = filtro
 
-	BoxpkgRes, errBoxpkgRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsBoxpkg, "msappman", "/"+os.Getenv("CORE_API_ENVIRONMENT")+"-core/api/"+os.Getenv("API_VERSION")+"/appman/BOXPKG", devopsToken, dominio, coreApiVersion)
+	BoxpkgRes, errBoxpkgRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsBoxpkg, "msappman", "/api/"+os.Getenv("API_VERSION")+"/appman/BOXPKG", devopsToken, dominio, coreApiVersion)
 	if errBoxpkgRes != nil {
 		Logga(ctx, os.Getenv("JsonLog"), errBoxpkgRes.Error())
 		erro := errors.New(errBoxpkgRes.Error())
@@ -813,7 +819,7 @@ func fillRefapp(ctx context.Context, microservice, refappname, devopsToken, domi
 	argsBr["$fullquery"] += " join TB_ANAG_KUBECLUSTER00 on (XKUBEIMICROSERV05 = XKUBECLUSTER03) "
 	argsBr["$fullquery"] += " where XKUBEIMICROSERV04 in (" + microsFullQ + ") "
 	Logga(ctx, os.Getenv("JsonLog"), argsBr["$fullquery"])
-	BrRes, errBrRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsBr, "msdevops", "/"+os.Getenv("APP_ENV")+"-devops/api/"+os.Getenv("API_VERSION")+"/devops/custom/KUBEIMICROSERV/values", devopsToken, dominio, coreApiVersion)
+	BrRes, errBrRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsBr, "msdevops", "/api/"+os.Getenv("API_VERSION")+"/devops/custom/KUBEIMICROSERV/values", devopsToken, dominio, coreApiVersion)
 	if errBrRes != nil {
 		Logga(ctx, os.Getenv("JsonLog"), errBrRes.Error())
 		erro := errors.New(errBrRes.Error())
@@ -823,7 +829,7 @@ func fillRefapp(ctx context.Context, microservice, refappname, devopsToken, domi
 	if len(BrRes.BodyArray) > 0 {
 		for _, x := range BrRes.BodyArray {
 			var dme BaseRoute
-			dme.Domino = x["XKUBECLUSTER15"].(string)
+			dme.DominoCluster = x["XKUBECLUSTER15"].(string)
 			dme.Env = x["XKUBEIMICROSERV06"].(string)
 			dme.Team = x["XKUBEMICROSERV07"].(string)
 			dme.Ip = x["XKUBECLUSTER22"].(string)
@@ -845,7 +851,7 @@ func fillRefapp(ctx context.Context, microservice, refappname, devopsToken, domi
 		}
 		if !inArr {
 			dmeOK.BaseRoute = x.BaseRoute
-			dmeOK.Domino = x.Domino
+			dmeOK.DominoCluster = x.DominoCluster
 			dmeOK.Env = x.Env
 			dmeOK.Team = x.Team
 			dmeOK.Ip = x.Ip
@@ -872,7 +878,7 @@ func fillRefapp(ctx context.Context, microservice, refappname, devopsToken, domi
 			argsGru["center_dett"] = "dettaglio"
 			argsGru["$filter"] = "equals(XGRU03,'" + x.Team + "') "
 
-			GruRes, errGruRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsGru, "msusers", "/"+os.Getenv("CORE_API_ENVIRONMENT")+"-core/api/"+os.Getenv("API_VERSION")+"/users/GRU", devopsToken, dominio, coreApiVersion)
+			GruRes, errGruRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsGru, "msusers", "/api/"+os.Getenv("API_VERSION")+"/users/GRU", devopsToken, dominio, coreApiVersion)
 			if errGruRes != nil {
 				Logga(ctx, os.Getenv("JsonLog"), errGruRes.Error())
 				erro := errors.New(errGruRes.Error())
@@ -889,14 +895,14 @@ func fillRefapp(ctx context.Context, microservice, refappname, devopsToken, domi
 				dmesOK[idx].Team = strings.ToLower(team)
 				gruteam[x.Team] = strings.ToLower(team)
 				dmesOK[idx].BaseRoute = "/" + x.Env + "-" + strings.ToLower(team) + "/"
-				dmesOK[idx].Domino = x.Env + "-" + strings.ToLower(team) + "." + x.Domino
+				dmesOK[idx].DominoCluster = x.Env + "-" + strings.ToLower(team) + "." + x.DominoCluster
 				gruppiArr = append(gruppiArr, x.Team)
 			}
 
 		} else {
 			dmesOK[idx].Team = gruteam[x.Team]
 			dmesOK[idx].BaseRoute = "/" + x.Env + "-" + gruteam[x.Team] + "/"
-			dmesOK[idx].Domino = x.Env + "-" + gruteam[x.Team] + "." + x.Domino
+			dmesOK[idx].DominoCluster = x.Env + "-" + gruteam[x.Team] + "." + x.DominoCluster
 		}
 	}
 
@@ -915,7 +921,7 @@ func fillRefapp(ctx context.Context, microservice, refappname, devopsToken, domi
 	argsSr["$filter"] = "equals(XAPPSRV03,'" + appID + "') "
 
 	Logga(ctx, os.Getenv("JsonLog"), argsSr["$fullquery"])
-	SrRes, errSrRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsSr, "msappman", "/"+os.Getenv("CORE_API_ENVIRONMENT")+"-core/api/"+os.Getenv("API_VERSION")+"/appman/APPSRV", devopsToken, dominio, coreApiVersion)
+	SrRes, errSrRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsSr, "msappman", "/api/"+os.Getenv("API_VERSION")+"/appman/APPSRV", devopsToken, dominio, coreApiVersion)
 	if errSrRes != nil {
 		Logga(ctx, os.Getenv("JsonLog"), errSrRes.Error())
 		erro := errors.New(errSrRes.Error())
@@ -942,7 +948,7 @@ func fillRefapp(ctx context.Context, microservice, refappname, devopsToken, domi
 func fillMarketPlaceRoute(dmesOK *[]BaseRoute) {
 	found := false
 	for _, x := range *dmesOK {
-		if x.Domino == "q01.io" {
+		if x.DominoCluster == "q01.io" {
 			found = true
 			break
 		}
@@ -950,7 +956,7 @@ func fillMarketPlaceRoute(dmesOK *[]BaseRoute) {
 	if !found {
 		var dme BaseRoute
 		dme.BaseRoute = "prod-core.q01.io"
-		dme.Domino = "q01.io"
+		dme.DominoCluster = "q01.io"
 		dme.Env = "prod"
 		dme.Team = "core"
 		dme.Ip = "" // lasciare vuoto indica che e un mondo esterno !!!! DNS
@@ -982,7 +988,7 @@ func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]Service, error) {
 	argsDoker["$fullquery"] += " join TB_ANAG_DEPLOYLOG00 on (XDEPLOYLOG04=XKUBEIMICROSERV03 and XDEPLOYLOG06 = 1 and XDEPLOYLOG09 = '" + routeJson.Enviro + "') "
 	argsDoker["$fullquery"] += " where XKUBEIMICROSERV05 = '" + cluster + "'   and XKUBEIMICROSERV08 ='" + team + "' "
 	Logga(ctx, os.Getenv("JsonLog"), argsDoker["$fullquery"])
-	restyDokerRes, errDokerRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsDoker, "msdevops", "/"+os.Getenv("APP_ENV")+"-devops/api/"+os.Getenv("API_VERSION")+"/devops/custom/KUBEIMICROSERV/values", devopsToken, os.Getenv("apiDomain"), os.Getenv("coreApiVersion"))
+	restyDokerRes, errDokerRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsDoker, "msdevops", "/api/"+os.Getenv("API_VERSION")+"/devops/custom/KUBEIMICROSERV/values", devopsToken, os.Getenv("apiDomain"), os.Getenv("coreApiVersion"))
 
 	if errDokerRes != nil {
 		Logga(ctx, os.Getenv("JsonLog"), errDokerRes.Error())
@@ -1135,7 +1141,7 @@ func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]Service, error) {
 			argsEndpoint["source"] = "devops-8"
 			argsEndpoint["$fullquery"] = sqlEndpoint
 
-			restyKubeEndpointRes, erroEnd := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsEndpoint, "msdevops", "/"+os.Getenv("APP_ENV")+"-devops/api/"+os.Getenv("API_VERSION")+"/devops/custom/KUBEENDPOINT/values", devopsToken, os.Getenv("apiDomain"), os.Getenv("coreApiVersion"))
+			restyKubeEndpointRes, erroEnd := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsEndpoint, "msdevops", "/api/"+os.Getenv("API_VERSION")+"/devops/custom/KUBEENDPOINT/values", devopsToken, os.Getenv("apiDomain"), os.Getenv("coreApiVersion"))
 			if erroEnd != nil {
 				Logga(ctx, os.Getenv("JsonLog"), erroEnd.Error())
 				return services, erroEnd
@@ -1206,7 +1212,7 @@ func GetIstanzaVersioni(ctx context.Context, istanza, enviro, devopsTokenDst, do
 	argsDeploy["$filter"] += " and equals(XDEPLOYLOG09,'" + enviro + "') "
 	argsDeploy["$filter"] += " and equals(XDEPLOYLOG06,'1') "
 
-	restyDeployRes, errDeployRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsDeploy, "msdevops", "/"+os.Getenv("APP_ENV")+"-devops/api/"+os.Getenv("API_VERSION")+"/devops/DEPLOYLOG", devopsTokenDst, dominio, coreApiVersion)
+	restyDeployRes, errDeployRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsDeploy, "msdevops", "/api/"+os.Getenv("API_VERSION")+"/devops/DEPLOYLOG", devopsTokenDst, dominio, coreApiVersion)
 	if errDeployRes != nil {
 		Logga(ctx, os.Getenv("JsonLog"), errDeployRes.Error())
 		erro = errors.New(errDeployRes.Error())
@@ -1271,7 +1277,7 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 
 				filter := "equals(XDEPLOYLOG04,'" + istanza.Istanza + "') and equals(XDEPLOYLOG03,'canary') and XDEPLOYLOG06 eq 1"
 
-				_, erro := ApiCallPUT(ctx, os.Getenv("RestyDebug"), keyvalueslice, "ms"+devops, "/"+os.Getenv("APP_ENV")+"-devops/api/"+os.Getenv("API_VERSION")+"/"+devops+"/DEPLOYLOG/"+filter, devopsToken, dominio, coreApiVersion)
+				_, erro := ApiCallPUT(ctx, os.Getenv("RestyDebug"), keyvalueslice, "ms"+devops, "/api/"+os.Getenv("API_VERSION")+"/"+devops+"/DEPLOYLOG/"+filter, devopsToken, dominio, coreApiVersion)
 
 				if erro != nil {
 					return erro
@@ -1299,7 +1305,7 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 
 				filter := "equals(XDEPLOYLOG04,'" + istanza.Istanza + "') and equals(XDEPLOYLOG03,'production') and XDEPLOYLOG06 eq 1"
 
-				_, erro := ApiCallPUT(ctx, os.Getenv("RestyDebug"), keyvalueslice, "ms"+devops, "/"+os.Getenv("APP_ENV")+"-devops/api/"+os.Getenv("API_VERSION")+"/"+devops+"/DEPLOYLOG/"+filter, devopsToken, dominio, coreApiVersion)
+				_, erro := ApiCallPUT(ctx, os.Getenv("RestyDebug"), keyvalueslice, "ms"+devops, "/api/"+os.Getenv("API_VERSION")+"/"+devops+"/DEPLOYLOG/"+filter, devopsToken, dominio, coreApiVersion)
 				if erro != nil {
 					return erro
 				}
@@ -1314,7 +1320,7 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 
 				filter := "equals(XDEPLOYLOG04,'" + istanza.Istanza + "') and equals(XDEPLOYLOG03,'canary')"
 
-				_, erro := ApiCallPUT(ctx, os.Getenv("RestyDebug"), keyvalueslice, "ms"+devops, "/"+os.Getenv("APP_ENV")+"-devops/api/"+os.Getenv("API_VERSION")+"/"+devops+"/DEPLOYLOG/"+filter, devopsToken, dominio, coreApiVersion)
+				_, erro := ApiCallPUT(ctx, os.Getenv("RestyDebug"), keyvalueslice, "ms"+devops, "/api/"+os.Getenv("API_VERSION")+"/"+devops+"/DEPLOYLOG/"+filter, devopsToken, dominio, coreApiVersion)
 				if erro != nil {
 					return erro
 				}
@@ -1382,7 +1388,7 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 	keyvalueslice["XDEPLOYLOG10"] = microfrontendJson
 	keyvalueslices = append(keyvalueslices, keyvalueslice)
 
-	resPOST := ApiCallPOST(ctx, os.Getenv("RestyDebug"), keyvalueslices, "ms"+devops, "/"+os.Getenv("APP_ENV")+"-devops/api/"+os.Getenv("API_VERSION")+"/"+devops+"/DEPLOYLOG", devopsToken, dominio, coreApiVersion)
+	resPOST := ApiCallPOST(ctx, os.Getenv("RestyDebug"), keyvalueslices, "ms"+devops, "/api/"+os.Getenv("API_VERSION")+"/"+devops+"/DEPLOYLOG", devopsToken, dominio, coreApiVersion)
 	if resPOST.Errore < 0 {
 		erro := errors.New(resPOST.Log)
 		return erro
@@ -1585,7 +1591,7 @@ func UpdateDockerVersion(ctx context.Context, docker, ver, user, devMaster, sha,
 
 	Logga(ctx, os.Getenv("JsonLog"), "beore ApiCallPOST")
 
-	res := ApiCallPOST(ctx, os.Getenv("RestyDebug"), keyvalueslices, "msdevops", "/"+os.Getenv("APP_ENV")+"-devops/api/"+os.Getenv("API_VERSION")+"/devops/KUBEDKRBUILD", devopsToken, dominio, coreApiVersion)
+	res := ApiCallPOST(ctx, os.Getenv("RestyDebug"), keyvalueslices, "msdevops", "/api/"+os.Getenv("API_VERSION")+"/devops/KUBEDKRBUILD", devopsToken, dominio, coreApiVersion)
 	Logga(ctx, os.Getenv("JsonLog"), "after ApiCallPOST")
 	if res.Errore != 0 {
 		Logga(ctx, os.Getenv("JsonLog"), res.Log)
