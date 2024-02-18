@@ -1171,7 +1171,7 @@ func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]Service, error) {
 	}
 	return services, erro
 }
-func GetIstanzaVersioni(ctx context.Context, istanza, enviro, devopsTokenDst, dominio, coreApiVersion string) ([]IstanzaMicroVersioni, error) {
+func GetIstanzaVersioni(ctx context.Context, istnzs, enviro, devopsTokenDst, dominio, coreApiVersion string) ([]IstanzaMicroVersioni, error) {
 	Logga(ctx, os.Getenv("JsonLog"), "GetIstanzaVersioni - Getting DEPLOYLOG")
 	var erro error
 	var istanzaMicroVersioni []IstanzaMicroVersioni
@@ -1180,9 +1180,11 @@ func GetIstanzaVersioni(ctx context.Context, istanza, enviro, devopsTokenDst, do
 	argsDeploy["source"] = "devops-8"
 	argsDeploy["$select"] = "XDEPLOYLOG03,XDEPLOYLOG05"
 	argsDeploy["center_dett"] = "visualizza"
-	argsDeploy["$filter"] = "equals(XDEPLOYLOG04,'" + istanza + "') "
-	argsDeploy["$filter"] += " and equals(XDEPLOYLOG09,'" + enviro + "') "
-	argsDeploy["$filter"] += " and equals(XDEPLOYLOG06,'1') "
+
+	filtro := "in_s(XDEPLOYLOG04," + istnzs + ") "
+	filtro += " and equals(XDEPLOYLOG09,'" + enviro + "') "
+	filtro += " and equals(XDEPLOYLOG06,'1') "
+	argsDeploy["$filter"] = filtro
 
 	restyDeployRes, errDeployRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsDeploy, "msdevops", "/api/"+os.Getenv("API_VERSION")+"/devops/DEPLOYLOG", devopsTokenDst, dominio, coreApiVersion)
 	if errDeployRes != nil {
@@ -1195,6 +1197,7 @@ func GetIstanzaVersioni(ctx context.Context, istanza, enviro, devopsTokenDst, do
 		for _, x := range restyDeployRes.BodyArray {
 			var istanzaMicroVersione IstanzaMicroVersioni
 
+			istanzaMicroVersione.Microservice = x["XDEPLOYLOG04"].(string)
 			istanzaMicroVersione.TipoVersione = x["XDEPLOYLOG03"].(string)
 			istanzaMicroVersione.Versione = x["XDEPLOYLOG05"].(string)
 
