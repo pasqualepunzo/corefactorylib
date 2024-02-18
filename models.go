@@ -334,6 +334,7 @@ type IstanzaMicro struct {
 	SwMultiEnvironment                  string                 `json:"swMultiEnvironment"`
 	SwCore                              bool                   `json:"swCore"`
 	ScaleToZero                         bool                   `json:"scaleToZero"`
+	IsRefapp                            bool                   `json:"isRefapp"`
 	SwDb                                int                    `json:"swDb"`
 	IstanzaMicroVersioni                []IstanzaMicroVersioni `json:"istanzaMicroVersioni"`
 	AttributiMS                         []AttributiMS          `json:"attributiMS"`
@@ -345,9 +346,9 @@ type IstanzaMicro struct {
 	RefApp                              Refapp                 `json:"refapp"`
 }
 type Refapp struct {
-	RefAppName string      `json:"refAppName"`
-	Servers    []Server    `json:"servers"`
-	BaseRoute  []BaseRoute `json:"baseRoute"`
+	RefAppName string     `json:"refAppName"`
+	Servers    []Server   `json:"servers"`
+	MsDetail   []MsDetail `json:"msDetail"`
 }
 type Server struct {
 	Domini   []string `json:"domini"`
@@ -355,7 +356,8 @@ type Server struct {
 	Number   string   `json:"number"`
 	Protocol string   `json:"protocol"`
 }
-type BaseRoute struct {
+type MsDetail struct {
+	Microservice  string `json:"microservice"`
 	BaseRoute     string `json:"baseRoute"`
 	Team          string `json:"team"`
 	DominoCluster string `json:"dominioCluster"`

@@ -432,76 +432,59 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 		ims.SwCore = swCoreBool
 
 		isRefappFloat := restyKubeMSRes.BodyJson["XKUBEMICROSERV21"].(float64)
-		if isRefappFloat == 1 {
-			ims.RefApp.RefAppName = strings.ToLower(slugify.Slugify(restyKubeMSRes.BodyJson["XKUBEMICROSERV22"].(string)))
-
-			/*
-				============ REFAPP DETAIL =============================
-			*/
-			rfapp, errRefapp := GetRefappDetails(ctx, restyKubeMSRes.BodyJson["XKUBEMICROSERV22"].(string), devopsToken, dominio, coreApiVersion)
-			ims.RefApp = rfapp
-			if errRefapp != nil {
-				Logga(ctx, os.Getenv("JsonLog"), errRefapp.Error())
-
-				erro = errors.New(errRefapp.Error())
-				return ims, erro
-			}
+		if isRefappFloat == 0 {
+			ims.IsRefapp = false
 		} else {
-
-			// in caso di deploy di MS no refapp popolo rfapp per costruire il dominio del GW del NS del TEAM
-			var rfapp Refapp
-			var br BaseRoute
-			var brs []BaseRoute
-
-			// recupero il TEAM dal GRUPPO
-			teamGroup, erroreGroup := GetUserGroup(ctx, devopsToken, restyKubeMSRes.BodyJson["XKUBEMICROSERV07"].(string), os.Getenv("apiDomain"), os.Getenv("coreApiVersion"))
-			if erroreGroup != nil {
-				Logga(ctx, os.Getenv("JsonLog"), erroreGroup.Error())
-				return ims, erroreGroup
-			}
-			team := teamGroup["gruppo"]
-
-			br.Ip = clu.RefappID
-			br.DominoCluster = enviro + "-" + strings.ToLower(team) + "." + ims.ClusterDomainProd
-			br.Env = enviro
-			br.Team = strings.ToLower(team)
-			brs = append(brs, br)
-
-			rfapp.BaseRoute = brs
-			ims.RefApp = rfapp
-
-			if strings.ToLower(team) == "devops" {
-
-				var srvs []Server
-				var srv Server
-				var dmn []string
-				dmn = append(dmn, br.DominoCluster)
-
-				// PROD
-				srv.Domini = dmn
-				srv.Name = "grpc-prod"
-				srv.Number = "50051"
-				srv.Protocol = "TCP"
-				srvs = append(srvs, srv)
-
-				// INT
-				srv.Domini = dmn
-				srv.Name = "grpc-int"
-				srv.Number = "51051"
-				srv.Protocol = "TCP"
-				srvs = append(srvs, srv)
-
-				// QA
-				srv.Domini = dmn
-				srv.Name = "grpc-qa"
-				srv.Number = "52051"
-				srv.Protocol = "TCP"
-				srvs = append(srvs, srv)
-
-				rfapp.Servers = srvs
-				ims.RefApp = rfapp
-			}
+			ims.IsRefapp = true
 		}
+
+		ims.RefApp.RefAppName = strings.ToLower(slugify.Slugify(restyKubeMSRes.BodyJson["XKUBEMICROSERV22"].(string)))
+
+		/*
+		*	=============================                          =============================
+		*	 ***************************        REFAPP DETAIL       ***************************
+		*	=============================                          =============================
+		 */
+		rfapp, errRefapp := GetRefappDetails(ctx, restyKubeMSRes.BodyJson["XKUBEMICROSERV22"].(string), devopsToken, dominio, coreApiVersion)
+		ims.RefApp = rfapp
+		if errRefapp != nil {
+			Logga(ctx, os.Getenv("JsonLog"), errRefapp.Error())
+
+			erro = errors.New(errRefapp.Error())
+			return ims, erro
+		}
+
+		// if strings.ToLower(team) == "devops" {
+
+		// 	var srvs []Server
+		// 	var srv Server
+		// 	var dmn []string
+		// 	dmn = append(dmn, br.DominoCluster)
+
+		// 	// PROD
+		// 	srv.Domini = dmn
+		// 	srv.Name = "grpc-prod"
+		// 	srv.Number = "50051"
+		// 	srv.Protocol = "TCP"
+		// 	srvs = append(srvs, srv)
+
+		// 	// INT
+		// 	srv.Domini = dmn
+		// 	srv.Name = "grpc-int"
+		// 	srv.Number = "51051"
+		// 	srv.Protocol = "TCP"
+		// 	srvs = append(srvs, srv)
+
+		// 	// QA
+		// 	srv.Domini = dmn
+		// 	srv.Name = "grpc-qa"
+		// 	srv.Number = "52051"
+		// 	srv.Protocol = "TCP"
+		// 	srvs = append(srvs, srv)
+
+		// 	rfapp.Servers = srvs
+		// 	ims.RefApp = rfapp
+		// }
 
 		var scaleToZero bool
 		scaleToZeroFloat := restyKubeMSRes.BodyJson["XKUBEMICROSERV20"].(float64)
@@ -646,7 +629,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 func GetRefappDetails(ctx context.Context, refappname, devopsToken, dominio, coreApiVersion string) (Refapp, error) {
 
 	var refapp Refapp
-	var dmes []BaseRoute
+	var dmes []MsDetail
 
 	Logga(ctx, os.Getenv("JsonLog"), "CERCO I MICROSERVIZI SU KUBEIMICROSERV")
 	// entro su microservice per avere i ms
@@ -663,7 +646,8 @@ func GetRefappDetails(ctx context.Context, refappname, devopsToken, dominio, cor
 		erro := errors.New(errMsRes.Error())
 		return refapp, erro
 	}
-	var micros, microsFullQ string
+	// var micros, microsFullQ string
+	var micros string
 	if len(MsRes.BodyArray) > 0 {
 		for _, x := range MsRes.BodyArray {
 			_, errcast := x["XKUBEMICROSERV05"].(string)
@@ -673,10 +657,10 @@ func GetRefappDetails(ctx context.Context, refappname, devopsToken, dominio, cor
 				return refapp, erro
 			}
 			micros += x["XKUBEMICROSERV05"].(string) + ","
-			microsFullQ += "'" + x["XKUBEMICROSERV05"].(string) + "', "
+			//	microsFullQ += "'" + x["XKUBEMICROSERV05"].(string) + "', "
 		}
 		micros = "'" + micros[0:len(micros)-1] + "'"
-		microsFullQ = microsFullQ[0 : len(microsFullQ)-2]
+		//microsFullQ = microsFullQ[0 : len(microsFullQ)-2]
 	}
 
 	// ottengo il codice della refapp per agganciarmi a app
@@ -798,6 +782,7 @@ func GetRefappDetails(ctx context.Context, refappname, devopsToken, dominio, cor
 	}
 	var pkgs string
 	if len(BoxpkgRes.BodyArray) > 0 {
+		var mms []string
 		for _, x := range BoxpkgRes.BodyArray {
 			_, errcast := x["XBOXPKG04_COD"].(string)
 			if !errcast {
@@ -806,6 +791,7 @@ func GetRefappDetails(ctx context.Context, refappname, devopsToken, dominio, cor
 				return refapp, erro
 			}
 			pkgs += "'" + x["XBOXPKG04_COD"].(string) + "', "
+			mms = append(mms, x["XBOXPKG04_COD"].(string))
 		}
 		pkgs = pkgs[0 : len(pkgs)-2]
 	}
@@ -820,8 +806,9 @@ func GetRefappDetails(ctx context.Context, refappname, devopsToken, dominio, cor
 	argsBr["$fullquery"] += " join TB_ANAG_KUBECLUSTER00 on (XKUBEIMICROSERV05 = XKUBECLUSTER03) "
 	argsBr["$fullquery"] += " join TB_ANAG_KUBEENDPOINT00 on (XKUBEENDPOINT05 = XKUBEIMICROSERV04 and XKUBEENDPOINT12 = 100 and XKUBEENDPOINT09 != '') "
 	argsBr["$fullquery"] += " where 1>0 "
-	argsBr["$fullquery"] += " AND XKUBEIMICROSERV04 in (" + microsFullQ + ") "
-	//argsBr["$fullquery"] += " AND XKUBEIMICROSERV06 = '" + enviro + "' "
+	// argsBr["$fullquery"] += " AND XKUBEIMICROSERV04 in (" + microsFullQ + ") "
+	argsBr["$fullquery"] += " AND XKUBEIMICROSERV04 in (" + pkgs + ") "
+
 	Logga(ctx, os.Getenv("JsonLog"), argsBr["$fullquery"])
 	BrRes, errBrRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsBr, "msdevops", "/api/"+os.Getenv("API_VERSION")+"/devops/custom/KUBEIMICROSERV/values", devopsToken, dominio, coreApiVersion)
 	if errBrRes != nil {
@@ -832,36 +819,16 @@ func GetRefappDetails(ctx context.Context, refappname, devopsToken, dominio, cor
 
 	if len(BrRes.BodyArray) > 0 {
 		for _, x := range BrRes.BodyArray {
-			var dme BaseRoute
+			var dme MsDetail
+			dme.Microservice = x["XKUBEIMICROSERV04"].(string)
+			dme.BaseRoute = x["XKUBEENDPOINT09"].(string)
+			dme.Team = x["XKUBEMICROSERV07"].(string)
 			dme.DominoCluster = x["XKUBECLUSTER15"].(string)
 			dme.Env = x["XKUBEIMICROSERV06"].(string)
-			dme.Team = x["XKUBEMICROSERV07"].(string)
 			dme.Ip = x["XKUBECLUSTER22"].(string)
-			dme.BaseRoute = x["XKUBEENDPOINT09"].(string)
 			dmes = append(dmes, dme)
 		}
 	}
-
-	// sgrasso i doppioni
-	// var dmesOK []BaseRoute
-	// var dmeOK BaseRoute
-	// for _, x := range dmes {
-	// 	inArr := false
-	// 	for _, y := range dmesOK {
-	// 		if y.BaseRoute == x.BaseRoute {
-	// 			inArr = true
-	// 			break
-	// 		}
-	// 	}
-	// 	if !inArr {
-	// 		dmeOK.BaseRoute = x.BaseRoute
-	// 		dmeOK.DominoCluster = x.DominoCluster
-	// 		dmeOK.Env = x.Env
-	// 		dmeOK.Team = x.Team
-	// 		dmeOK.Ip = x.Ip
-	// 		dmesOK = append(dmesOK, dmeOK)
-	// 	}
-	// }
 
 	// cambio il gruppo in team da GRU
 	var gruppiArr []string
@@ -896,6 +863,7 @@ func GetRefappDetails(ctx context.Context, refappname, devopsToken, dominio, cor
 					erro := errors.New("XGRU05 no cast")
 					return refapp, erro
 				}
+				dmes[idx].Microservice = x.Microservice
 				dmes[idx].Team = strings.ToLower(team)
 				gruteam[x.Team] = strings.ToLower(team)
 				dmes[idx].BaseRoute = x.BaseRoute
@@ -912,7 +880,7 @@ func GetRefappDetails(ctx context.Context, refappname, devopsToken, dominio, cor
 
 	// cerco eventuali rotte esterne
 	fillMarketPlaceRoute(&dmes)
-	refapp.BaseRoute = dmes
+	refapp.MsDetail = dmes
 	Logga(ctx, os.Getenv("JsonLog"), "FINE CERCO I MICROSERVIZI SU KUBEIMICROSERV")
 
 	Logga(ctx, os.Getenv("JsonLog"), "CERCO LE PORTE DEI MS PER GW")
@@ -949,7 +917,7 @@ func GetRefappDetails(ctx context.Context, refappname, devopsToken, dominio, cor
 }
 
 // questo medoto è un harcoded di un futuro possibile MARKET PLACE
-func fillMarketPlaceRoute(dmesOK *[]BaseRoute) {
+func fillMarketPlaceRoute(dmesOK *[]MsDetail) {
 	found := false
 	for _, x := range *dmesOK {
 		if x.DominoCluster == "q01.io" {
@@ -958,7 +926,7 @@ func fillMarketPlaceRoute(dmesOK *[]BaseRoute) {
 		}
 	}
 	if !found {
-		var dme BaseRoute
+		var dme MsDetail
 		dme.BaseRoute = "prod-core.q01.io"
 		dme.DominoCluster = "q01.io"
 		dme.Env = "prod"
