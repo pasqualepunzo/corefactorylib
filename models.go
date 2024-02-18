@@ -387,6 +387,7 @@ type DbDataConnMs struct {
 	Cluster      string `json:"cluster"`
 }
 type IstanzaMicroVersioni struct {
+	Microservice string `json:"microservice"`
 	TipoVersione string `json:"tipoVersione"`
 	Versione     string `json:"versione"`
 }
