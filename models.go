@@ -346,23 +346,28 @@ type IstanzaMicro struct {
 	RefApp                              Refapp                 `json:"refapp"`
 }
 type Refapp struct {
-	RefAppName string     `json:"refAppName"`
-	Servers    []Server   `json:"servers"`
-	MsDetail   []MsDetail `json:"msDetail"`
+	RefAppName string `json:"refAppName"`
+	Gw         []Gw   `json:"gw"`
+	Vs         Vs     `json:"vs"`
+	Se         Se     `json:"se"`
 }
-type Server struct {
-	Domini   []string `json:"domini"`
-	Name     string   `json:"name"`
-	Number   string   `json:"number"`
-	Protocol string   `json:"protocol"`
+type Gw struct {
+	Dominio  string `json:"dominio"`
+	Name     string `json:"name"`
+	Number   string `json:"number"`
+	Protocol string `json:"protocol"`
 }
-type MsDetail struct {
-	Microservice  string `json:"microservice"`
-	BaseRoute     string `json:"baseRoute"`
-	Team          string `json:"team"`
-	DominoCluster string `json:"dominioCluster"`
-	Env           string `json:"env"`
-	Ip            string `json:"ip"`
+type Se struct {
+	Ip    string   `json:"dominio"`
+	Hosts []string `json:"hosts"`
+}
+type Vs struct {
+	ExternalHost string      `json:"externalHost"`
+	VsDetails    []VsDetails `json:"vsDetails"`
+}
+type VsDetails struct {
+	InternalHost string `json:"internalHost"`
+	Prefix       string `json:"prefix"`
 }
 type AttributiMS struct {
 	Partner  string `json:"partner"`

@@ -445,7 +445,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 		*	 ***************************        REFAPP DETAIL       ***************************
 		*	=============================                          =============================
 		 */
-		rfapp, errRefapp := GetRefappDetails(ctx, restyKubeMSRes.BodyJson["XKUBEMICROSERV22"].(string), devopsToken, dominio, coreApiVersion)
+		rfapp, errRefapp := GetLayerDueDetails(ctx, restyKubeMSRes.BodyJson["XKUBEMICROSERV22"].(string), devopsToken, dominio, coreApiVersion, enviro)
 		ims.RefApp = rfapp
 		if errRefapp != nil {
 			Logga(ctx, os.Getenv("JsonLog"), errRefapp.Error())
@@ -626,15 +626,15 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 }
 
 // questo metodo restituisce cio che serve in caso in cui il MS e di tipo REFAPP
-func GetRefappDetails(ctx context.Context, refappname, devopsToken, dominio, coreApiVersion string) (Refapp, error) {
+func GetLayerDueDetails(ctx context.Context, refappname, devopsToken, dominio, coreApiVersion, enviro string) (Refapp, error) {
 
 	var refapp Refapp
-	var dmes []MsDetail
 
 	Logga(ctx, os.Getenv("JsonLog"), "CERCO I MICROSERVIZI SU KUBEIMICROSERV")
 	// entro su microservice per avere i ms
 
-	// CERCO TUTTI I MS
+	/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+	// CERCO TUTTI I MS che filtrero successivamente per avere solo i MS del tenant
 	argsMs := make(map[string]string)
 	argsMs["source"] = "devops-8"
 	argsMs["$select"] = "XKUBEMICROSERV05"
@@ -657,235 +657,55 @@ func GetRefappDetails(ctx context.Context, refappname, devopsToken, dominio, cor
 				return refapp, erro
 			}
 			micros += x["XKUBEMICROSERV05"].(string) + ","
-			//	microsFullQ += "'" + x["XKUBEMICROSERV05"].(string) + "', "
 		}
 		micros = "'" + micros[0:len(micros)-1] + "'"
-		//microsFullQ = microsFullQ[0 : len(microsFullQ)-2]
 	}
+	/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
-	// ottengo il codice della refapp per agganciarmi a app
-	argsRefapp := make(map[string]string)
-	argsRefapp["source"] = "devops-8"
-	argsRefapp["$select"] = "XREFAPPNEW03"
-	argsRefapp["center_dett"] = "dettaglio"
-	argsRefapp["$filter"] = "equals(XREFAPPNEW05,'" + refappname + "') "
-
-	RefappRes, errRefappRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsRefapp, "msappman", "/api/"+os.Getenv("API_VERSION")+"/appman/REFAPPNEW", devopsToken, dominio, coreApiVersion)
-	if errRefappRes != nil {
-		Logga(ctx, os.Getenv("JsonLog"), errRefappRes.Error())
-		erro := errors.New(errRefappRes.Error())
-		return refapp, erro
-	}
-	appID := ""
-	if len(RefappRes.BodyJson) > 0 {
-		_, errcast := RefappRes.BodyJson["XREFAPPNEW03"].(string)
-		if !errcast {
-			Logga(ctx, os.Getenv("JsonLog"), "XREFAPPNEW03 no cast")
-			erro := errors.New("XREFAPPNEW03 no cast")
-			return refapp, erro
-		}
-		appID = RefappRes.BodyJson["XREFAPPNEW03"].(string)
-	}
-
-	// entro su refappcustomer ed ottengo i domini
-	argsRefappcustomer := make(map[string]string)
-	argsRefappcustomer["source"] = "appman-8"
-	argsRefappcustomer["$select"] = "XREFAPPCUSTOMER12"
-	argsRefappcustomer["center_dett"] = "visualizza"
-	argsRefappcustomer["$filter"] = "equals(XREFAPPCUSTOMER09,'" + refappname + "') "
-
-	RefappcustomerRes, errRefappcustomerRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsRefappcustomer, "msappman", "/api/"+os.Getenv("API_VERSION")+"/appman/REFAPPCUSTOMER", devopsToken, dominio, coreApiVersion)
-	if errRefappcustomerRes != nil {
-		Logga(ctx, os.Getenv("JsonLog"), errRefappcustomerRes.Error())
-		erro := errors.New(errRefappcustomerRes.Error())
-		return refapp, erro
-	}
-	var domini []string
-	if len(RefappcustomerRes.BodyArray) > 0 {
-		for _, x := range RefappcustomerRes.BodyArray {
-			_, errcast := x["XREFAPPCUSTOMER12"].(string)
-			if !errcast {
-				Logga(ctx, os.Getenv("JsonLog"), "XREFAPPCUSTOMER12 no cast")
-				erro := errors.New("XREFAPPCUSTOMER12 no cast")
-				return refapp, erro
-			}
-			domini = append(domini, x["XREFAPPCUSTOMER12"].(string))
-		}
-	}
-
-	// ottengo il nome della refapp
+	/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+	// qui cerco solo i MS relativi all' APP
 	argsApp := make(map[string]string)
-	argsApp["source"] = "appman-8"
-	argsApp["$select"] = "XAPP17"
-	argsApp["center_dett"] = "dettaglio"
-	argsApp["$filter"] = "equals(XAPP03,'" + appID + "') "
+	argsApp["$fullquery"] = " select XBOXPKG04,XBOXPKG03,XREFAPPCUSTOMER12 "
+	argsApp["$fullquery"] += " from appman_data.TB_ANAG_REFAPPNEW00 "
+	argsApp["$fullquery"] += " join appman_data.TB_ANAG_REFAPPCUSTOMER00 on (XREFAPPCUSTOMER09 = '" + refappname + "') "
+	argsApp["$fullquery"] += " join appman_data.TB_ANAG_APP00 on (XAPP03=XREFAPPNEW03) "
+	argsApp["$fullquery"] += " join appman_data.TB_ANAG_APPBOX00 on (XAPPBOX03=XREFAPPNEW03) "
+	argsApp["$fullquery"] += " join appman_data.TB_ANAG_BOXPKG00 on (XBOXPKG03=XAPPBOX04 and XBOXPKG04 in (" + micros + ")) "
+	argsApp["$fullquery"] += " where 1 "
+	argsApp["$fullquery"] += " and XREFAPPNEW05 = '" + refappname + "' "
 
-	AppRes, errAppRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsApp, "msappman", "/api/"+os.Getenv("API_VERSION")+"/appman/APP", devopsToken, dominio, coreApiVersion)
+	Logga(ctx, os.Getenv("JsonLog"), argsApp["$fullquery"])
+	AppRes, errAppRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsApp, "msdevops", "/api/"+os.Getenv("API_VERSION")+"/appman/custom/REFAPPNEW/values", devopsToken, dominio, coreApiVersion)
 	if errAppRes != nil {
 		Logga(ctx, os.Getenv("JsonLog"), errAppRes.Error())
 		erro := errors.New(errAppRes.Error())
 		return refapp, erro
 	}
-	if len(AppRes.BodyJson) > 0 {
-		_, errcast := AppRes.BodyJson["XAPP17"].(string)
-		if !errcast {
-			Logga(ctx, os.Getenv("JsonLog"), "XAPP17 no cast")
-			erro := errors.New("XAP17 no cast")
-			return refapp, erro
-		}
-		refapp.RefAppName = strings.ToLower(slugify.Slugify(AppRes.BodyJson["XAPP17"].(string)))
-	}
 
-	// entro su appbox per avere i box
-	argsAppbox := make(map[string]string)
-	argsAppbox["source"] = "appman-8"
-	argsAppbox["$select"] = "XAPPBOX04"
-	argsAppbox["center_dett"] = "visualizza"
-	argsAppbox["$filter"] = "equals(XAPPBOX03,'" + appID + "') "
-
-	AppboxRes, errAppboxRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsAppbox, "msappman", "/api/"+os.Getenv("API_VERSION")+"/appman/APPBOX", devopsToken, dominio, coreApiVersion)
-	if errAppboxRes != nil {
-		Logga(ctx, os.Getenv("JsonLog"), errAppboxRes.Error())
-		erro := errors.New(errAppboxRes.Error())
-		return refapp, erro
-	}
-	var boxes string
-	if len(AppboxRes.BodyArray) > 0 {
-		for _, x := range AppboxRes.BodyArray {
-			_, errcast := x["XAPPBOX04_COD"].(string)
-			if !errcast {
-				Logga(ctx, os.Getenv("JsonLog"), "XAPPBOX04_COD no cast")
-				erro := errors.New("XAPPBOX04_COD no cast")
-				return refapp, erro
-			}
-			boxes += x["XAPPBOX04_COD"].(string) + ","
-		}
-		boxes = "'" + boxes[0:len(boxes)-1] + "'"
-	}
-
-	// entro su boxpkg per avere i microservizi
-	argsBoxpkg := make(map[string]string)
-
-	//argsBoxpkg["debug"] = "true"
-	argsBoxpkg["source"] = "appman-8"
-	argsBoxpkg["$select"] = "XBOXPKG04"
-	argsBoxpkg["center_dett"] = "visualizza"
-	filtro := "in_s(XBOXPKG03," + boxes + ") "
-	filtro += " and in_s(XBOXPKG04," + micros + ")"
-	argsBoxpkg["$filter"] = filtro
-
-	BoxpkgRes, errBoxpkgRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsBoxpkg, "msappman", "/api/"+os.Getenv("API_VERSION")+"/appman/BOXPKG", devopsToken, dominio, coreApiVersion)
-	if errBoxpkgRes != nil {
-		Logga(ctx, os.Getenv("JsonLog"), errBoxpkgRes.Error())
-		erro := errors.New(errBoxpkgRes.Error())
-		return refapp, erro
-	}
-	var pkgs string
-	if len(BoxpkgRes.BodyArray) > 0 {
+	var pkgs, appID, dominiCustomer string
+	if len(AppRes.BodyArray) > 0 {
 		var mms []string
-		for _, x := range BoxpkgRes.BodyArray {
+		for _, x := range AppRes.BodyArray {
 			_, errcast := x["XBOXPKG04_COD"].(string)
 			if !errcast {
 				Logga(ctx, os.Getenv("JsonLog"), "XBOXPKG04_COD no cast")
 				erro := errors.New("XBOXPKG04_COD no cast")
 				return refapp, erro
 			}
+			dominiCustomer = x["XREFAPPCUSTOMER12"].(string)
+			appID = x["XBOXPKG03"].(string)
 			pkgs += "'" + x["XBOXPKG04_COD"].(string) + "', "
 			mms = append(mms, x["XBOXPKG04_COD"].(string))
 		}
 		pkgs = pkgs[0 : len(pkgs)-2]
 	}
+	/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
-	// entro su microservice per avere i ms
-	argsBr := make(map[string]string)
-	argsBr["source"] = "devops-8"
+	var dominiCustomerMap map[string]string
+	json.Unmarshal([]byte(dominiCustomer), &dominiCustomerMap)
 
-	argsBr["$fullquery"] = "  select XKUBEENDPOINT09,XKUBECLUSTER15,XKUBECLUSTER22,XKUBEIMICROSERV04,XKUBEIMICROSERV05, XKUBEIMICROSERV06, XKUBEMICROSERV07 "
-	argsBr["$fullquery"] += " from TB_ANAG_KUBEIMICROSERV00 "
-	argsBr["$fullquery"] += " join TB_ANAG_KUBEMICROSERV00 on (XKUBEMICROSERV05 = XKUBEIMICROSERV04) "
-	argsBr["$fullquery"] += " join TB_ANAG_KUBECLUSTER00 on (XKUBEIMICROSERV05 = XKUBECLUSTER03) "
-	argsBr["$fullquery"] += " join TB_ANAG_KUBEENDPOINT00 on (XKUBEENDPOINT05 = XKUBEIMICROSERV04 and XKUBEENDPOINT12 = 100 and XKUBEENDPOINT09 != '') "
-	argsBr["$fullquery"] += " where 1>0 "
-	// argsBr["$fullquery"] += " AND XKUBEIMICROSERV04 in (" + microsFullQ + ") "
-	argsBr["$fullquery"] += " AND XKUBEIMICROSERV04 in (" + pkgs + ") "
-
-	Logga(ctx, os.Getenv("JsonLog"), argsBr["$fullquery"])
-	BrRes, errBrRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsBr, "msdevops", "/api/"+os.Getenv("API_VERSION")+"/devops/custom/KUBEIMICROSERV/values", devopsToken, dominio, coreApiVersion)
-	if errBrRes != nil {
-		Logga(ctx, os.Getenv("JsonLog"), errBrRes.Error())
-		erro := errors.New(errBrRes.Error())
-		return refapp, erro
-	}
-
-	if len(BrRes.BodyArray) > 0 {
-		for _, x := range BrRes.BodyArray {
-			var dme MsDetail
-			dme.Microservice = x["XKUBEIMICROSERV04"].(string)
-			dme.BaseRoute = x["XKUBEENDPOINT09"].(string)
-			dme.Team = x["XKUBEMICROSERV07"].(string)
-			dme.DominoCluster = x["XKUBECLUSTER15"].(string)
-			dme.Env = x["XKUBEIMICROSERV06"].(string)
-			dme.Ip = x["XKUBECLUSTER22"].(string)
-			dmes = append(dmes, dme)
-		}
-	}
-
-	// cambio il gruppo in team da GRU
-	var gruppiArr []string
-	gruteam := make(map[string]string)
-	for idx, x := range dmes {
-		inArr := false
-		for _, y := range gruppiArr {
-			if y == x.Team {
-				inArr = true
-				break
-			}
-		}
-		if !inArr {
-			// ottengo da gru il nome del team
-			argsGru := make(map[string]string)
-			argsGru["source"] = "devops-8"
-			argsGru["$select"] = "XGRU05"
-			argsGru["center_dett"] = "dettaglio"
-			argsGru["$filter"] = "equals(XGRU03,'" + x.Team + "') "
-
-			GruRes, errGruRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsGru, "msusers", "/api/"+os.Getenv("API_VERSION")+"/users/GRU", devopsToken, dominio, coreApiVersion)
-			if errGruRes != nil {
-				Logga(ctx, os.Getenv("JsonLog"), errGruRes.Error())
-				erro := errors.New(errGruRes.Error())
-				return refapp, erro
-			}
-
-			if len(GruRes.BodyJson) > 0 {
-				team, errcast := GruRes.BodyJson["XGRU05"].(string)
-				if !errcast {
-					Logga(ctx, os.Getenv("JsonLog"), "XGRU05 no cast")
-					erro := errors.New("XGRU05 no cast")
-					return refapp, erro
-				}
-				dmes[idx].Microservice = x.Microservice
-				dmes[idx].Team = strings.ToLower(team)
-				gruteam[x.Team] = strings.ToLower(team)
-				dmes[idx].BaseRoute = x.BaseRoute
-				dmes[idx].DominoCluster = x.Env + "-" + strings.ToLower(team) + "." + x.DominoCluster
-				gruppiArr = append(gruppiArr, x.Team)
-			}
-
-		} else {
-			dmes[idx].Team = gruteam[x.Team]
-			dmes[idx].BaseRoute = x.BaseRoute
-			dmes[idx].DominoCluster = x.Env + "-" + gruteam[x.Team] + "." + x.DominoCluster
-		}
-	}
-
-	// cerco eventuali rotte esterne
-	fillMarketPlaceRoute(&dmes)
-	refapp.MsDetail = dmes
-	Logga(ctx, os.Getenv("JsonLog"), "FINE CERCO I MICROSERVIZI SU KUBEIMICROSERV")
-
-	Logga(ctx, os.Getenv("JsonLog"), "CERCO LE PORTE DEI MS PER GW")
-
-	// leggo le porte da aprire sul GW
+	/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+	// leggo le porte relative all APP da aprire sul GW
 	argsSr := make(map[string]string)
 	argsSr["source"] = "appman-8"
 	argsSr["$select"] = "XAPPSRV04,XAPPSRV05,XAPPSRV06"
@@ -900,41 +720,174 @@ func GetRefappDetails(ctx context.Context, refappname, devopsToken, dominio, cor
 		return refapp, erro
 	}
 
-	var srvs []Server
+	type Appsrv struct {
+		Name     string
+		Protocol string
+		Number   string
+	}
+	// POPOLO UN ARR con tutte le porte HTTP da mappare sul GW
+	var aps []Appsrv
 	if len(SrRes.BodyArray) > 0 {
 		for _, x := range SrRes.BodyArray {
-			var srv Server
-			srv.Domini = domini
-			srv.Name = x["XAPPSRV04"].(string)
-			srv.Number = strconv.Itoa(int(x["XAPPSRV05"].(float64)))
-			srv.Protocol = x["XAPPSRV06"].(string)
-			srvs = append(srvs, srv)
+			if x["XAPPSRV06"].(string) != "TCP" {
+				var ap Appsrv
+				ap.Name = x["XAPPSRV04"].(string)
+				ap.Number = strconv.Itoa(int(x["XAPPSRV05"].(float64)))
+				ap.Protocol = x["XAPPSRV06"].(string)
+				aps = append(aps, ap)
+			}
 		}
 	}
-	refapp.Servers = srvs
+
+	// PER OGNI DOMINIO POPOLO LA STRUCT PER IL GW con porte protocolli etc
+	var gws []Gw
+	var dominioEnvironment string
+	for env, dom := range dominiCustomerMap {
+		// qui prendo il dominio estarno
+		if env == enviro {
+			dominioEnvironment = dom
+
+			var gw Gw
+			for _, ap := range aps {
+				gw.Dominio = dom
+				gw.Protocol = ap.Protocol
+				gw.Name = ap.Name
+				gw.Number = ap.Number
+				gws = append(gws, gw)
+			}
+		}
+	}
+	// gw OK
+	refapp.Gw = gws
+	/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+
+	// QUESTA QUERY MI DA TUTTE LE INFO PER CREARE IL LAYER 2
+	// quindi le rotte per accedere al layer 3
+	argsBr := make(map[string]string)
+	argsBr["source"] = "devops-8"
+
+	argsBr["$fullquery"] = "  select XKUBEENDPOINT09,XKUBECLUSTER15,XKUBECLUSTER22, XKUBEMICROSERV07 "
+	argsBr["$fullquery"] += " from TB_ANAG_KUBEIMICROSERV00 "
+	argsBr["$fullquery"] += " join TB_ANAG_KUBEMICROSERV00 on (XKUBEMICROSERV05 = XKUBEIMICROSERV04) "
+	argsBr["$fullquery"] += " join TB_ANAG_KUBECLUSTER00 on (XKUBEIMICROSERV05 = XKUBECLUSTER03) "
+	argsBr["$fullquery"] += " join TB_ANAG_KUBEENDPOINT00 on (XKUBEENDPOINT05 = XKUBEIMICROSERV04 and XKUBEENDPOINT12 = 100 and XKUBEENDPOINT09 != '') "
+	argsBr["$fullquery"] += " where 1>0 "
+	argsBr["$fullquery"] += " AND XKUBEIMICROSERV04 in (" + pkgs + ") "
+	argsBr["$fullquery"] += " AND XKUBEIMICROSERV06  = '" + enviro + "' "
+
+	Logga(ctx, os.Getenv("JsonLog"), argsBr["$fullquery"])
+	BrRes, errBrRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsBr, "msdevops", "/api/"+os.Getenv("API_VERSION")+"/devops/custom/KUBEIMICROSERV/values", devopsToken, dominio, coreApiVersion)
+	if errBrRes != nil {
+		Logga(ctx, os.Getenv("JsonLog"), errBrRes.Error())
+		erro := errors.New(errBrRes.Error())
+		return refapp, erro
+	}
+
+	type Rotte struct {
+		Prefix string
+		Team   string
+	}
+	var rts []Rotte
+	var Ip, DominioCluster string
+	var gruppiArrDirt []string
+	var gruppiArr []string
+
+	// mi conservo IP e DOMINIO del cluster
+	// popolo le rotte con il gruppo al posto del team che calcolero successivamente
+	if len(BrRes.BodyArray) > 0 {
+		for _, x := range BrRes.BodyArray {
+
+			Ip = x["XKUBECLUSTER22"].(string)
+			DominioCluster = x["XKUBECLUSTER15"].(string)
+
+			// metto tutti i gruppi anche ripetuti ( li pulisco dopo)
+			gruppiArrDirt = append(gruppiArrDirt, x["XKUBEMICROSERV07"].(string))
+
+			var rt Rotte
+			rt.Prefix = x["XKUBEENDPOINT09"].(string)
+			rt.Team = x["XKUBEMICROSERV07"].(string) // qui e sporco (gruppo)
+			rts = append(rts, rt)
+		}
+	}
+
+	// carico in gruppiArr i soli gruppi che vanno tradotti in TEAM
+	gruppiArr = GetSingleGroup(gruppiArrDirt)
+
+	type GroupTeam struct {
+		Group string
+		Team  string
+	}
+
+	var gts []GroupTeam
+	// per ogni gruppo ottengo il TEAM
+	for _, grp := range gruppiArr {
+		var gt GroupTeam
+		team, errGrTm := GetTeamFromGroup(ctx, devopsToken, dominio, grp)
+		if errGrTm != nil {
+			Logga(ctx, os.Getenv("JsonLog"), errGrTm.Error())
+			erro := errors.New(errGrTm.Error())
+			return refapp, erro
+		}
+		gt.Group = grp
+		gt.Team = team
+		gts = append(gts, gt)
+	}
+
+	// organizzo il SE
+	var se Se
+	se.Ip = Ip
+	for _, tm := range gts {
+		se.Hosts = append(se.Hosts, enviro+"-"+tm.Team+"."+DominioCluster)
+	}
+
+	// Se OK
+	refapp.Se = se
+
+	var vs Vs
+	vs.ExternalHost = dominioEnvironment
+	var vsDetails []VsDetails
+	for _, rt := range rts {
+
+		var v VsDetails
+		v.Prefix = rt.Prefix
+		v.InternalHost = enviro + "-" + rt.Team + "." + DominioCluster
+		vsDetails = append(vsDetails, v)
+	}
+	vs.VsDetails = vsDetails
+
+	refapp.Vs = vs
+
+	// cerco eventuali rotte esterne
+	// fillMarketPlaceRoute(&dmes)
+	// refapp.MsDetail = dmes
+	Logga(ctx, os.Getenv("JsonLog"), "FINE CERCO I MICROSERVIZI SU KUBEIMICROSERV")
+
+	Logga(ctx, os.Getenv("JsonLog"), "CERCO LE PORTE DEI MS PER GW")
 
 	return refapp, nil
 }
 
 // questo medoto è un harcoded di un futuro possibile MARKET PLACE
-func fillMarketPlaceRoute(dmesOK *[]MsDetail) {
-	found := false
-	for _, x := range *dmesOK {
-		if x.DominoCluster == "q01.io" {
-			found = true
-			break
-		}
-	}
-	if !found {
-		var dme MsDetail
-		dme.BaseRoute = "prod-core.q01.io"
-		dme.DominoCluster = "q01.io"
-		dme.Env = "prod"
-		dme.Team = "core"
-		dme.Ip = "" // lasciare vuoto indica che e un mondo esterno !!!! DNS
-		*dmesOK = append(*dmesOK, dme)
-	}
-}
+// le cose sono cambiate e quindo va fatto ex novo ( monodominio a multidominio per env ..... il plasma a terra)
+//
+//	func fillMarketPlaceRoute(dmesOK *[]) {
+//		found := false
+//		for _, x := range *dmesOK {
+//			if x.DominoCluster == "q01.io" {
+//				found = true
+//				break
+//			}
+//		}
+//		if !found {
+//			var dme MsDetail
+//			dme.BaseRoute = "prod-core.q01.io"
+//			dme.DominoCluster = "q01.io"
+//			dme.Env = "prod"
+//			dme.Team = "core"
+//			dme.Ip = "" // lasciare vuoto indica che e un mondo esterno !!!! DNS
+//			*dmesOK = append(*dmesOK, dme)
+//		}
+//	}
 func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]Service, error) {
 
 	Logga(ctx, os.Getenv("JsonLog"), "GetMsRoutes")

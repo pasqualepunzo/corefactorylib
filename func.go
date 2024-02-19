@@ -1823,3 +1823,46 @@ func GeneraBuildDirectory(ctx context.Context, microservice, jobID string) (stri
 
 	return dirToCreate, erro
 }
+func GetTeamFromGroup(ctx context.Context, devopsToken, dominio, group string) (string, error) {
+	// ottengo da gru il nome del team
+	argsGru := make(map[string]string)
+	argsGru["source"] = "devops-8"
+	argsGru["$select"] = "XGRU05"
+	argsGru["center_dett"] = "dettaglio"
+	argsGru["$filter"] = "equals(XGRU03,'" + group + "') "
+
+	GruRes, errGruRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsGru, "msusers", "/api/"+os.Getenv("API_VERSION")+"/users/GRU", devopsToken, dominio, os.Getenv("API_VERSION"))
+	if errGruRes != nil {
+		Logga(ctx, os.Getenv("JsonLog"), errGruRes.Error())
+		erro := errors.New(errGruRes.Error())
+		return " ", erro
+	}
+
+	var team string
+	var errcast bool
+	if len(GruRes.BodyJson) > 0 {
+		team, errcast = GruRes.BodyJson["XGRU05"].(string)
+		if !errcast {
+			Logga(ctx, os.Getenv("JsonLog"), "XGRU05 no cast")
+			erro := errors.New("XGRU05 no cast")
+			return " ", erro
+		}
+	}
+	return team, nil
+}
+func GetSingleGroup(grpArrDirt []string) []string {
+	var grpArrClean []string
+	for _, grp := range grpArrDirt {
+		inArr := false
+		for _, y := range grpArrClean {
+			if y == grp {
+				inArr = true
+				break
+			}
+		}
+		if !inArr {
+			grpArrClean = append(grpArrClean, grp)
+		}
+	}
+	return grpArrClean
+}
