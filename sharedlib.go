@@ -600,23 +600,6 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	// os.Exit(0)
 	Logga(ctx, os.Getenv("JsonLog"), "")
 
-	//
-	//
-	// questa parte viene eseguita quando parte il subprocess delivery canary e production
-	// senno caca
-	//
-	//
-	// /* ************************************************************************************************ */
-	// // DEPLOYLOG
-	// var erroIstanzaVersioni error
-	// ims.IstanzaMicroVersioni, erroIstanzaVersioni = GetIstanzaVersioni(ctx, iresReq, istanza, enviro, devops, devopsTokenDst, dominio, coreApiVersion)
-	// if erroIstanzaVersioni != nil {
-	// 	Logga(ctx, os.Getenv("JsonLog"), erroIstanzaVersioni.Error())
-	// 	return ims, erroIstanzaVersioni
-	// }
-	// // DEPLOYLOG
-	// /* ************************************************************************************************ */
-
 	//Logga(ctx, os.Getenv("JsonLog"), ims)
 	Logga(ctx, os.Getenv("JsonLog"), "", "getIstanceDetail end")
 	Logga(ctx, os.Getenv("JsonLog"), "", " - - - - - - - - - - - - - - - - - - - ")
@@ -888,10 +871,12 @@ func GetLayerDueDetails(ctx context.Context, refappname, devopsToken, dominio, c
 //			*dmesOK = append(*dmesOK, dme)
 //		}
 //	}
-func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]Service, error) {
+func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]Microservice, error) {
 
 	Logga(ctx, os.Getenv("JsonLog"), "GetMsRoutes")
 	var erro error
+	var mss []Microservice
+	var pods []Pod
 	var eps []Endpoint
 
 	devopsToken := routeJson.DevopsToken
@@ -906,34 +891,29 @@ func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]Service, error) {
 	argsDoker := make(map[string]string)
 	argsDoker["source"] = "devops-8"
 
-	argsDoker["$fullquery"] = " select XKUBEMICROSERVDKR04,XKUBESERVICEDKR05,XKUBESERVICEDKR06,XDEPLOYLOG03,XDEPLOYLOG05 "
+	argsDoker["$fullquery"] = " select XKUBEMICROSERVDKR03,XKUBEMICROSERVDKR04,,XKUBESERVICEDKR05,XKUBESERVICEDKR06,XDEPLOYLOG03,XDEPLOYLOG05 "
 	argsDoker["$fullquery"] += " from TB_ANAG_KUBEIMICROSERV00 "
 	argsDoker["$fullquery"] += " join TB_ANAG_KUBEMICROSERVDKR00 on (XKUBEIMICROSERV04=XKUBEMICROSERVDKR03) "
 	argsDoker["$fullquery"] += " join TB_ANAG_KUBESERVICEDKR00 on (XKUBESERVICEDKR04=XKUBEMICROSERVDKR04) "
 	argsDoker["$fullquery"] += " join TB_ANAG_DEPLOYLOG00 on (XDEPLOYLOG04=XKUBEIMICROSERV03 and XDEPLOYLOG06 = 1 and XDEPLOYLOG09 = '" + routeJson.Enviro + "') "
 	argsDoker["$fullquery"] += " where XKUBEIMICROSERV05 = '" + cluster + "'   and XKUBEIMICROSERV08 ='" + team + "' "
+	argsDoker["$fullquery"] += " order by  XKUBEMICROSERVDKR03, XKUBEMICROSERVDKR04"
 	Logga(ctx, os.Getenv("JsonLog"), argsDoker["$fullquery"])
 	restyDokerRes, errDokerRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsDoker, "msdevops", "/api/"+os.Getenv("API_VERSION")+"/devops/custom/KUBEIMICROSERV/values", devopsToken, os.Getenv("apiDomain"), os.Getenv("coreApiVersion"))
 
 	if errDokerRes != nil {
 		Logga(ctx, os.Getenv("JsonLog"), errDokerRes.Error())
-		return services, errDokerRes
+		return mss, errDokerRes
 	}
 	if restyDokerRes.Errore < 0 {
 		Logga(ctx, os.Getenv("JsonLog"), restyDokerRes.Log)
 		erro = errors.New(restyDokerRes.Log)
-		return services, erro
+		return mss, erro
 	}
 
 	if len(restyDokerRes.BodyArray) > 0 {
-		var port, tipo, versione, tipoDeploy string
+		msOld := ""
 		for _, x := range restyDokerRes.BodyArray {
-
-			docker := x["XKUBEMICROSERVDKR04"].(string)
-			port = strconv.FormatFloat(x["XKUBESERVICEDKR06"].(float64), 'f', 0, 64)
-			tipo = x["XKUBESERVICEDKR05"].(string)
-			versione = x["XDEPLOYLOG05"].(string)
-			tipoDeploy = x["XDEPLOYLOG03"].(string)
 
 			/* ************************************************************************************************ */
 			// ENDPOINTS
@@ -1051,8 +1031,8 @@ func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]Service, error) {
 			sqlEndpoint += "(aa.XKUBEENDPOINT03 = bb_ext.XKUBEENDPOINTOVR03 ) "
 			sqlEndpoint += "having "
 			sqlEndpoint += "1>0 "
-			sqlEndpoint += "and docker_src = '" + docker + "' "
-			sqlEndpoint += "and port_src = '" + port + "' "
+			sqlEndpoint += "and docker_src = '" + x["XKUBEMICROSERVDKR04"].(string) + "' "
+			sqlEndpoint += "and port_src = '" + strconv.FormatFloat(x["XKUBESERVICEDKR06"].(float64), 'f', 0, 64) + "' "
 			sqlEndpoint += "order by "
 			sqlEndpoint += "length(priority), "
 			sqlEndpoint += "priority, "
@@ -1069,7 +1049,7 @@ func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]Service, error) {
 			restyKubeEndpointRes, erroEnd := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsEndpoint, "msdevops", "/api/"+os.Getenv("API_VERSION")+"/devops/custom/KUBEENDPOINT/values", devopsToken, os.Getenv("apiDomain"), os.Getenv("coreApiVersion"))
 			if erroEnd != nil {
 				Logga(ctx, os.Getenv("JsonLog"), erroEnd.Error())
-				return services, erroEnd
+				return mss, erroEnd
 			}
 
 			if len(restyKubeEndpointRes.BodyArray) > 0 {
@@ -1109,61 +1089,76 @@ func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]Service, error) {
 				}
 
 				var service Service
-				service.Port = port
-				service.Tipo = tipo
-				service.TipoDeploy = tipoDeploy
-				service.Versione = versione
+				service.Port = strconv.FormatFloat(x["XKUBESERVICEDKR06"].(float64), 'f', 0, 64)
+				service.Tipo = x["XKUBESERVICEDKR05"].(string)  // http grpc
+				service.TipoDeploy = x["XDEPLOYLOG03"].(string) // canary production
+				service.Versione = x["XDEPLOYLOG05"].(string)
 				service.Endpoint = eps
 
 				services = append(services, service)
 				eps = nil
 			}
+
+			var pod Pod
+			pod.Docker = x["XKUBEMICROSERVDKR04"].(string)
+			pod.Service = services
+
+			pods = append(pods, pod)
+
+			if msOld != "" && msOld != x["XKUBEMICROSERVDKR03"].(string) {
+				var ms Microservice
+				ms.Nome = x["XKUBEMICROSERVDKR03"].(string)
+				ms.Pod = pods
+				mss = append(mss, ms)
+			}
+			msOld = x["XKUBEMICROSERVDKR03"].(string)
 		}
-		LogJson(services)
+		LogJson(mss)
 
 	}
-	return services, erro
+	return mss, erro
 }
-func GetIstanzaVersioni(ctx context.Context, istnzs, enviro, devopsTokenDst, dominio, coreApiVersion string) ([]IstanzaMicroVersioni, error) {
-	Logga(ctx, os.Getenv("JsonLog"), "GetIstanzaVersioni - Getting DEPLOYLOG")
-	var erro error
-	var istanzaMicroVersioni []IstanzaMicroVersioni
 
-	argsDeploy := make(map[string]string)
-	argsDeploy["source"] = "devops-8"
-	argsDeploy["$select"] = "XDEPLOYLOG03,XDEPLOYLOG05"
-	argsDeploy["center_dett"] = "visualizza"
+// func GetIstanzaVersioni(ctx context.Context, istnzs, enviro, devopsTokenDst, dominio, coreApiVersion string) ([]IstanzaMicroVersioni, error) {
+// 	Logga(ctx, os.Getenv("JsonLog"), "GetIstanzaVersioni - Getting DEPLOYLOG")
+// 	var erro error
+// 	var istanzaMicroVersioni []IstanzaMicroVersioni
 
-	filtro := "in_s(XDEPLOYLOG04," + istnzs + ") "
-	filtro += " and equals(XDEPLOYLOG09,'" + enviro + "') "
-	filtro += " and equals(XDEPLOYLOG06,'1') "
-	argsDeploy["$filter"] = filtro
+// 	argsDeploy := make(map[string]string)
+// 	argsDeploy["source"] = "devops-8"
+// 	argsDeploy["$select"] = "XDEPLOYLOG03,XDEPLOYLOG05"
+// 	argsDeploy["center_dett"] = "visualizza"
 
-	restyDeployRes, errDeployRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsDeploy, "msdevops", "/api/"+os.Getenv("API_VERSION")+"/devops/DEPLOYLOG", devopsTokenDst, dominio, coreApiVersion)
-	if errDeployRes != nil {
-		Logga(ctx, os.Getenv("JsonLog"), errDeployRes.Error())
-		erro = errors.New(errDeployRes.Error())
-		return istanzaMicroVersioni, erro
-	}
+// 	filtro := "in_s(XDEPLOYLOG04," + istnzs + ") "
+// 	filtro += " and equals(XDEPLOYLOG09,'" + enviro + "') "
+// 	filtro += " and equals(XDEPLOYLOG06,'1') "
+// 	argsDeploy["$filter"] = filtro
 
-	if len(restyDeployRes.BodyArray) > 0 {
-		for _, x := range restyDeployRes.BodyArray {
-			var istanzaMicroVersione IstanzaMicroVersioni
+// 	restyDeployRes, errDeployRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsDeploy, "msdevops", "/api/"+os.Getenv("API_VERSION")+"/devops/DEPLOYLOG", devopsTokenDst, dominio, coreApiVersion)
+// 	if errDeployRes != nil {
+// 		Logga(ctx, os.Getenv("JsonLog"), errDeployRes.Error())
+// 		erro = errors.New(errDeployRes.Error())
+// 		return istanzaMicroVersioni, erro
+// 	}
 
-			istanzaMicroVersione.Microservice = x["XDEPLOYLOG04"].(string)
-			istanzaMicroVersione.TipoVersione = x["XDEPLOYLOG03"].(string)
-			istanzaMicroVersione.Versione = x["XDEPLOYLOG05"].(string)
+// 	if len(restyDeployRes.BodyArray) > 0 {
+// 		for _, x := range restyDeployRes.BodyArray {
+// 			var istanzaMicroVersione IstanzaMicroVersioni
 
-			istanzaMicroVersioni = append(istanzaMicroVersioni, istanzaMicroVersione)
-		}
-		Logga(ctx, os.Getenv("JsonLog"), "DEPLOYLOG OK")
-	} else {
-		Logga(ctx, os.Getenv("JsonLog"), "DEPLOYLOG MISSING")
-	}
-	Logga(ctx, os.Getenv("JsonLog"), "")
+// 			istanzaMicroVersione.Microservice = x["XDEPLOYLOG04"].(string)
+// 			istanzaMicroVersione.TipoVersione = x["XDEPLOYLOG03"].(string)
+// 			istanzaMicroVersione.Versione = x["XDEPLOYLOG05"].(string)
 
-	return istanzaMicroVersioni, erro
-}
+// 			istanzaMicroVersioni = append(istanzaMicroVersioni, istanzaMicroVersione)
+// 		}
+// 		Logga(ctx, os.Getenv("JsonLog"), "DEPLOYLOG OK")
+// 	} else {
+// 		Logga(ctx, os.Getenv("JsonLog"), "DEPLOYLOG MISSING")
+// 	}
+// 	Logga(ctx, os.Getenv("JsonLog"), "")
+
+//		return istanzaMicroVersioni, erro
+//	}
 func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMicroservizio string, istanza IstanzaMicro, micros Microservice, istanzaMicroVersioni []IstanzaMicroVersioni, utente, enviro, devopsToken, dominio, coreApiVersion, microfrontendJson string) error {
 
 	Logga(ctx, os.Getenv("JsonLog"), "")
