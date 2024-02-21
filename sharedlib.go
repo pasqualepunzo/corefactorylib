@@ -435,7 +435,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 			ims.IsRefapp = true
 		}
 
-		ims.RefAppName = strings.ToLower(slugify.Slugify(restyKubeMSRes.BodyJson["XKUBEMICROSERV22"].(string)))
+		ims.RefAppCode = strings.ToLower(slugify.Slugify(restyKubeMSRes.BodyJson["XKUBEMICROSERV22"].(string)))
 
 		var scaleToZero bool
 		scaleToZeroFloat := restyKubeMSRes.BodyJson["XKUBEMICROSERV20"].(float64)
@@ -600,7 +600,7 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, devopsToken, do
 	// qui cerco solo i MS relativi all' APP
 
 	argsApp := make(map[string]string)
-	argsApp["$fullquery"] = " select XBOXPKG04,XBOXPKG03,XREFAPPCUSTOMER12 "
+	argsApp["$fullquery"] = " select XAPP04,XBOXPKG04,XBOXPKG03,XREFAPPNEW03,XREFAPPCUSTOMER12 "
 	argsApp["$fullquery"] += " from TB_ANAG_REFAPPNEW00 "
 	argsApp["$fullquery"] += " join TB_ANAG_REFAPPCUSTOMER00 on (XREFAPPCUSTOMER09 = '" + refappname + "') "
 	argsApp["$fullquery"] += " join TB_ANAG_APP00 on (XAPP03=XREFAPPNEW03) "
@@ -617,7 +617,7 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, devopsToken, do
 		return layerDue, erro
 	}
 
-	var pkgs, appID, dominiCustomer string
+	var pkgs, appID, appName, dominiCustomer string
 	if len(AppRes.BodyArray) > 0 {
 		var mms []string
 		for _, x := range AppRes.BodyArray {
@@ -628,13 +628,16 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, devopsToken, do
 				return layerDue, erro
 			}
 			dominiCustomer = x["XREFAPPCUSTOMER12"].(string)
-			appID = x["XBOXPKG03"].(string)
+			appID = x["XREFAPPNEW03"].(string)
+			appName = x["XAPP04"].(string)
 			pkgs += "'" + x["XBOXPKG04"].(string) + "', "
 			mms = append(mms, x["XBOXPKG04"].(string))
 		}
 		pkgs = pkgs[0 : len(pkgs)-2]
 	}
 	/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+
+	layerDue.RefAppName = appName
 
 	var dominiCustomerMap map[string]string
 	json.Unmarshal([]byte(dominiCustomer), &dominiCustomerMap)
@@ -678,6 +681,7 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, devopsToken, do
 	var gws []Gw
 	var dominioEnvironment string
 	for env, dom := range dominiCustomerMap {
+		fmt.Println("SAMENT", dom, "|", env, "|", enviro, aps)
 		// qui prendo il dominio estarno
 		if env == enviro {
 			dominioEnvironment = dom
@@ -735,6 +739,9 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, devopsToken, do
 			Ip = x["XKUBECLUSTER22"].(string)
 			DominioCluster = x["XKUBECLUSTER15"].(string)
 
+			// FAKE FUTURE TOGGLE
+			DominioCluster = "q01.local"
+
 			// metto tutti i gruppi anche ripetuti ( li pulisco dopo)
 			gruppiArrDirt = append(gruppiArrDirt, x["XKUBEMICROSERV07"].(string))
 
@@ -764,7 +771,7 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, devopsToken, do
 			return layerDue, erro
 		}
 		gt.Group = grp
-		gt.Team = team
+		gt.Team = strings.ToLower(team)
 		gts = append(gts, gt)
 	}
 
@@ -783,9 +790,17 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, devopsToken, do
 	var vsDetails []VsDetails
 	for _, rt := range rts {
 
+		team := ""
+		for _, v := range gts {
+			if v.Group == rt.Team {
+				team = v.Team
+			}
+		}
+
 		var v VsDetails
 		v.Prefix = rt.Prefix
-		v.InternalHost = enviro + "-" + rt.Team + "." + DominioCluster
+
+		v.InternalHost = enviro + "-" + team + "." + DominioCluster
 		vsDetails = append(vsDetails, v)
 	}
 	vs.VsDetails = vsDetails

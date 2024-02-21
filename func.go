@@ -1848,7 +1848,7 @@ func GetTeamFromGroup(ctx context.Context, devopsToken, dominio, group string) (
 			return " ", erro
 		}
 	}
-	return team, nil
+	return strings.ToLower(team), nil
 }
 func GetSingleGroup(grpArrDirt []string) []string {
 	var grpArrClean []string

@@ -343,7 +343,7 @@ type IstanzaMicro struct {
 	Autopilot                           string                 `json:"autopilot"`
 	CloudNet                            string                 `json:"cloudNet"`
 	DepEnv                              string                 `json:"depEnv"`
-	RefAppName                          string                 `json:"refAppName"`
+	RefAppCode                          string                 `json:"refAppCode"`
 }
 type LayerDue struct {
 	RefAppName string `json:"refAppName"`
@@ -358,7 +358,7 @@ type Gw struct {
 	Protocol string `json:"protocol"`
 }
 type Se struct {
-	Ip    string   `json:"dominio"`
+	Ip    string   `json:"ip"`
 	Hosts []string `json:"hosts"`
 }
 type Vs struct {
