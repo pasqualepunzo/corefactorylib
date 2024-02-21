@@ -677,27 +677,6 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, devopsToken, do
 		}
 	}
 
-	// PER OGNI DOMINIO POPOLO LA STRUCT PER IL GW con porte protocolli etc
-	var gws []Gw
-	var dominioEnvironment string
-	for env, dom := range dominiCustomerMap {
-		fmt.Println("SAMENT", dom, "|", env, "|", enviro, aps)
-		// qui prendo il dominio estarno
-		if env == enviro {
-			dominioEnvironment = dom
-
-			var gw Gw
-			for _, ap := range aps {
-				gw.Dominio = dom
-				gw.Protocol = ap.Protocol
-				gw.Name = ap.Name
-				gw.Number = ap.Number
-				gws = append(gws, gw)
-			}
-		}
-	}
-	// gw OK
-	layerDue.Gw = gws
 	/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
 	// QUESTA QUERY MI DA TUTTE LE INFO PER CREARE IL LAYER 2
@@ -775,6 +754,18 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, devopsToken, do
 		gts = append(gts, gt)
 	}
 
+	// PER OGNI DOMINIO POPOLO LA STRUCT PER IL GW con porte protocolli etc
+	var gws []Gw
+	var dominioEnvironment string
+	for env, dom := range dominiCustomerMap {
+		// qui prendo il dominio estarno
+		if env == enviro {
+			dominioEnvironment = dom
+		}
+	}
+	// gw OK
+	layerDue.Gw = gws
+
 	// organizzo il SE
 	var se Se
 	se.Ip = Ip
@@ -788,9 +779,8 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, devopsToken, do
 	var vs Vs
 	vs.ExternalHost = dominioEnvironment
 	var vsDetails []VsDetails
+	team := ""
 	for _, rt := range rts {
-
-		team := ""
 		for _, v := range gts {
 			if v.Group == rt.Team {
 				team = v.Team
@@ -806,6 +796,22 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, devopsToken, do
 	vs.VsDetails = vsDetails
 
 	layerDue.Vs = vs
+
+	for env, dom := range dominiCustomerMap {
+		// qui prendo il dominio estarno
+		if env == enviro {
+
+			var gw Gw
+			for _, ap := range aps {
+				gw.ExtDominio = dom
+				gw.IntDominio = enviro + "-" + team + "." + DominioCluster
+				gw.Protocol = ap.Protocol
+				gw.Name = ap.Name
+				gw.Number = ap.Number
+				gws = append(gws, gw)
+			}
+		}
+	}
 
 	// cerco eventuali rotte esterne
 	// fillMarketPlaceRoute(&dmes)

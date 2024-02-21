@@ -352,10 +352,11 @@ type LayerDue struct {
 	Se         Se     `json:"se"`
 }
 type Gw struct {
-	Dominio  string `json:"dominio"`
-	Name     string `json:"name"`
-	Number   string `json:"number"`
-	Protocol string `json:"protocol"`
+	ExtDominio string `json:"extDominio"`
+	IntDominio string `json:"intDominio"`
+	Name       string `json:"name"`
+	Number     string `json:"number"`
+	Protocol   string `json:"protocol"`
 }
 type Se struct {
 	Ip    string   `json:"ip"`
