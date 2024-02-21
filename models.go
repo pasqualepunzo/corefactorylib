@@ -152,32 +152,32 @@ type RestyResConflict struct {
 	Size int `json:"size"`
 }
 type Microservice struct {
-	Nome             string `json:"nome"`
-	Descrizione      string `json:"descrizione"`
-	Namespace        string `json:"namespace"`
-	VersMicroservice string `json:"versMs"`
-	Virtualservice   string `json:"virtualService"`
-	Public           int    `json:"public"`
-	DatabasebEnable  string `json:"databasebEnable"`
-	Hpa              Hpa
-	Pod              []Pod
+	Nome             string `json:"nome,omitempty"`
+	Descrizione      string `json:"descrizione,omitempty"`
+	Namespace        string `json:"namespace,omitempty"`
+	VersMicroservice string `json:"versMs,omitempty"`
+	Virtualservice   string `json:"virtualService,omitempty"`
+	Public           int    `json:"public,omitempty"`
+	DatabasebEnable  string `json:"databasebEnable,omitempty"`
+	Hpa              Hpa    `json:"hpa,omitempty"`
+	Pod              []Pod  `json:"pod,omitempty"`
 }
 
 type Pod struct {
-	Id         string
-	Docker     string
-	GitRepo    string
-	Descr      string
-	Dockerfile string
-	Tipo       string
-	Vpn        int
-	Workdir    string
-	Mount      []Mount
-	Service    []Service
-	Branch     Branch
-	Resource   Resource
-	PodBuild   PodBuild
-	Probes     []Probes
+	Id         string    `json:"id,omitempty"`
+	Docker     string    `json:"docker,omitempty"`
+	GitRepo    string    `json:"gitRepo,omitempty"`
+	Descr      string    `json:"descr,omitempty"`
+	Dockerfile string    `json:"dockerfile,omitempty"`
+	Tipo       string    `json:"tipo,omitempty"`
+	Vpn        int       `json:"vpn,omitempty"`
+	Workdir    string    `json:"workdir,omitempty"`
+	Mount      []Mount   `json:"mount,omitempty"`
+	Service    []Service `json:"service,omitempty"`
+	Branch     Branch    `json:"branch,omitempty"`
+	Resource   Resource  `json:"resource,omitempty"`
+	PodBuild   PodBuild  `json:"podBuild,omitempty"`
+	Probes     []Probes  `json:"probes,omitempty"`
 }
 type Probes struct {
 	Category            string
@@ -222,9 +222,9 @@ type Hpa struct {
 }
 
 type Branch struct {
-	Branch  string
-	Version string
-	Sha     string
+	Branch  string `json:"branch,omitempty"`
+	Version string `json:"version,omitempty"`
+	Sha     string `json:"sha,omitempty"`
 }
 type Mount struct {
 	Nome       string
@@ -235,11 +235,11 @@ type Mount struct {
 }
 
 type Service struct {
-	Tipo       string
-	Port       string
-	Versione   string
-	TipoDeploy string
-	Endpoint   []Endpoint
+	Tipo       string     `json:"tipo,omitempty"`
+	Port       string     `json:"port,omitempty"`
+	Versione   string     `json:"versione,omitempty"`
+	TipoDeploy string     `json:"tipoDeploy,omitempty"`
+	Endpoint   []Endpoint `json:"endpoint,omitempty"`
 }
 
 type Endpoint struct {
@@ -343,9 +343,9 @@ type IstanzaMicro struct {
 	Autopilot                           string                 `json:"autopilot"`
 	CloudNet                            string                 `json:"cloudNet"`
 	DepEnv                              string                 `json:"depEnv"`
-	RefApp                              Refapp                 `json:"refapp"`
+	RefAppName                          string                 `json:"refAppName"`
 }
-type Refapp struct {
+type LayerDue struct {
 	RefAppName string `json:"refAppName"`
 	Gw         []Gw   `json:"gw"`
 	Vs         Vs     `json:"vs"`
@@ -667,4 +667,20 @@ type RouteJson struct {
 	Cluster     string `json:"cluster"`
 	ClusterHost string `json:"clusterHost"`
 	DevopsToken string `json:"devopsToken"`
+}
+
+type RouteMs struct {
+	Microservice string         `json:"microservice,omitempty"`
+	Istanza      string         `json:"istanza,omitempty"`
+	Docker       []RouteDocker  `json:"docker,omitempty"`
+	Version      []RouteVersion `json:"version,omitempty"`
+}
+type RouteDocker struct {
+	Docker  string    `json:"docker,omitempty"`
+	Service []Service `json:"service,omitempty"`
+}
+type RouteVersion struct {
+	Istanza          string `json:"istanza,omitempty"`
+	CanaryProduction string `json:"canaryProduction,omitempty"`
+	Versione         string `json:"versione,omitempty"`
 }
