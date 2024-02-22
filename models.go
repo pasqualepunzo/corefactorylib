@@ -364,6 +364,7 @@ type Se struct {
 }
 type Vs struct {
 	ExternalHost string      `json:"externalHost"`
+	InternalHost string      `json:"internalHost"`
 	VsDetails    []VsDetails `json:"vsDetails"`
 }
 type VsDetails struct {

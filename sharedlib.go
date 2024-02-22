@@ -789,6 +789,7 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 
 	var vs Vs
 	vs.ExternalHost = dominioEnvironment
+	vs.InternalHost = enviro + "-" + strings.ToLower(team) + "." + DominioCluster
 	var vsDetails []VsDetails
 
 	for _, rt := range rts {
