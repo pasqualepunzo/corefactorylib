@@ -560,6 +560,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 }
 
 // questo metodo restituisce cio che serve in caso in cui il MS e di tipo REFAPP
+
 func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsToken, dominio, coreApiVersion string) (LayerDue, error) {
 
 	var layerDue LayerDue
@@ -791,11 +792,17 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 	var vsDetails []VsDetails
 
 	for _, rt := range rts {
+		ttt := ""
+		for _, tt := range gts {
+			if tt.Group == rt.Team {
+				ttt = tt.Team
+			}
+		}
 
 		var v VsDetails
 		v.Prefix = rt.Prefix
 
-		v.InternalHost = enviro + "-" + team + "." + DominioCluster
+		v.InternalHost = enviro + "-" + strings.ToLower(ttt) + "." + DominioCluster
 		vsDetails = append(vsDetails, v)
 	}
 	vs.VsDetails = vsDetails
@@ -1178,14 +1185,23 @@ func GetIstanzaVersioni(ctx context.Context, allMs, enviro, devopsToken string) 
 
 	return vrss, erro
 }
-func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMicroservizio string, istanza IstanzaMicro, micros Microservice, istanzaMicroVersioni []IstanzaMicroVersioni, utente, enviro, devopsToken, dominio, coreApiVersion, microfrontendJson string) error {
+func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMicroservizio string, istanza IstanzaMicro, micros Microservice, vsMsRoutes []RouteMs, utente, enviro, devopsToken, dominio, coreApiVersion, microfrontendJson string) error {
 
 	Logga(ctx, os.Getenv("JsonLog"), "")
 	Logga(ctx, os.Getenv("JsonLog"), " + + + + + + + + + + + + + + + + + + + + ")
 	Logga(ctx, os.Getenv("JsonLog"), "updateIstanzaMicroservice begin")
+	Logga(ctx, os.Getenv("JsonLog"), "istanza "+istanza.Istanza)
 	Logga(ctx, os.Getenv("JsonLog"), "versioneMicroservizio "+versioneMicroservizio)
-	for _, ccc := range istanzaMicroVersioni {
-		Logga(ctx, os.Getenv("JsonLog"), ccc.TipoVersione+" "+ccc.Versione)
+
+	var currVersioni []RouteVersion
+
+	for _, ccc := range vsMsRoutes {
+		if ccc.Istanza == istanza.Istanza {
+			currVersioni = ccc.Version
+			for _, ddd := range ccc.Version {
+				Logga(ctx, os.Getenv("JsonLog"), ddd.CanaryProduction+" "+ddd.Versione)
+			}
+		}
 	}
 
 	devops := "devops"
@@ -1199,11 +1215,11 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 	// se canary devo rendere obsoleto il vecchio canarino  se esiste e inserire il nuovo canarino
 	// se production devo rendere obsoleto la vecchia produzione e rendere il canarino produzione
 
-	for _, versioni := range istanzaMicroVersioni {
+	for _, versioni := range currVersioni {
 
 		switch canaryProduction {
 		case "canary", "Canary":
-			if versioni.TipoVersione == "canary" || versioni.TipoVersione == "Canary" {
+			if versioni.CanaryProduction == "canary" || versioni.CanaryProduction == "Canary" {
 
 				Logga(ctx, os.Getenv("JsonLog"), "Old canary found")
 
@@ -1236,7 +1252,7 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 
 			// FAC-744 - rendere tutte le precedenti versioni obsolete XDEPLOYLOG07 = 1
 
-			switch versioni.TipoVersione {
+			switch versioni.CanaryProduction {
 			case "production", "Production":
 
 				// rendo obsoleto il vecchio production
