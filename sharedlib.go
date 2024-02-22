@@ -560,11 +560,11 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 }
 
 // questo metodo restituisce cio che serve in caso in cui il MS e di tipo REFAPP
-func GetLayerDueDetails(ctx context.Context, refappname, enviro, devopsToken, dominio, coreApiVersion string) (LayerDue, error) {
+func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsToken, dominio, coreApiVersion string) (LayerDue, error) {
 
 	var layerDue LayerDue
 
-	Logga(ctx, os.Getenv("JsonLog"), "CERCO I MICROSERVIZI SU KUBEIMICROSERV")
+	Logga(ctx, os.Getenv("JsonLog"), "LAYER DUE")
 	// entro su microservice per avere i ms
 
 	/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
@@ -761,6 +761,16 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, devopsToken, do
 		// qui prendo il dominio estarno
 		if env == enviro {
 			dominioEnvironment = dom
+			var gw Gw
+			for _, ap := range aps {
+				gw.ExtDominio = dom
+				gw.IntDominio = enviro + "-" + team + "." + DominioCluster
+				gw.Protocol = ap.Protocol
+				gw.Name = ap.Name
+				gw.Number = ap.Number
+				gws = append(gws, gw)
+			}
+
 		}
 	}
 	// gw OK
@@ -779,13 +789,8 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, devopsToken, do
 	var vs Vs
 	vs.ExternalHost = dominioEnvironment
 	var vsDetails []VsDetails
-	team := ""
+
 	for _, rt := range rts {
-		for _, v := range gts {
-			if v.Group == rt.Team {
-				team = v.Team
-			}
-		}
 
 		var v VsDetails
 		v.Prefix = rt.Prefix
@@ -796,22 +801,6 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, devopsToken, do
 	vs.VsDetails = vsDetails
 
 	layerDue.Vs = vs
-
-	for env, dom := range dominiCustomerMap {
-		// qui prendo il dominio estarno
-		if env == enviro {
-
-			var gw Gw
-			for _, ap := range aps {
-				gw.ExtDominio = dom
-				gw.IntDominio = enviro + "-" + team + "." + DominioCluster
-				gw.Protocol = ap.Protocol
-				gw.Name = ap.Name
-				gw.Number = ap.Number
-				gws = append(gws, gw)
-			}
-		}
-	}
 
 	// cerco eventuali rotte esterne
 	// fillMarketPlaceRoute(&dmes)
