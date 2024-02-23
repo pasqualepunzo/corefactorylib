@@ -630,7 +630,7 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 			}
 			dominiCustomer = x["XREFAPPCUSTOMER12"].(string)
 			appID = x["XREFAPPNEW03"].(string)
-			appName = x["XAPP04"].(string)
+			appName = strings.ToLower(slugify.Slugify(x["XAPP04"].(string)))
 			pkgs += "'" + x["XBOXPKG04"].(string) + "', "
 			mms = append(mms, x["XBOXPKG04"].(string))
 		}
@@ -811,36 +811,47 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 	layerDue.Vs = vs
 
 	// cerco eventuali rotte esterne
-	// fillMarketPlaceRoute(&dmes)
-	// refapp.MsDetail = dmes
-	Logga(ctx, os.Getenv("JsonLog"), "FINE CERCO I MICROSERVIZI SU KUBEIMICROSERV")
+	fillMarketPlaceRoute(&layerDue, DominioCluster)
 
-	Logga(ctx, os.Getenv("JsonLog"), "CERCO LE PORTE DEI MS PER GW")
+	Logga(ctx, os.Getenv("JsonLog"), "GetMsRoute END")
 
 	return layerDue, nil
 }
 
 // questo medoto è un harcoded di un futuro possibile MARKET PLACE
 // le cose sono cambiate e quindo va fatto ex novo ( monodominio a multidominio per env ..... il plasma a terra)
-//
-//	func fillMarketPlaceRoute(dmesOK *[]) {
-//		found := false
-//		for _, x := range *dmesOK {
-//			if x.DominoCluster == "q01.io" {
-//				found = true
-//				break
-//			}
-//		}
-//		if !found {
-//			var dme MsDetail
-//			dme.BaseRoute = "prod-core.q01.io"
-//			dme.DominoCluster = "q01.io"
-//			dme.Env = "prod"
-//			dme.Team = "core"
-//			dme.Ip = "" // lasciare vuoto indica che e un mondo esterno !!!! DNS
-//			*dmesOK = append(*dmesOK, dme)
-//		}
-//	}
+func fillMarketPlaceRoute(layerDue *LayerDue, DominioCluster string) {
+	found := false
+	for _, x := range layerDue.Vs.VsDetails {
+		if x.InternalHost == DominioCluster {
+			found = true
+			break
+		}
+	}
+	if !found {
+		var vsD VsDetails
+		vsD.InternalHost = "prod-core." + DominioCluster
+		vsD.Prefix = "/api/" + os.Getenv("API_VERSION") + "/core"
+		layerDue.Vs.VsDetails = append(layerDue.Vs.VsDetails, vsD)
+
+		vsD.InternalHost = "prod-core." + DominioCluster
+		vsD.Prefix = "/api/" + os.Getenv("API_VERSION") + "/auth"
+		layerDue.Vs.VsDetails = append(layerDue.Vs.VsDetails, vsD)
+
+		vsD.InternalHost = "prod-core." + DominioCluster
+		vsD.Prefix = "/api/" + os.Getenv("API_VERSION") + "/users"
+		layerDue.Vs.VsDetails = append(layerDue.Vs.VsDetails, vsD)
+
+		vsD.InternalHost = "prod-core." + DominioCluster
+		vsD.Prefix = "/api/" + os.Getenv("API_VERSION") + "/document"
+		layerDue.Vs.VsDetails = append(layerDue.Vs.VsDetails, vsD)
+
+		vsD.InternalHost = "prod-core." + DominioCluster
+		vsD.Prefix = "/ref-app-cs"
+		layerDue.Vs.VsDetails = append(layerDue.Vs.VsDetails, vsD)
+
+	}
+}
 func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]RouteMs, error) {
 
 	Logga(ctx, os.Getenv("JsonLog"), "GetMsRoutes")
