@@ -664,11 +664,13 @@ type DockerStruct struct {
 	Microservizio, Docker, GitRepo, Branch, Version, Tag, Dockerfile, Namespace, TipoGitRepo, DockerArgs string
 }
 type RouteJson struct {
-	Team        string `json:"team"`
-	Enviro      string `json:"enviro"`
-	Cluster     string `json:"cluster"`
-	ClusterHost string `json:"clusterHost"`
-	DevopsToken string `json:"devopsToken"`
+	Microservice string `json:"microservice"`
+	Team         string `json:"team"`
+	Enviro       string `json:"enviro"`
+	Cluster      string `json:"cluster"`
+	ClusterHost  string `json:"clusterHost"`
+	DevopsToken  string `json:"devopsToken"`
+	IsRefapp     bool   `json:"isRefapp"`
 }
 
 type RouteMs struct {
@@ -685,4 +687,5 @@ type RouteVersion struct {
 	Istanza          string `json:"istanza,omitempty"`
 	CanaryProduction string `json:"canaryProduction,omitempty"`
 	Versione         string `json:"versione,omitempty"`
+	MsRouteJson      string `json:"msRouteJson,omitempty"`
 }
