@@ -560,12 +560,11 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 }
 
 // questo metodo restituisce cio che serve in caso in cui il MS e di tipo REFAPP
-
 func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsToken, dominio, coreApiVersion string) (LayerDue, error) {
 
 	var layerDue LayerDue
 
-	Logga(ctx, os.Getenv("JsonLog"), "LAYER DUE")
+	Logga(ctx, os.Getenv("JsonLog"), "Get Layer Due Start")
 	// entro su microservice per avere i ms
 
 	/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
@@ -813,9 +812,116 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 	// cerco eventuali rotte esterne
 	fillMarketPlaceRoute(&layerDue, DominioCluster)
 
-	Logga(ctx, os.Getenv("JsonLog"), "GetMsRoute END")
+	Logga(ctx, os.Getenv("JsonLog"), "Get Layer Due END")
 
 	return layerDue, nil
+}
+func GetLayerTreDetails(ctx context.Context, tenant, DominioCluster, microservice, enviro, team, devopsToken, dominio, coreApiVersion string) (LayerDue, error) {
+
+	var layerTre LayerDue
+
+	// FAKE FUTURE TOGGLE
+	DominioCluster = "q01.local"
+
+	Logga(ctx, os.Getenv("JsonLog"), "Get Layer Tre Start")
+	// entro su microservice per avere i ms
+
+	/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+	// qui cerco il dominio
+
+	argsApp := make(map[string]string)
+	argsApp["source"] = "appman-1"
+	argsApp["$select"] = "XREFAPPCUSTOMER04,XREFAPPCUSTOMER12 "
+	argsApp["center_dett"] = "dettaglio"
+	argsApp["$filter"] = " equals(XREFAPPCUSTOMER03,'" + tenant + "') "
+
+	AppRes, errAppRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsApp, "msappman", "/api/"+os.Getenv("API_VERSION")+"/appman/REFAPPCUSTOMER", devopsToken, dominio, coreApiVersion)
+	if errAppRes != nil {
+		Logga(ctx, os.Getenv("JsonLog"), errAppRes.Error())
+		erro := errors.New(errAppRes.Error())
+		return layerTre, erro
+	}
+
+	var dominiCustomer, appID string
+
+	if len(AppRes.BodyJson) > 0 {
+		dominiCustomer = AppRes.BodyJson["XREFAPPCUSTOMER12"].(string)
+		appID = AppRes.BodyJson["XREFAPPCUSTOMER04_COD"].(string)
+	}
+
+	/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+
+	var dominiCustomerMap map[string]string
+	var extDominio string
+	var intDominio string
+
+	json.Unmarshal([]byte(dominiCustomer), &dominiCustomerMap)
+
+	for env, dom := range dominiCustomerMap {
+		// qui prendo il dominio estarno
+		if env == enviro {
+			extDominio = dom
+			intDominio = enviro + "-" + team + "." + DominioCluster
+		}
+	}
+
+	/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+	argsSr := make(map[string]string)
+	argsSr["source"] = "appman-8"
+	argsSr["$select"] = "XAPPSRV04,XAPPSRV05,XAPPSRV06"
+	argsSr["center_dett"] = "visualizza"
+	argsSr["$filter"] = "equals(XAPPSRV03,'" + appID + "') "
+
+	Logga(ctx, os.Getenv("JsonLog"), argsSr["$fullquery"])
+	SrRes, errSrRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsSr, "msappman", "/api/"+os.Getenv("API_VERSION")+"/appman/APPSRV", devopsToken, dominio, coreApiVersion)
+	if errSrRes != nil {
+		Logga(ctx, os.Getenv("JsonLog"), errSrRes.Error())
+		erro := errors.New(errSrRes.Error())
+		return layerTre, erro
+	}
+
+	// POPOLO UN ARR con tutte le porte HTTP da mappare sul GW
+	var gws []Gw
+	if len(SrRes.BodyArray) > 0 {
+		for _, x := range SrRes.BodyArray {
+			var gw Gw
+
+			if microservice == "msdevops" {
+
+				// qui per msdevops devo avere il dominio esterno e le port grpc
+				if x["XAPPSRV06"].(string) != "HTTPS" {
+					gw.ExtDominio = extDominio
+					gw.IntDominio = intDominio
+					gw.Name = x["XAPPSRV04"].(string)
+					gw.Number = strconv.Itoa(int(x["XAPPSRV05"].(float64)))
+					gw.Protocol = x["XAPPSRV06"].(string)
+					gws = append(gws, gw)
+				}
+			} else {
+
+				// per i ms che non sono msdevops basta il dominio interno e la porta 80
+				if x["XAPPSRV06"].(string) == "HTTP" {
+					gw.IntDominio = intDominio
+					gw.Name = x["XAPPSRV04"].(string)
+					gw.Number = strconv.Itoa(int(x["XAPPSRV05"].(float64)))
+					gw.Protocol = x["XAPPSRV06"].(string)
+					gws = append(gws, gw)
+				}
+			}
+		}
+	}
+	/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+
+	// gw OK
+	layerTre.Gw = gws
+
+	var vs Vs
+	vs.InternalHost = enviro + "-" + strings.ToLower(team) + "." + DominioCluster
+	layerTre.Vs = vs
+
+	Logga(ctx, os.Getenv("JsonLog"), "Get Layer Tre END")
+
+	return layerTre, nil
 }
 
 // questo medoto è un harcoded di un futuro possibile MARKET PLACE
@@ -863,7 +969,7 @@ func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]RouteMs, error) {
 	cluster := routeJson.Cluster
 
 	/* ************************************************************************************************ */
-	// MS, DOCKER, PROTOCOL AND PORTS
+	// CERCO TUTTI I MS DEL TEAM
 
 	argsDoker := make(map[string]string)
 	argsDoker["source"] = "devops-8"
@@ -890,15 +996,14 @@ func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]RouteMs, error) {
 	if len(restyDokerRes.BodyArray) > 0 {
 		allMs := ""
 		for _, x := range restyDokerRes.BodyArray {
-			if x["XKUBEMICROSERVDKR03"].(string) == routeJson.Microservice { // MS che sto deployando
-
+			if x["XKUBEIMICROSERV04"].(string) == routeJson.Microservice { // MS che sto deployando
 				ms, msError := GetMsServiceAndRoute(ctx, x["XKUBEIMICROSERV03"].(string), routeJson)
 				if msError != nil {
 					Logga(ctx, os.Getenv("JsonLog"), msError.Error())
 					return mss, msError
 				}
+				Logga(ctx, os.Getenv("JsonLog"), "AZZECCO: "+ms.Istanza)
 				mss = append(mss, ms)
-
 			} else { // MS GIA DEPLOYATO - PRENDO LA FOTO DA DEPLOYLOG
 				// popolo una stringa da dare in pasto al metodo che mi restituisce le foto della deploy dei MS non coinvolti direttamente nella deploy corrente
 				allMs += "'" + x["XKUBEIMICROSERV03"].(string) + "',"
@@ -917,10 +1022,10 @@ func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]RouteMs, error) {
 		var ms RouteMs
 		for _, routeJson := range allMsVers {
 			json.Unmarshal([]byte(routeJson.MsRouteJson), &ms)
+			Logga(ctx, os.Getenv("JsonLog"), "AZZECCO: "+ms.Istanza)
 			mss = append(mss, ms)
 		}
 	}
-
 	return mss, erro
 }
 func GetMsServiceAndRoute(ctx context.Context, istanza string, routeJson RouteJson) (RouteMs, error) {
@@ -944,7 +1049,7 @@ func GetMsServiceAndRoute(ctx context.Context, istanza string, routeJson RouteJs
 	argsDoker := make(map[string]string)
 	argsDoker["source"] = "devops-8"
 
-	argsDoker["$fullquery"] = " select XKUBEMICROSERVDKR03,XKUBEMICROSERVDKR04,XKUBESERVICEDKR05,XKUBESERVICEDKR06"
+	argsDoker["$fullquery"] = " select XKUBEIMICROSERV04,XKUBEMICROSERVDKR03,XKUBEMICROSERVDKR04,XKUBESERVICEDKR05,XKUBESERVICEDKR06"
 	argsDoker["$fullquery"] += " from TB_ANAG_KUBEIMICROSERV00 "
 	argsDoker["$fullquery"] += " join TB_ANAG_KUBEMICROSERVDKR00 on (XKUBEIMICROSERV04=XKUBEMICROSERVDKR03) "
 	argsDoker["$fullquery"] += " join TB_ANAG_KUBESERVICEDKR00 on (XKUBESERVICEDKR04=XKUBEMICROSERVDKR04) "
@@ -1154,15 +1259,15 @@ func GetMsServiceAndRoute(ctx context.Context, istanza string, routeJson RouteJs
 			dkr.Service = services
 			dkrs = append(dkrs, dkr)
 			services = nil
+
 		}
 
-		var ms RouteMs
 		ms.Microservice = nomeMicroservice
 		ms.Istanza = istanza
 		ms.Docker = dkrs
 
 		// CERCA LE VERSIONI
-		allMsVers, errV := GetIstanzaVersioni(ctx, istanza, routeJson.Enviro, devopsToken)
+		allMsVers, errV := GetIstanzaVersioni(ctx, "'"+istanza+"'", routeJson.Enviro, devopsToken)
 		if errV != nil {
 			Logga(ctx, os.Getenv("JsonLog"), errV.Error())
 			return ms, errV
@@ -1485,7 +1590,7 @@ func GetIstanzaVersioni(ctx context.Context, allMs, enviro, devopsToken string) 
 	var vrss []RouteVersion
 	argsDeploy := make(map[string]string)
 	argsDeploy["source"] = "devops-8"
-	argsDeploy["$fullquery"] = " select XDEPLOYLOG03,XDEPLOYLOG04,XDEPLOYLOG05,XDEPLOYLOG06 "
+	argsDeploy["$fullquery"] = " select XDEPLOYLOG03,XDEPLOYLOG04,XDEPLOYLOG05,XDEPLOYLOG07 "
 	argsDeploy["$fullquery"] += " from TB_ANAG_DEPLOYLOG00 "
 	argsDeploy["$fullquery"] += " where XDEPLOYLOG04  IN (" + allMs + ") "
 	argsDeploy["$fullquery"] += " and XDEPLOYLOG09 = '" + enviro + "' "
@@ -1503,7 +1608,7 @@ func GetIstanzaVersioni(ctx context.Context, allMs, enviro, devopsToken string) 
 			vrs.Istanza = x["XDEPLOYLOG04"].(string)
 			vrs.CanaryProduction = x["XDEPLOYLOG03"].(string) // canary production
 			vrs.Versione = x["XDEPLOYLOG05"].(string)
-			vrs.MsRouteJson = x["XDEPLOYLOG06"].(string)
+			vrs.MsRouteJson = x["XDEPLOYLOG07"].(string)
 			vrss = append(vrss, vrs)
 		}
 		Logga(ctx, os.Getenv("JsonLog"), "DEPLOYLOG OK")
