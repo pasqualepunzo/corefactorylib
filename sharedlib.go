@@ -820,22 +820,20 @@ func GetLayerTreDetails(ctx context.Context, tenant, DominioCluster, microservic
 
 	var layerTre LayerDue
 
-	// FAKE FUTURE TOGGLE
-	DominioCluster = "q01.local"
-
 	Logga(ctx, os.Getenv("JsonLog"), "Get Layer Tre Start")
 	// entro su microservice per avere i ms
 
 	/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 	// qui cerco il dominio
-
 	argsApp := make(map[string]string)
-	argsApp["source"] = "appman-1"
-	argsApp["$select"] = "XREFAPPCUSTOMER04,XREFAPPCUSTOMER12 "
-	argsApp["center_dett"] = "dettaglio"
-	argsApp["$filter"] = " equals(XREFAPPCUSTOMER03,'" + tenant + "') "
 
-	AppRes, errAppRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsApp, "msappman", "/api/"+os.Getenv("API_VERSION")+"/appman/REFAPPCUSTOMER", devopsToken, dominio, coreApiVersion)
+	argsApp["$fullquery"] = "  select XREFAPPCUSTOMER12,XREFAPPNEW04 "
+	argsApp["$fullquery"] += " from TB_ANAG_REFAPPCUSTOMER00 "
+	argsApp["$fullquery"] += " join TB_ANAG_REFAPPNEW00 on (XREFAPPNEW03 = XREFAPPCUSTOMER04) "
+	argsApp["$fullquery"] += " where 1>0 "
+	argsApp["$fullquery"] += " AND XREFAPPCUSTOMER03  = '" + tenant + "' "
+
+	AppRes, errAppRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsApp, "msappman", "/api/"+os.Getenv("API_VERSION")+"/appman/custom/REFAPPCUSTOMER/values", devopsToken, dominio, coreApiVersion)
 	if errAppRes != nil {
 		Logga(ctx, os.Getenv("JsonLog"), errAppRes.Error())
 		erro := errors.New(errAppRes.Error())
@@ -844,9 +842,11 @@ func GetLayerTreDetails(ctx context.Context, tenant, DominioCluster, microservic
 
 	var dominiCustomer, appID string
 
-	if len(AppRes.BodyJson) > 0 {
-		dominiCustomer = AppRes.BodyJson["XREFAPPCUSTOMER12"].(string)
-		appID = AppRes.BodyJson["XREFAPPCUSTOMER04_COD"].(string)
+	if len(AppRes.BodyArray) > 0 {
+		for _, x := range AppRes.BodyArray {
+			dominiCustomer = x["XREFAPPCUSTOMER12"].(string)
+			appID = x["XREFAPPNEW04"].(string)
+		}
 	}
 
 	/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
@@ -886,9 +886,9 @@ func GetLayerTreDetails(ctx context.Context, tenant, DominioCluster, microservic
 		for _, x := range SrRes.BodyArray {
 			var gw Gw
 
-			if microservice == "msdevops" {
+			if strings.ToLower(team) == "devops" {
 
-				// qui per msdevops devo avere il dominio esterno e le port grpc
+				// qui per team devops devo avere il dominio esterno e le port grpc
 				if x["XAPPSRV06"].(string) != "HTTPS" {
 					gw.ExtDominio = extDominio
 					gw.IntDominio = intDominio
