@@ -1626,15 +1626,18 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 	Logga(ctx, os.Getenv("JsonLog"), "versioneMicroservizio "+versioneMicroservizio)
 
 	var currVersioni []RouteVersion
-
+	var ms RouteMs
 	for _, ccc := range vsMsRoutes {
 		if ccc.Istanza == istanza.Istanza {
+			ms = ccc
 			currVersioni = ccc.Version
 			for _, ddd := range ccc.Version {
 				Logga(ctx, os.Getenv("JsonLog"), ddd.CanaryProduction+" "+ddd.Versione)
 			}
 		}
 	}
+
+	msByte, _ := json.Marshal(ms)
 
 	devops := "devops"
 	if istanza.Monolith == 1 {
@@ -1772,7 +1775,7 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 	keyvalueslice["XDEPLOYLOG04"] = ista
 	keyvalueslice["XDEPLOYLOG05"] = versioneMicroservizio
 	keyvalueslice["XDEPLOYLOG06"] = 1
-	keyvalueslice["XDEPLOYLOG07"] = 0
+	keyvalueslice["XDEPLOYLOG07"] = string(msByte)
 	keyvalueslice["XDEPLOYLOG08"] = string(detailJson)
 	keyvalueslice["XDEPLOYLOG09"] = enviro
 	keyvalueslice["XDEPLOYLOG10"] = microfrontendJson
