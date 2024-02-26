@@ -291,7 +291,6 @@ type HealthPod struct {
 }
 
 type KillemallStruct struct {
-	ClusterContext   string `json:"clusterContext"`
 	DeploymentToKill string `json:"deploymentToKill"`
 	Namespace        string `json:"namespace"`
 }
