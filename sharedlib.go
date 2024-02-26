@@ -886,17 +886,15 @@ func GetLayerTreDetails(ctx context.Context, tenant, DominioCluster, microservic
 		for _, x := range SrRes.BodyArray {
 			var gw Gw
 
-			if strings.ToLower(team) == "devops" {
+			if strings.ToLower(team) == "devops" && x["XAPPSRV04"].(string) == "grpc-"+enviro {
 
-				// qui per team devops devo avere il dominio esterno e le port grpc
-				if x["XAPPSRV06"].(string) != "HTTPS" {
-					gw.ExtDominio = extDominio
-					gw.IntDominio = intDominio
-					gw.Name = x["XAPPSRV04"].(string)
-					gw.Number = strconv.Itoa(int(x["XAPPSRV05"].(float64)))
-					gw.Protocol = x["XAPPSRV06"].(string)
-					gws = append(gws, gw)
-				}
+				gw.ExtDominio = extDominio
+				gw.IntDominio = intDominio
+				gw.Name = x["XAPPSRV04"].(string)
+				gw.Number = strconv.Itoa(int(x["XAPPSRV05"].(float64)))
+				gw.Protocol = x["XAPPSRV06"].(string)
+				gws = append(gws, gw)
+
 			} else {
 
 				// per i ms che non sono msdevops basta il dominio interno e la porta 80
@@ -916,6 +914,9 @@ func GetLayerTreDetails(ctx context.Context, tenant, DominioCluster, microservic
 	layerTre.Gw = gws
 
 	var vs Vs
+	if strings.ToLower(team) == "devops" {
+		vs.ExternalHost = extDominio
+	}
 	vs.InternalHost = enviro + "-" + strings.ToLower(team) + "." + DominioCluster
 	layerTre.Vs = vs
 
