@@ -1417,7 +1417,7 @@ func CheckPodHealth(microservice, versione, namespace, apiHost, apiToken string,
 		return false, errBool
 	}
 
-	msDeploy := microservice + "-v" + versione
+	msDeploy := microservice + "-" + versione
 	msMatch := false
 	i := 0
 	for {
