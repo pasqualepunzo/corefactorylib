@@ -1225,7 +1225,7 @@ func GetMsServiceAndRoute(ctx context.Context, istanza string, routeJson RouteJs
 					ep.RouteDst = x["route_dst"].(string)
 					ep.RewriteDst = x["rewrite_dst"].(string)
 					ep.NamespaceDst = x["namespace_dst"].(string)
-					ep.VersionDst = "v" + x["version_dst"].(string)
+					ep.VersionDst = x["version_dst"].(string)
 
 					ep.MicroserviceSrc = x["microservice_src"].(string)
 					ep.DockerSrc = x["docker_src"].(string)
@@ -1371,8 +1371,6 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 				}
 			}
 
-			break
-
 		case "production", "Production":
 
 			Logga(ctx, os.Getenv("JsonLog"), "Delete production "+istanza.Istanza+"-v"+versioni.Versione)
@@ -1412,10 +1410,8 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 					return erro
 				}
 
-				break
 			}
 
-			break
 		}
 
 	}
