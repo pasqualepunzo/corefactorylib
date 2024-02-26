@@ -1522,11 +1522,19 @@ func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, can
 
 			if x["XDEPLOYLOG03"].(string) == "canary" && !canFound {
 				canFound = true
-				versioneCanaryDb = "v" + x["XDEPLOYLOG05"].(string)
+				vrs := x["XDEPLOYLOG05"].(string)
+				if vrs[0:1] == "v" {
+					vrs = strings.Replace(vrs, "v", "", -1)
+				}
+				versioneCanaryDb = "v" + vrs
 			}
 			if x["XDEPLOYLOG03"].(string) == "production" && !prodFound {
 				prodFound = true
-				versioneProductionDb = "v" + x["XDEPLOYLOG05"].(string)
+				vrs := x["XDEPLOYLOG05"].(string)
+				if vrs[0:1] == "v" {
+					vrs = strings.Replace(vrs, "v", "", -1)
+				}
+				versioneProductionDb = "v" + vrs
 			}
 
 		}
