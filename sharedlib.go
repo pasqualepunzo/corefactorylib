@@ -867,7 +867,7 @@ func GetLayerTreDetails(ctx context.Context, tenant, DominioCluster, microservic
 		// qui prendo il dominio estarno
 		if env == enviro {
 			extDominio = dom
-			intDominio = enviro + "-" + team + "." + DominioCluster
+			intDominio = microservice + "." + DominioCluster
 		}
 	}
 
@@ -892,10 +892,9 @@ func GetLayerTreDetails(ctx context.Context, tenant, DominioCluster, microservic
 		for _, x := range SrRes.BodyArray {
 			var gw Gw
 
-			if strings.ToLower(team) == "devops" && x["XAPPSRV04"].(string) == "grpc-"+enviro {
+			if microservice == "devops" && x["XAPPSRV04"].(string) == "grpc-"+enviro {
 
 				gw.ExtDominio = extDominio
-				//gw.IntDominio = intDominio
 				gw.Name = x["XAPPSRV04"].(string)
 				gw.Number = strconv.Itoa(int(x["XAPPSRV05"].(float64)))
 				gw.Protocol = x["XAPPSRV06"].(string)
@@ -923,7 +922,7 @@ func GetLayerTreDetails(ctx context.Context, tenant, DominioCluster, microservic
 	if strings.ToLower(team) == "devops" {
 		vs.ExternalHost = extDominio
 	}
-	vs.InternalHost = enviro + "-" + strings.ToLower(team) + "." + DominioCluster
+	vs.InternalHost = microservice + "." + DominioCluster
 	layerTre.Vs = vs
 
 	Logga(ctx, os.Getenv("JsonLog"), "Get Layer Tre END")
