@@ -664,6 +664,7 @@ type DockerStruct struct {
 }
 type RouteJson struct {
 	Microservice string `json:"microservice"`
+	Istanza      string `json:"istanza"`
 	Team         string `json:"team"`
 	Enviro       string `json:"enviro"`
 	Cluster      string `json:"cluster"`
@@ -683,8 +684,6 @@ type RouteDocker struct {
 	Service []Service `json:"service,omitempty"`
 }
 type RouteVersion struct {
-	Istanza          string `json:"istanza,omitempty"`
 	CanaryProduction string `json:"canaryProduction,omitempty"`
 	Versione         string `json:"versione,omitempty"`
-	MsRouteJson      string `json:"msRouteJson,omitempty"`
 }

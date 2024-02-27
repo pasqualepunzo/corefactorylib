@@ -619,7 +619,7 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 
 	var pkgs, appID, appName, dominiCustomer string
 	if len(AppRes.BodyArray) > 0 {
-		var mms []string
+		//var mms []string
 		for _, x := range AppRes.BodyArray {
 			_, errcast := x["XBOXPKG04"].(string)
 			if !errcast {
@@ -631,7 +631,7 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 			appID = x["XREFAPPNEW03"].(string)
 			appName = strings.ToLower(slugify.Slugify(x["XAPP04"].(string)))
 			pkgs += "'" + x["XBOXPKG04"].(string) + "', "
-			mms = append(mms, x["XBOXPKG04"].(string))
+			//mms = append(mms, x["XBOXPKG04"].(string))
 		}
 		pkgs = pkgs[0 : len(pkgs)-2]
 	}
@@ -639,8 +639,16 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 
 	layerDue.RefAppName = appName
 
+	// individuo il dominio dell'environment selezionato
 	var dominiCustomerMap map[string]string
+	var dominioEnvironment string
 	json.Unmarshal([]byte(dominiCustomer), &dominiCustomerMap)
+	for env, dom := range dominiCustomerMap {
+		// qui prendo il dominio estarno
+		if env == enviro {
+			dominioEnvironment = dom
+		}
+	}
 
 	/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 	// leggo le porte relative all APP da aprire sul GW
@@ -684,7 +692,7 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 	argsBr := make(map[string]string)
 	argsBr["source"] = "devops-8"
 
-	argsBr["$fullquery"] = "  select XKUBEENDPOINT09,XKUBECLUSTER15,XKUBECLUSTER22, XKUBEMICROSERV07 "
+	argsBr["$fullquery"] = "  select XKUBEIMICROSERV04,XKUBEENDPOINT09,XKUBECLUSTER15,XKUBECLUSTER22, XKUBEMICROSERV07 "
 	argsBr["$fullquery"] += " from TB_ANAG_KUBEIMICROSERV00 "
 	argsBr["$fullquery"] += " join TB_ANAG_KUBEMICROSERV00 on (XKUBEMICROSERV05 = XKUBEIMICROSERV04) "
 	argsBr["$fullquery"] += " join TB_ANAG_KUBECLUSTER00 on (XKUBEIMICROSERV05 = XKUBECLUSTER03) "
@@ -701,45 +709,24 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 		return layerDue, erro
 	}
 
-	type Rotte struct {
-		Prefix string
-		Team   string
-	}
-	var rts []Rotte
-	var Ip, DominioCluster string
-	var gruppiArrDirt []string
-	var gruppiArr []string
-
-	// mi conservo IP e DOMINIO del cluster
-	// popolo le rotte con il gruppo al posto del team che calcolero successivamente
-	if len(BrRes.BodyArray) > 0 {
-		for _, x := range BrRes.BodyArray {
-
-			Ip = x["XKUBECLUSTER22"].(string)
-			DominioCluster = x["XKUBECLUSTER15"].(string)
-
-			// FAKE FUTURE TOGGLE
-			DominioCluster = "q01.local"
-
-			// metto tutti i gruppi anche ripetuti ( li pulisco dopo)
-			gruppiArrDirt = append(gruppiArrDirt, x["XKUBEMICROSERV07"].(string))
-
-			var rt Rotte
-			rt.Prefix = x["XKUBEENDPOINT09"].(string)
-			rt.Team = x["XKUBEMICROSERV07"].(string) // qui e sporco (gruppo)
-			rts = append(rts, rt)
-		}
-	}
-
-	// carico in gruppiArr i soli gruppi che vanno tradotti in TEAM
-	gruppiArr = GetSingleGroup(gruppiArrDirt)
-
+	/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+	//
+	// pulisco i doppioni dei gruppi e trasfomo i gruppi in team
 	type GroupTeam struct {
 		Group string
 		Team  string
 	}
-
+	var gruppiArrDirt []string
+	var gruppiArr []string
 	var gts []GroupTeam
+	if len(BrRes.BodyArray) > 0 {
+		for _, x := range BrRes.BodyArray {
+			// metto tutti i gruppi anche ripetuti ( li pulisco dopo)
+			gruppiArrDirt = append(gruppiArrDirt, x["XKUBEMICROSERV07"].(string))
+		}
+	}
+	// carico in gruppiArr i soli gruppi che vanno tradotti in TEAM
+	gruppiArr = GetSingleGroup(gruppiArrDirt)
 	// per ogni gruppo ottengo il TEAM
 	for _, grp := range gruppiArr {
 		var gt GroupTeam
@@ -753,61 +740,80 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 		gt.Team = strings.ToLower(team)
 		gts = append(gts, gt)
 	}
+	/*
+		gts => Q01-DEVOPS - devops, Q01-CORE - core
+	*/
+	/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
-	// PER OGNI DOMINIO POPOLO LA STRUCT PER IL GW con porte protocolli etc
-	var gws []Gw
-	var dominioEnvironment string
-	for env, dom := range dominiCustomerMap {
-		// qui prendo il dominio estarno
-		if env == enviro {
-			dominioEnvironment = dom
-			var gw Gw
-			for _, ap := range aps {
-				gw.ExtDominio = dom
-				gw.IntDominio = enviro + "-" + team + "." + DominioCluster
-				gw.Protocol = ap.Protocol
-				gw.Name = ap.Name
-				gw.Number = ap.Number
-				gws = append(gws, gw)
+	type Rotte struct {
+		Microservice string
+		Prefix       string
+		Team         string
+	}
+	var rts []Rotte
+	var Ip, DominioCluster string
+
+	// mi conservo IP e DOMINIO del cluster
+	// popolo le rotte con il gruppo al posto del team che calcolero successivamente
+	if len(BrRes.BodyArray) > 0 {
+		for _, x := range BrRes.BodyArray {
+			var rt Rotte
+
+			Ip = x["XKUBECLUSTER22"].(string)
+			DominioCluster = x["XKUBECLUSTER15"].(string)
+
+			// FAKE FUTURE TOGGLE
+			DominioCluster = "q01.local"
+
+			for _, tt := range gts {
+				if tt.Group == x["XKUBEMICROSERV07"].(string) {
+					rt.Team = tt.Team
+				}
 			}
-
+			rt.Microservice = x["XKUBEIMICROSERV04"].(string)
+			rt.Prefix = x["XKUBEENDPOINT09"].(string)
+			rts = append(rts, rt)
 		}
 	}
-	// gw OK
-	layerDue.Gw = gws
 
-	// organizzo il SE
-	var se Se
-	se.Ip = Ip
-	for _, tm := range gts {
-		se.Hosts = append(se.Hosts, enviro+"-"+tm.Team+"."+DominioCluster)
+	// +++++++++++++++++++++++++++++++++
+	// GATEWAY
+	// PER OGNI DOMINIO POPOLO LA STRUCT PER IL GW con porte protocolli etc
+	var gws []Gw
+	var gw Gw
+	for _, ap := range aps {
+		gw.ExtDominio = dominioEnvironment
+		//gw.IntDominio = enviro + "-" + refappname + "." + DominioCluster
+		gw.Protocol = ap.Protocol
+		gw.Name = ap.Name
+		gw.Number = ap.Number
+		gws = append(gws, gw)
 	}
+	layerDue.Gw = gws
+	// +++++++++++++++++++++++++++++++++
 
-	// Se OK
-	layerDue.Se = se
-
+	// +++++++++++++++++++++++++++++++++
+	// SERVICE ENTRY + VIRTUALSERVICE
 	var vs Vs
+	var se Se
 	vs.ExternalHost = dominioEnvironment
 	vs.InternalHost = enviro + "-" + strings.ToLower(team) + "." + DominioCluster
 	var vsDetails []VsDetails
 
 	for _, rt := range rts {
-		ttt := ""
-		for _, tt := range gts {
-			if tt.Group == rt.Team {
-				ttt = tt.Team
-			}
-		}
-
 		var v VsDetails
 		v.Prefix = rt.Prefix
-
-		v.InternalHost = enviro + "-" + strings.ToLower(ttt) + "." + DominioCluster
+		v.InternalHost = rt.Microservice + "." + DominioCluster
+		se.Hosts = append(se.Hosts, v.InternalHost)
 		vsDetails = append(vsDetails, v)
 	}
 	vs.VsDetails = vsDetails
-
 	layerDue.Vs = vs
+
+	// organizzo il SE
+	se.Ip = Ip
+	layerDue.Se = se
+	// +++++++++++++++++++++++++++++++++
 
 	// cerco eventuali rotte esterne
 	fillMarketPlaceRoute(&layerDue, DominioCluster)
@@ -959,88 +965,21 @@ func fillMarketPlaceRoute(layerDue *LayerDue, DominioCluster string) {
 
 	}
 }
-func GetMsRoutes(ctx context.Context, routeJson RouteJson) ([]RouteMs, error) {
+func GetMsRoutes(ctx context.Context, routeJson RouteJson) (RouteMs, error) {
 
 	Logga(ctx, os.Getenv("JsonLog"), "GetMsRoutes")
 	var erro error
-	var mss []RouteMs
+	var ms RouteMs
 
-	devopsToken := routeJson.DevopsToken
 	team := strings.ToLower(routeJson.Team)
 	cluster := routeJson.Cluster
-
-	/* ************************************************************************************************ */
-	// CERCO TUTTI I MS DEL TEAM
-
-	argsDoker := make(map[string]string)
-	argsDoker["source"] = "devops-8"
-
-	argsDoker["$fullquery"] = " select XKUBEIMICROSERV03,XKUBEIMICROSERV04 "
-	argsDoker["$fullquery"] += " from TB_ANAG_KUBEIMICROSERV00 "
-	argsDoker["$fullquery"] += " where XKUBEIMICROSERV05 = '" + cluster + "'   and XKUBEIMICROSERV08 ='" + team + "' "
-	argsDoker["$fullquery"] += " and XKUBEIMICROSERV06 = '" + routeJson.Enviro + "' "
-	argsDoker["$fullquery"] += " order by XKUBEIMICROSERV03,XKUBEIMICROSERV04 "
-
-	Logga(ctx, os.Getenv("JsonLog"), argsDoker["$fullquery"])
-	restyDokerRes, errDokerRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsDoker, "msdevops", "/api/"+os.Getenv("API_VERSION")+"/devops/custom/KUBEIMICROSERV/values", devopsToken, os.Getenv("apiDomain"), os.Getenv("coreApiVersion"))
-
-	if errDokerRes != nil {
-		Logga(ctx, os.Getenv("JsonLog"), errDokerRes.Error())
-		return mss, errDokerRes
-	}
-	if restyDokerRes.Errore < 0 {
-		Logga(ctx, os.Getenv("JsonLog"), restyDokerRes.Log)
-		erro = errors.New(restyDokerRes.Log)
-		return mss, erro
-	}
-
-	if len(restyDokerRes.BodyArray) > 0 {
-		allMs := ""
-		for _, x := range restyDokerRes.BodyArray {
-			if x["XKUBEIMICROSERV04"].(string) == routeJson.Microservice { // MS che sto deployando
-				ms, msError := GetMsServiceAndRoute(ctx, x["XKUBEIMICROSERV03"].(string), routeJson)
-				if msError != nil {
-					Logga(ctx, os.Getenv("JsonLog"), msError.Error())
-					return mss, msError
-				}
-				Logga(ctx, os.Getenv("JsonLog"), "AZZECCO: "+ms.Istanza)
-				mss = append(mss, ms)
-			} else { // MS GIA DEPLOYATO - PRENDO LA FOTO DA DEPLOYLOG
-				// popolo una stringa da dare in pasto al metodo che mi restituisce le foto della deploy dei MS non coinvolti direttamente nella deploy corrente
-				allMs += "'" + x["XKUBEIMICROSERV03"].(string) + "',"
-			}
-		}
-		allMs = allMs[0 : len(allMs)-1]
-
-		// CERCO IL JSON della deploy
-		allMsVers, errV := GetIstanzaVersioni(ctx, allMs, routeJson.Enviro, devopsToken)
-		if errV != nil {
-			Logga(ctx, os.Getenv("JsonLog"), errV.Error())
-			return mss, errV
-		}
-
-		// POPOLO MSS con tutti i Json trovati in DEPLOYLOG
-		var ms RouteMs
-		for _, routeJson := range allMsVers {
-			json.Unmarshal([]byte(routeJson.MsRouteJson), &ms)
-			Logga(ctx, os.Getenv("JsonLog"), "AZZECCO: "+ms.Istanza)
-			mss = append(mss, ms)
-		}
-	}
-	return mss, erro
-}
-func GetMsServiceAndRoute(ctx context.Context, istanza string, routeJson RouteJson) (RouteMs, error) {
-
-	var ms RouteMs
-	var erro error
+	istanza := routeJson.Istanza
 
 	var eps []Endpoint
 	var services []Service
 	var dkrs []RouteDocker
 
 	devopsToken := routeJson.DevopsToken
-	team := strings.ToLower(routeJson.Team)
-	cluster := routeJson.Cluster
 	namespace := routeJson.Enviro + "-" + team
 
 	nomeMicroservice := ""
@@ -1268,31 +1207,30 @@ func GetMsServiceAndRoute(ctx context.Context, istanza string, routeJson RouteJs
 		ms.Docker = dkrs
 
 		// CERCA LE VERSIONI
-		allMsVers, errV := GetIstanzaVersioni(ctx, "'"+istanza+"'", routeJson.Enviro, devopsToken)
+		allMsVers, errV := GetIstanzaVersioni(ctx, istanza, routeJson.Enviro, devopsToken)
 		if errV != nil {
 			Logga(ctx, os.Getenv("JsonLog"), errV.Error())
 			return ms, errV
 		}
 		ms.Version = allMsVers
 	}
-
 	return ms, erro
 }
 
-func GetIstanzaVersioni(ctx context.Context, allMs, enviro, devopsToken string) ([]RouteVersion, error) {
+func GetIstanzaVersioni(ctx context.Context, istanza, enviro, devopsToken string) ([]RouteVersion, error) {
 
 	Logga(ctx, os.Getenv("JsonLog"), "GetIstanzaVersioni - Getting DEPLOYLOG")
 	var erro error
 	var vrss []RouteVersion
 	argsDeploy := make(map[string]string)
 	argsDeploy["source"] = "devops-8"
-	argsDeploy["$fullquery"] = " select XDEPLOYLOG03,XDEPLOYLOG04,XDEPLOYLOG05,XDEPLOYLOG07 "
-	argsDeploy["$fullquery"] += " from TB_ANAG_DEPLOYLOG00 "
-	argsDeploy["$fullquery"] += " where XDEPLOYLOG04  IN (" + allMs + ") "
-	argsDeploy["$fullquery"] += " and XDEPLOYLOG09 = '" + enviro + "' "
-	argsDeploy["$fullquery"] += " and XDEPLOYLOG06 = '1' "
-	Logga(ctx, os.Getenv("JsonLog"), argsDeploy["$fullquery"])
-	restyDeployRes, errDeployRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsDeploy, "msdevops", "/api/"+os.Getenv("API_VERSION")+"/devops/custom/DEPLOYLOG/values", devopsToken, os.Getenv("apiDomain"), os.Getenv("coreApiVersion"))
+	argsDeploy["center_dett"] = "visualizza"
+	argsDeploy["$select"] = "XDEPLOYLOG03,XDEPLOYLOG04,XDEPLOYLOG05,XDEPLOYLOG07"
+	argsDeploy["$filter"] = "equals(XDEPLOYLOG04,'" + istanza + "') "
+	argsDeploy["$filter"] += " and equals(XDEPLOYLOG09,'" + enviro + "') "
+	argsDeploy["$filter"] += " and equals(XDEPLOYLOG06,'1') "
+
+	restyDeployRes, errDeployRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsDeploy, "msdevops", "/api/"+os.Getenv("API_VERSION")+"/devops/DEPLOYLOG", devopsToken, os.Getenv("apiDomain"), os.Getenv("coreApiVersion"))
 	if errDeployRes != nil {
 		Logga(ctx, os.Getenv("JsonLog"), errDeployRes.Error())
 		erro = errors.New(errDeployRes.Error())
@@ -1301,10 +1239,8 @@ func GetIstanzaVersioni(ctx context.Context, allMs, enviro, devopsToken string) 
 	if len(restyDeployRes.BodyArray) > 0 {
 		for _, x := range restyDeployRes.BodyArray {
 			var vrs RouteVersion
-			vrs.Istanza = x["XDEPLOYLOG04"].(string)
 			vrs.CanaryProduction = x["XDEPLOYLOG03"].(string) // canary production
 			vrs.Versione = x["XDEPLOYLOG05"].(string)
-			vrs.MsRouteJson = x["XDEPLOYLOG07"].(string)
 			vrss = append(vrss, vrs)
 		}
 		Logga(ctx, os.Getenv("JsonLog"), "DEPLOYLOG OK")
