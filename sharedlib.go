@@ -1248,7 +1248,7 @@ func GetIstanzaVersioni(ctx context.Context, istanza, enviro, devopsToken string
 	}
 	return vrss, erro
 }
-func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMicroservizio string, istanza IstanzaMicro, micros Microservice, vsMsRoutes []RouteMs, utente, enviro, devopsToken, dominio, coreApiVersion, microfrontendJson string) error {
+func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMicroservizio string, istanza IstanzaMicro, micros Microservice, vsMsRoutes RouteMs, utente, enviro, devopsToken, dominio, coreApiVersion, microfrontendJson string) error {
 
 	Logga(ctx, os.Getenv("JsonLog"), "")
 	Logga(ctx, os.Getenv("JsonLog"), " + + + + + + + + + + + + + + + + + + + + ")
@@ -1256,18 +1256,12 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 	Logga(ctx, os.Getenv("JsonLog"), "istanza "+istanza.Istanza)
 	Logga(ctx, os.Getenv("JsonLog"), "versioneMicroservizio "+versioneMicroservizio)
 
-	var currVersioni []RouteVersion
-	var ms RouteMs
-	for _, ccc := range vsMsRoutes {
-		if ccc.Istanza == istanza.Istanza {
-			ms = ccc
-			currVersioni = ccc.Version
-			for _, ddd := range ccc.Version {
-				Logga(ctx, os.Getenv("JsonLog"), ddd.CanaryProduction+" "+ddd.Versione)
-			}
-		}
+	currVersioni := vsMsRoutes.Version
+	for _, ddd := range currVersioni {
+		Logga(ctx, os.Getenv("JsonLog"), ddd.CanaryProduction+" "+ddd.Versione)
 	}
 
+	var ms RouteMs
 	msByte, _ := json.Marshal(ms)
 
 	devops := "devops"

@@ -1412,6 +1412,8 @@ func CheckPodHealth(microservice, versione, namespace, apiHost, apiToken string,
 	var erro error
 	var c context.Context
 
+	Logga(c, os.Getenv("JsonLog"), "Checkpodhealth: "+microservice+" "+versione)
+
 	debool, errBool := strconv.ParseBool(debug)
 	if errBool != nil {
 		return false, errBool
@@ -1467,10 +1469,11 @@ func CheckPodHealth(microservice, versione, namespace, apiHost, apiToken string,
 		}
 	}
 }
-func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, canaryProduction, namespace, enviro, tenant, devopsToken, dominio, coreApiVersion string, debug string) error {
+
+func DeleteObsoleteObjects(ctx context.Context, deployJson, ires IstanzaMicro, versione, canaryProduction, namespace, enviro, tenant, devopsToken string, vsMsRoutes RouteMs, dominio, coreApiVersion string, debug string) error {
 
 	var erro error
-	istanza := ires.Istanza
+
 	microservice := ""
 	if ires.Monolith == 0 {
 		microservice = ires.Microservice
@@ -1486,62 +1489,32 @@ func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, can
 	Logga(ctx, os.Getenv("JsonLog"), "****************************************************************************************")
 	Logga(ctx, os.Getenv("JsonLog"), "DELETING OBSOLETE PODS")
 
-	/* ************************************************************************************************ */
-	// DEPLOYLOG
-	Logga(ctx, os.Getenv("JsonLog"), "Getting DEPLOYLOG - deleteObsoleteMonolith")
-
-	devops := "devops"
-	if ires.Monolith == 1 {
-		devops = "devopsmono"
-	}
-
-	argsDeploy := make(map[string]string)
-	argsDeploy["source"] = "devops-8"
-	argsDeploy["$select"] = "XDEPLOYLOG03,XDEPLOYLOG05"
-	argsDeploy["center_dett"] = "visualizza"
-	argsDeploy["$filter"] = "equals(XDEPLOYLOG04,'" + istanza + "') "
-	argsDeploy["$filter"] += " and (equals(XDEPLOYLOG03,'canary') OR equals(XDEPLOYLOG03,'production'))  "
-	argsDeploy["$filter"] += " and equals(XDEPLOYLOG06,'1') "
-	argsDeploy["$filter"] += " and equals(XDEPLOYLOG09,'" + enviro + "') "
-	argsDeploy["$orderby"] = " XDEPLOYLOG05 desc"
-
-	restyDeployRes, errDeployRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsDeploy, "ms"+devops, "/api/"+os.Getenv("API_VERSION")+"/"+devops+"/DEPLOYLOG", devopsToken, dominio, coreApiVersion)
-	if errDeployRes != nil {
-		Logga(ctx, os.Getenv("JsonLog"), errDeployRes.Error())
-		erro = errors.New(errDeployRes.Error())
-		return erro
-	}
-
 	versioneProductionDb := ""
 	versioneCanaryDb := ""
 
 	canFound := false
 	prodFound := false
-	if len(restyDeployRes.BodyArray) > 0 {
-		for _, x := range restyDeployRes.BodyArray {
 
-			if x["XDEPLOYLOG03"].(string) == "canary" && !canFound {
-				canFound = true
-				vrs := x["XDEPLOYLOG05"].(string)
-				if vrs[0:1] == "v" {
-					vrs = strings.Replace(vrs, "v", "", -1)
-				}
-				versioneCanaryDb = "v" + vrs
+	msRoute := vsMsRoutes.Version
+	for _, x := range msRoute {
+		if x.CanaryProduction == "canary" && !canFound {
+			canFound = true
+			vrs := x.Versione
+			if vrs[0:1] == "v" {
+				vrs = strings.Replace(vrs, "v", "", -1)
 			}
-			if x["XDEPLOYLOG03"].(string) == "production" && !prodFound {
-				prodFound = true
-				vrs := x["XDEPLOYLOG05"].(string)
-				if vrs[0:1] == "v" {
-					vrs = strings.Replace(vrs, "v", "", -1)
-				}
-				versioneProductionDb = "v" + vrs
-			}
-
+			versioneCanaryDb = "v" + vrs
 		}
-		Logga(ctx, os.Getenv("JsonLog"), "DEPLOYLOG OK")
-	} else {
-		Logga(ctx, os.Getenv("JsonLog"), "DEPLOYLOG MISSING", "warn")
+		if x.CanaryProduction == "production" && !prodFound {
+			prodFound = true
+			vrs := x.Versione
+			if vrs[0:1] == "v" {
+				vrs = strings.Replace(vrs, "v", "", -1)
+			}
+			versioneProductionDb = "v" + vrs
+		}
 	}
+
 	Logga(ctx, os.Getenv("JsonLog"), "=== NEVER DELETE INNOCENT DEPLOYMENTS === ")
 	Logga(ctx, os.Getenv("JsonLog"), "eventually to kill: "+microservice)
 	Logga(ctx, os.Getenv("JsonLog"), "Never kill Canary: "+versioneCanaryDb)
@@ -1551,18 +1524,13 @@ func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, can
 
 	// ho recuperato le versioni canary e production che NON cancellero MAI :D
 
-	//msDeploy := microservice + "-v" + versione
-
-	//LogJson(ires)
 	item, errDepl := GetDeploymentApi(namespace, ires.ApiHost, ires.ApiToken, ires.ScaleToZero, debool)
-	//LogJson(item)
 	if errDepl != nil {
 		return errDepl
 	} else {
 
 		if len(item.Items) == 0 {
-
-			erro = errors.New("No Deployment Found in Namespace")
+			erro = errors.New("no Deployment Found in Namespace")
 			return erro
 		}
 
