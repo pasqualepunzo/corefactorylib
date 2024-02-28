@@ -1470,7 +1470,7 @@ func CheckPodHealth(microservice, versione, namespace, apiHost, apiToken string,
 	}
 }
 
-func DeleteObsoleteObjects(ctx context.Context, deployJson, ires IstanzaMicro, versione, canaryProduction, namespace, enviro, tenant, devopsToken string, vsMsRoutes RouteMs, dominio, coreApiVersion string, debug string) error {
+func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, canaryProduction, namespace, enviro, tenant, devopsToken string, vsMsRoutes RouteMs, dominio, coreApiVersion string, debug string) error {
 
 	var erro error
 
