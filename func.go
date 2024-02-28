@@ -1429,16 +1429,14 @@ func CheckPodHealth(microservice, versione, namespace, apiHost, apiToken string,
 		} else {
 
 			if len(item.Items) == 0 {
-				erro = errors.New("No Deployment Found in Namespace")
+				erro = errors.New("no Deployment Found in Namespace")
 				return false, erro
 			}
 
 			for _, item := range item.Items {
-
 				Logga(c, os.Getenv("JsonLog"), item.Metadata.Name+"-"+msDeploy)
 				if item.Metadata.Name == msDeploy {
 					msMatch = true
-
 					if !scaleToZero {
 						var ctx context.Context
 						Logga(ctx, os.Getenv("JsonLog"), item.Metadata.Name+" desired: "+strconv.Itoa(item.Spec.Replicas)+" - aviable: "+strconv.Itoa(item.Status.ReadyReplicas))
@@ -1457,13 +1455,12 @@ func CheckPodHealth(microservice, versione, namespace, apiHost, apiToken string,
 					erro = errors.New("nessun item risponde a cio che cerco")
 					return false, erro
 				}
-
 			}
 
 			i++
 			time.Sleep(10 * time.Second)
 			if i > 150 { // superati 5 minuti direi che stann e plobble'
-				erro = errors.New("Time Out. Pod is not Running")
+				erro = errors.New("time Out. Pod is not Running")
 				return false, erro
 			}
 		}
@@ -1496,7 +1493,9 @@ func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, can
 	prodFound := false
 
 	msRoute := vsMsRoutes.Version
+	Logga(ctx, os.Getenv("JsonLog"), "VERSIONI ATTUALI: ")
 	for _, x := range msRoute {
+		Logga(ctx, os.Getenv("JsonLog"), x.CanaryProduction+" - "+x.Versione)
 		if x.CanaryProduction == "canary" && !canFound {
 			canFound = true
 			vrs := x.Versione
@@ -1558,7 +1557,6 @@ func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, can
 
 					deployment := item.Spec.Template.Metadata.Labels.App + "-" + item.Spec.Template.Metadata.Labels.Version
 					Logga(ctx, os.Getenv("JsonLog"), "KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL")
-
 					Logga(ctx, os.Getenv("JsonLog"), "I DO KILL: "+deployment)
 
 					if ires.ScaleToZero {
@@ -1569,12 +1567,9 @@ func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, can
 						// delete HPA
 						DeleteObjectsApi(namespace, ires.ApiHost, ires.ApiToken, deployment, "hpa", debool)
 					}
-
 				}
 			}
-
 		}
-
 	}
 	return erro
 }

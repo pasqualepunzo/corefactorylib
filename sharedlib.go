@@ -803,7 +803,7 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 	for _, rt := range rts {
 		var v VsDetails
 		v.Prefix = rt.Prefix
-		v.InternalHost = rt.Microservice + "." + DominioCluster
+		v.InternalHost = enviro + "-" + rt.Microservice + "." + DominioCluster
 		se.Hosts = append(se.Hosts, v.InternalHost)
 		vsDetails = append(vsDetails, v)
 	}
@@ -922,7 +922,7 @@ func GetLayerTreDetails(ctx context.Context, tenant, DominioCluster, microservic
 	if strings.ToLower(team) == "devops" {
 		vs.ExternalHost = extDominio
 	}
-	vs.InternalHost = microservice + "." + DominioCluster
+	vs.InternalHost = enviro + "-" + microservice + "." + DominioCluster
 	layerTre.Vs = vs
 
 	Logga(ctx, os.Getenv("JsonLog"), "Get Layer Tre END")
