@@ -793,7 +793,6 @@ func GetLayerTreDetails(ctx context.Context, tenant, DominioCluster, microservic
 
 	var dominiCustomerMap map[string]string
 	var extDominio string
-	var intDominio string
 
 	json.Unmarshal([]byte(dominiCustomer), &dominiCustomerMap)
 
@@ -801,7 +800,6 @@ func GetLayerTreDetails(ctx context.Context, tenant, DominioCluster, microservic
 		// qui prendo il dominio esterno
 		if env == enviro {
 			extDominio = dom
-			intDominio = enviro + "-" + microservice + ".local"
 		}
 	}
 
@@ -838,7 +836,7 @@ func GetLayerTreDetails(ctx context.Context, tenant, DominioCluster, microservic
 
 				// per i ms che non sono msdevops basta il dominio interno e la porta 80
 				if x["XAPPSRV06"].(string) == "HTTP" {
-					gw.IntDominio = intDominio
+					gw.IntDominio = enviro + "-" + microservice + ".local"
 					gw.Name = x["XAPPSRV04"].(string)
 					gw.Number = strconv.Itoa(int(x["XAPPSRV05"].(float64)))
 					gw.Protocol = x["XAPPSRV06"].(string)
