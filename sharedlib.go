@@ -723,12 +723,6 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 
 			Ip = x["XKUBECLUSTER22"].(string)
 
-			gw.IntDominio = enviro + "-" + layerDue.AppName + ".local"
-			gw.Protocol = "HTTP"
-			gw.Name = "http"
-			gw.Number = "80"
-			gws = append(gws, gw)
-
 			// SE
 			se.Hosts = append(se.Hosts, enviro+"-"+x["XKUBEIMICROSERV04"].(string)+".local")
 
@@ -740,6 +734,12 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 		}
 	}
 	// azzecco i GW
+	gw.IntDominio = enviro + "-" + layerDue.AppName + ".local"
+	gw.Protocol = "HTTP"
+	gw.Name = "http"
+	gw.Number = "80"
+	gws = append(gws, gw)
+
 	layerDue.Gw = gws
 	// azzecco SE
 	se.Ip = Ip
