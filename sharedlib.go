@@ -430,9 +430,9 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 
 		isRefappFloat := restyKubeMSRes.BodyJson["XKUBEMICROSERV21"].(float64)
 		if isRefappFloat == 0 {
-			ims.IsRefapp = false
+			ims.IsApp = false
 		} else {
-			ims.IsRefapp = true
+			ims.IsApp = true
 		}
 
 		ims.RefAppCode = strings.ToLower(slugify.Slugify(restyKubeMSRes.BodyJson["XKUBEMICROSERV22"].(string)))
@@ -558,8 +558,56 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	//os.Exit(0)
 	return ims, erro
 }
+func GetLayerUnoDetails() {
+	// individuo il dominio dell'environment selezionato
+	// var dominiCustomerMap map[string]string
+	// var dominioEnvironment string
+	// json.Unmarshal([]byte(dominiCustomer), &dominiCustomerMap)
+	// for env, dom := range dominiCustomerMap {
+	// 	// qui prendo il dominio estarno
+	// 	if env == enviro {
+	// 		dominioEnvironment = dom
+	// 	}
+	// }
+	/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+	//
+	// pulisco i doppioni dei gruppi e trasfomo i gruppi in team
+	// type GroupTeam struct {
+	// 	Group string
+	// 	Team  string
+	// }
+	// var gruppiArrDirt []string
+	// var gruppiArr []string
+	// var gts []GroupTeam
+	// if len(BrRes.BodyArray) > 0 {
+	// 	for _, x := range BrRes.BodyArray {
+	// 		// metto tutti i gruppi anche ripetuti ( li pulisco dopo)
+	// 		gruppiArrDirt = append(gruppiArrDirt, x["XKUBEMICROSERV07"].(string))
+	// 	}
+	// }
+	// // carico in gruppiArr i soli gruppi che vanno tradotti in TEAM
+	// gruppiArr = GetSingleGroup(gruppiArrDirt)
+	// // per ogni gruppo ottengo il TEAM
+	// for _, grp := range gruppiArr {
+	// 	var gt GroupTeam
+	// 	team, errGrTm := GetTeamFromGroup(ctx, devopsToken, dominio, grp)
+	// 	if errGrTm != nil {
+	// 		Logga(ctx, os.Getenv("JsonLog"), errGrTm.Error())
+	// 		erro := errors.New(errGrTm.Error())
+	// 		return layerDue, erro
+	// 	}
+	// 	gt.Group = grp
+	// 	gt.Team = strings.ToLower(team)
+	// 	gts = append(gts, gt)
+	// }
+	/*
+		gts => Q01-DEVOPS - devops, Q01-CORE - core
+	*/
+	/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+}
 
 // questo metodo restituisce cio che serve in caso in cui il MS e di tipo REFAPP
+// calcola il GW, SE e VS di tutti i MS della APP
 func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsToken, dominio, coreApiVersion string) (LayerDue, error) {
 
 	var layerDue LayerDue
@@ -600,9 +648,9 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 	// qui cerco solo i MS relativi all' APP
 
 	argsApp := make(map[string]string)
-	argsApp["$fullquery"] = " select XAPP04,XBOXPKG04,XBOXPKG03,XREFAPPNEW03,XREFAPPCUSTOMER12 "
+	argsApp["$fullquery"] = " select XAPP04,XBOXPKG04,XBOXPKG03 "
 	argsApp["$fullquery"] += " from TB_ANAG_REFAPPNEW00 "
-	argsApp["$fullquery"] += " join TB_ANAG_REFAPPCUSTOMER00 on (XREFAPPCUSTOMER09 = '" + refappname + "') "
+	//argsApp["$fullquery"] += " join TB_ANAG_REFAPPCUSTOMER00 on (XREFAPPCUSTOMER09 = '" + refappname + "') "
 	argsApp["$fullquery"] += " join TB_ANAG_APP00 on (XAPP03=XREFAPPNEW03) "
 	argsApp["$fullquery"] += " join TB_ANAG_APPBOX00 on (XAPPBOX03=XREFAPPNEW03) "
 	argsApp["$fullquery"] += " join TB_ANAG_BOXPKG00 on (XBOXPKG03=XAPPBOX04 and XBOXPKG04 in (" + micros + ")) "
@@ -617,7 +665,7 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 		return layerDue, erro
 	}
 
-	var pkgs, appID, appName, dominiCustomer string
+	var pkgs, appName string
 	if len(AppRes.BodyArray) > 0 {
 		//var mms []string
 		for _, x := range AppRes.BodyArray {
@@ -627,8 +675,7 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 				erro := errors.New("XBOXPKG04 no cast")
 				return layerDue, erro
 			}
-			dominiCustomer = x["XREFAPPCUSTOMER12"].(string)
-			appID = x["XREFAPPNEW03"].(string)
+
 			appName = strings.ToLower(slugify.Slugify(x["XAPP04"].(string)))
 			pkgs += "'" + x["XBOXPKG04"].(string) + "', "
 			//mms = append(mms, x["XBOXPKG04"].(string))
@@ -637,55 +684,7 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 	}
 	/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
-	layerDue.RefAppName = appName
-
-	// individuo il dominio dell'environment selezionato
-	var dominiCustomerMap map[string]string
-	var dominioEnvironment string
-	json.Unmarshal([]byte(dominiCustomer), &dominiCustomerMap)
-	for env, dom := range dominiCustomerMap {
-		// qui prendo il dominio estarno
-		if env == enviro {
-			dominioEnvironment = dom
-		}
-	}
-
-	/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
-	// leggo le porte relative all APP da aprire sul GW
-	argsSr := make(map[string]string)
-	argsSr["source"] = "appman-8"
-	argsSr["$select"] = "XAPPSRV04,XAPPSRV05,XAPPSRV06"
-	argsSr["center_dett"] = "visualizza"
-	argsSr["$filter"] = "equals(XAPPSRV03,'" + appID + "') "
-
-	Logga(ctx, os.Getenv("JsonLog"), argsSr["$fullquery"])
-	SrRes, errSrRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsSr, "msappman", "/api/"+os.Getenv("API_VERSION")+"/appman/APPSRV", devopsToken, dominio, coreApiVersion)
-	if errSrRes != nil {
-		Logga(ctx, os.Getenv("JsonLog"), errSrRes.Error())
-		erro := errors.New(errSrRes.Error())
-		return layerDue, erro
-	}
-
-	type Appsrv struct {
-		Name     string
-		Protocol string
-		Number   string
-	}
-	// POPOLO UN ARR con tutte le porte HTTP da mappare sul GW
-	var aps []Appsrv
-	if len(SrRes.BodyArray) > 0 {
-		for _, x := range SrRes.BodyArray {
-			if x["XAPPSRV06"].(string) != "TCP" {
-				var ap Appsrv
-				ap.Name = x["XAPPSRV04"].(string)
-				ap.Number = strconv.Itoa(int(x["XAPPSRV05"].(float64)))
-				ap.Protocol = x["XAPPSRV06"].(string)
-				aps = append(aps, ap)
-			}
-		}
-	}
-
-	/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+	layerDue.AppName = appName
 
 	// QUESTA QUERY MI DA TUTTE LE INFO PER CREARE IL LAYER 2
 	// quindi le rotte per accedere al layer 3
@@ -709,114 +708,49 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 		return layerDue, erro
 	}
 
-	/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
-	//
-	// pulisco i doppioni dei gruppi e trasfomo i gruppi in team
-	type GroupTeam struct {
-		Group string
-		Team  string
-	}
-	var gruppiArrDirt []string
-	var gruppiArr []string
-	var gts []GroupTeam
-	if len(BrRes.BodyArray) > 0 {
-		for _, x := range BrRes.BodyArray {
-			// metto tutti i gruppi anche ripetuti ( li pulisco dopo)
-			gruppiArrDirt = append(gruppiArrDirt, x["XKUBEMICROSERV07"].(string))
-		}
-	}
-	// carico in gruppiArr i soli gruppi che vanno tradotti in TEAM
-	gruppiArr = GetSingleGroup(gruppiArrDirt)
-	// per ogni gruppo ottengo il TEAM
-	for _, grp := range gruppiArr {
-		var gt GroupTeam
-		team, errGrTm := GetTeamFromGroup(ctx, devopsToken, dominio, grp)
-		if errGrTm != nil {
-			Logga(ctx, os.Getenv("JsonLog"), errGrTm.Error())
-			erro := errors.New(errGrTm.Error())
-			return layerDue, erro
-		}
-		gt.Group = grp
-		gt.Team = strings.ToLower(team)
-		gts = append(gts, gt)
-	}
-	/*
-		gts => Q01-DEVOPS - devops, Q01-CORE - core
-	*/
-	/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
-
-	type Rotte struct {
-		Microservice string
-		Prefix       string
-		Team         string
-	}
-	var rts []Rotte
-	var Ip, DominioCluster string
+	var Ip string
+	var gws []Gw
+	var gw Gw
 
 	// mi conservo IP e DOMINIO del cluster
 	// popolo le rotte con il gruppo al posto del team che calcolero successivamente
+	var se Se
+	var vs Vs
+	vs.InternalHost = enviro + "-" + layerDue.AppName + ".local"
+
 	if len(BrRes.BodyArray) > 0 {
 		for _, x := range BrRes.BodyArray {
-			var rt Rotte
 
 			Ip = x["XKUBECLUSTER22"].(string)
-			DominioCluster = x["XKUBECLUSTER15"].(string)
 
-			// FAKE FUTURE TOGGLE
-			DominioCluster = "q01.local"
+			gw.IntDominio = enviro + "-" + layerDue.AppName + ".local"
+			gw.Protocol = "HTTP"
+			gw.Name = "http"
+			gw.Number = "80"
+			gws = append(gws, gw)
 
-			for _, tt := range gts {
-				if tt.Group == x["XKUBEMICROSERV07"].(string) {
-					rt.Team = tt.Team
-				}
-			}
-			rt.Microservice = x["XKUBEIMICROSERV04"].(string)
-			rt.Prefix = x["XKUBEENDPOINT09"].(string)
-			rts = append(rts, rt)
+			// SE
+			se.Hosts = append(se.Hosts, enviro+"-"+x["XKUBEIMICROSERV04"].(string)+".local")
+
+			// VS
+			var v VsDetails
+			v.DestinationHost = enviro + "-" + x["XKUBEIMICROSERV04"].(string) + ".local"
+			v.Prefix = x["XKUBEENDPOINT09"].(string)
+			vs.VsDetails = append(vs.VsDetails, v)
 		}
 	}
-
-	// +++++++++++++++++++++++++++++++++
-	// GATEWAY
-	// PER OGNI DOMINIO POPOLO LA STRUCT PER IL GW con porte protocolli etc
-	var gws []Gw
-	var gw Gw
-	for _, ap := range aps {
-		gw.ExtDominio = dominioEnvironment
-		//gw.IntDominio = enviro + "-" + refappname + "." + DominioCluster
-		gw.Protocol = ap.Protocol
-		gw.Name = ap.Name
-		gw.Number = ap.Number
-		gws = append(gws, gw)
-	}
+	// azzecco i GW
 	layerDue.Gw = gws
-	// +++++++++++++++++++++++++++++++++
-
-	// +++++++++++++++++++++++++++++++++
-	// SERVICE ENTRY + VIRTUALSERVICE
-	var vs Vs
-	var se Se
-	vs.ExternalHost = dominioEnvironment
-	vs.InternalHost = enviro + "-" + strings.ToLower(team) + "." + DominioCluster
-	var vsDetails []VsDetails
-
-	for _, rt := range rts {
-		var v VsDetails
-		v.Prefix = rt.Prefix
-		v.InternalHost = enviro + "-" + rt.Microservice + "." + DominioCluster
-		se.Hosts = append(se.Hosts, v.InternalHost)
-		vsDetails = append(vsDetails, v)
-	}
-	vs.VsDetails = vsDetails
-	layerDue.Vs = vs
-
-	// organizzo il SE
+	// azzecco SE
 	se.Ip = Ip
 	layerDue.Se = se
+	// azzecco VS
+	layerDue.Vs = vs
+
 	// +++++++++++++++++++++++++++++++++
 
 	// cerco eventuali rotte esterne
-	fillMarketPlaceRoute(&layerDue, DominioCluster)
+	fillMarketPlaceRoute(&layerDue)
 
 	Logga(ctx, os.Getenv("JsonLog"), "Get Layer Due END")
 
@@ -864,10 +798,10 @@ func GetLayerTreDetails(ctx context.Context, tenant, DominioCluster, microservic
 	json.Unmarshal([]byte(dominiCustomer), &dominiCustomerMap)
 
 	for env, dom := range dominiCustomerMap {
-		// qui prendo il dominio estarno
+		// qui prendo il dominio esterno
 		if env == enviro {
 			extDominio = dom
-			intDominio = microservice + "." + DominioCluster
+			intDominio = enviro + "-" + microservice + ".local"
 		}
 	}
 
@@ -892,7 +826,7 @@ func GetLayerTreDetails(ctx context.Context, tenant, DominioCluster, microservic
 		for _, x := range SrRes.BodyArray {
 			var gw Gw
 
-			if microservice == "devops" && x["XAPPSRV04"].(string) == "grpc-"+enviro {
+			if microservice == "msdevops" && x["XAPPSRV04"].(string) == "grpc-"+enviro {
 
 				gw.ExtDominio = extDominio
 				gw.Name = x["XAPPSRV04"].(string)
@@ -919,10 +853,10 @@ func GetLayerTreDetails(ctx context.Context, tenant, DominioCluster, microservic
 	layerTre.Gw = gws
 
 	var vs Vs
-	if strings.ToLower(team) == "devops" {
+	if microservice == "msdevops" {
 		vs.ExternalHost = extDominio
 	}
-	vs.InternalHost = enviro + "-" + microservice + "." + DominioCluster
+	vs.InternalHost = enviro + "-" + microservice + ".local"
 	layerTre.Vs = vs
 
 	Logga(ctx, os.Getenv("JsonLog"), "Get Layer Tre END")
@@ -932,33 +866,33 @@ func GetLayerTreDetails(ctx context.Context, tenant, DominioCluster, microservic
 
 // questo medoto è un harcoded di un futuro possibile MARKET PLACE
 // le cose sono cambiate e quindo va fatto ex novo ( monodominio a multidominio per env ..... il plasma a terra)
-func fillMarketPlaceRoute(layerDue *LayerDue, DominioCluster string) {
+func fillMarketPlaceRoute(layerDue *LayerDue) {
 	found := false
 	for _, x := range layerDue.Vs.VsDetails {
-		if x.InternalHost == DominioCluster {
+		if strings.Contains(x.DestinationHost, "mscoreservice") {
 			found = true
 			break
 		}
 	}
 	if !found {
 		var vsD VsDetails
-		vsD.InternalHost = "prod-core." + DominioCluster
+		vsD.DestinationHost = "prod-mscoreservice.local"
 		vsD.Prefix = "/api/" + os.Getenv("API_VERSION") + "/core"
 		layerDue.Vs.VsDetails = append(layerDue.Vs.VsDetails, vsD)
 
-		vsD.InternalHost = "prod-core." + DominioCluster
+		vsD.DestinationHost = "prod-msauth.local"
 		vsD.Prefix = "/api/" + os.Getenv("API_VERSION") + "/auth"
 		layerDue.Vs.VsDetails = append(layerDue.Vs.VsDetails, vsD)
 
-		vsD.InternalHost = "prod-core." + DominioCluster
+		vsD.DestinationHost = "prod-msusers.local"
 		vsD.Prefix = "/api/" + os.Getenv("API_VERSION") + "/users"
 		layerDue.Vs.VsDetails = append(layerDue.Vs.VsDetails, vsD)
 
-		vsD.InternalHost = "prod-core." + DominioCluster
+		vsD.DestinationHost = "prod-mscoreservice.local"
 		vsD.Prefix = "/api/" + os.Getenv("API_VERSION") + "/document"
 		layerDue.Vs.VsDetails = append(layerDue.Vs.VsDetails, vsD)
 
-		vsD.InternalHost = "prod-core." + DominioCluster
+		vsD.DestinationHost = "prod-mscoreservice.local"
 		vsD.Prefix = "/ref-app-cs"
 		layerDue.Vs.VsDetails = append(layerDue.Vs.VsDetails, vsD)
 

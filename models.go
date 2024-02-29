@@ -333,7 +333,7 @@ type IstanzaMicro struct {
 	SwMultiEnvironment                  string                 `json:"swMultiEnvironment"`
 	SwCore                              bool                   `json:"swCore"`
 	ScaleToZero                         bool                   `json:"scaleToZero"`
-	IsRefapp                            bool                   `json:"isRefapp"`
+	IsApp                               bool                   `json:"isApp"`
 	SwDb                                int                    `json:"swDb"`
 	IstanzaMicroVersioni                []IstanzaMicroVersioni `json:"istanzaMicroVersioni"`
 	AttributiMS                         []AttributiMS          `json:"attributiMS"`
@@ -345,10 +345,10 @@ type IstanzaMicro struct {
 	RefAppCode                          string                 `json:"refAppCode"`
 }
 type LayerDue struct {
-	RefAppName string `json:"refAppName"`
-	Gw         []Gw   `json:"gw"`
-	Vs         Vs     `json:"vs"`
-	Se         Se     `json:"se"`
+	AppName string `json:"AppName"`
+	Gw      []Gw   `json:"gw"`
+	Vs      Vs     `json:"vs"`
+	Se      Se     `json:"se"`
 }
 type Gw struct {
 	ExtDominio string `json:"extDominio"`
@@ -367,8 +367,8 @@ type Vs struct {
 	VsDetails    []VsDetails `json:"vsDetails"`
 }
 type VsDetails struct {
-	InternalHost string `json:"internalHost"`
-	Prefix       string `json:"prefix"`
+	DestinationHost string `json:"destinationHost"`
+	Prefix          string `json:"prefix"`
 }
 type AttributiMS struct {
 	Partner  string `json:"partner"`
