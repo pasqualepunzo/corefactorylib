@@ -1419,7 +1419,7 @@ func CheckPodHealth(microservice, versione, namespace, apiHost, apiToken string,
 		return false, errBool
 	}
 
-	msDeploy := microservice + "-" + versione
+	msDeploy := microservice + "-v" + versione
 	msMatch := false
 	i := 0
 	for {
@@ -1434,7 +1434,7 @@ func CheckPodHealth(microservice, versione, namespace, apiHost, apiToken string,
 			}
 
 			for _, item := range item.Items {
-				Logga(c, os.Getenv("JsonLog"), item.Metadata.Name+"-"+msDeploy)
+				Logga(c, os.Getenv("JsonLog"), "LISTA DEPLOY: "+item.Metadata.Name+"-"+msDeploy)
 				if item.Metadata.Name == msDeploy {
 					msMatch = true
 					if !scaleToZero {
