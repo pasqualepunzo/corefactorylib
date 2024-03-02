@@ -344,7 +344,7 @@ type IstanzaMicro struct {
 	DepEnv                              string                 `json:"depEnv"`
 	RefAppCode                          string                 `json:"refAppCode"`
 }
-type LayerDue struct {
+type LayerMesh struct {
 	AppName string `json:"AppName"`
 	Gw      []Gw   `json:"gw"`
 	Vs      Vs     `json:"vs"`
