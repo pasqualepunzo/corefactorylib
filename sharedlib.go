@@ -608,9 +608,9 @@ func GetLayerUnoDetails() {
 
 // questo metodo restituisce cio che serve in caso in cui il MS e di tipo REFAPP
 // calcola il GW, SE e VS di tutti i MS della APP
-func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsToken, dominio, coreApiVersion string) (LayerDue, error) {
+func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsToken, dominio, coreApiVersion string) (LayerMesh, error) {
 
-	var layerDue LayerDue
+	var layerDue LayerMesh
 
 	Logga(ctx, os.Getenv("JsonLog"), "Get Layer Due Start")
 	// entro su microservice per avere i ms
@@ -756,9 +756,9 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 
 	return layerDue, nil
 }
-func GetLayerTreDetails(ctx context.Context, tenant, DominioCluster, microservice, enviro, team, devopsToken, dominio, coreApiVersion string) (LayerDue, error) {
+func GetLayerTreDetails(ctx context.Context, tenant, DominioCluster, microservice, enviro, team, devopsToken, dominio, coreApiVersion string) (LayerMesh, error) {
 
-	var layerTre LayerDue
+	var layerTre LayerMesh
 
 	Logga(ctx, os.Getenv("JsonLog"), "Get Layer Tre Start")
 	// entro su microservice per avere i ms
@@ -864,7 +864,7 @@ func GetLayerTreDetails(ctx context.Context, tenant, DominioCluster, microservic
 
 // questo medoto è un harcoded di un futuro possibile MARKET PLACE
 // le cose sono cambiate e quindo va fatto ex novo ( monodominio a multidominio per env ..... il plasma a terra)
-func fillMarketPlaceRoute(layerDue *LayerDue) {
+func fillMarketPlaceRoute(layerDue *LayerMesh) {
 	found := false
 	for _, x := range layerDue.Vs.VsDetails {
 		if strings.Contains(x.DestinationHost, "mscoreservice") {
