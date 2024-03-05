@@ -790,16 +790,28 @@ func GetLayerTreDetails(ctx context.Context, tenant, DominioCluster, microservic
 	}
 
 	/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
-
-	var dominiCustomerMap map[string]string
+	fmt.Println(dominiCustomer)
+	type Domini struct {
+		Env string `json:"env"`
+		Dom string `json:"dom"`
+	}
+	var dd []Domini
+	// domini, errM := json.Marshal(dominiCustomer)
+	// if errM != nil {
+	// 	Logga(ctx, os.Getenv("JsonLog"), errM.Error())
+	// 	erro := errors.New(errM.Error())
+	// 	return layerTre, erro
+	// }
+	json.Unmarshal([]byte(dominiCustomer), &dd)
 	var extDominio string
 
-	json.Unmarshal([]byte(dominiCustomer), &dominiCustomerMap)
+	LogJson(dd)
 
-	for env, dom := range dominiCustomerMap {
+	for _, dom := range dd {
+		fmt.Println(dom.Env, enviro)
 		// qui prendo il dominio esterno
-		if env == enviro {
-			extDominio = dom
+		if dom.Env == enviro {
+			extDominio = dom.Dom
 		}
 	}
 
