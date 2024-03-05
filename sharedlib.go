@@ -558,53 +558,6 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	//os.Exit(0)
 	return ims, erro
 }
-func GetLayerUnoDetails() {
-	// individuo il dominio dell'environment selezionato
-	// var dominiCustomerMap map[string]string
-	// var dominioEnvironment string
-	// json.Unmarshal([]byte(dominiCustomer), &dominiCustomerMap)
-	// for env, dom := range dominiCustomerMap {
-	// 	// qui prendo il dominio estarno
-	// 	if env == enviro {
-	// 		dominioEnvironment = dom
-	// 	}
-	// }
-	/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
-	//
-	// pulisco i doppioni dei gruppi e trasfomo i gruppi in team
-	// type GroupTeam struct {
-	// 	Group string
-	// 	Team  string
-	// }
-	// var gruppiArrDirt []string
-	// var gruppiArr []string
-	// var gts []GroupTeam
-	// if len(BrRes.BodyArray) > 0 {
-	// 	for _, x := range BrRes.BodyArray {
-	// 		// metto tutti i gruppi anche ripetuti ( li pulisco dopo)
-	// 		gruppiArrDirt = append(gruppiArrDirt, x["XKUBEMICROSERV07"].(string))
-	// 	}
-	// }
-	// // carico in gruppiArr i soli gruppi che vanno tradotti in TEAM
-	// gruppiArr = GetSingleGroup(gruppiArrDirt)
-	// // per ogni gruppo ottengo il TEAM
-	// for _, grp := range gruppiArr {
-	// 	var gt GroupTeam
-	// 	team, errGrTm := GetTeamFromGroup(ctx, devopsToken, dominio, grp)
-	// 	if errGrTm != nil {
-	// 		Logga(ctx, os.Getenv("JsonLog"), errGrTm.Error())
-	// 		erro := errors.New(errGrTm.Error())
-	// 		return layerDue, erro
-	// 	}
-	// 	gt.Group = grp
-	// 	gt.Team = strings.ToLower(team)
-	// 	gts = append(gts, gt)
-	// }
-	/*
-		gts => Q01-DEVOPS - devops, Q01-CORE - core
-	*/
-	/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
-}
 
 // questo metodo restituisce cio che serve in caso in cui il MS e di tipo REFAPP
 // calcola il GW, SE e VS di tutti i MS della APP
@@ -699,6 +652,7 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 	argsBr["$fullquery"] += " where 1>0 "
 	argsBr["$fullquery"] += " AND XKUBEIMICROSERV04 in (" + pkgs + ") "
 	argsBr["$fullquery"] += " AND XKUBEIMICROSERV06  = '" + enviro + "' "
+	argsBr["$fullquery"] += " order by XKUBEIMICROSERV04"
 
 	Logga(ctx, os.Getenv("JsonLog"), argsBr["$fullquery"])
 	BrRes, errBrRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsBr, "msdevops", "/api/"+os.Getenv("API_VERSION")+"/devops/custom/KUBEIMICROSERV/values", devopsToken, dominio, coreApiVersion)
@@ -717,6 +671,10 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 	var se Se
 	var vs Vs
 	vs.InternalHost = enviro + "-" + layerDue.AppName + ".local"
+	msOld := ""
+
+	// azzecco il dominio interno del layer uno
+	se.Hosts = append(se.Hosts, enviro+"-"+appName+".local")
 
 	if len(BrRes.BodyArray) > 0 {
 		for _, x := range BrRes.BodyArray {
@@ -724,7 +682,10 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 			Ip = x["XKUBECLUSTER22"].(string)
 
 			// SE
-			se.Hosts = append(se.Hosts, enviro+"-"+x["XKUBEIMICROSERV04"].(string)+".local")
+			if msOld == "" || msOld != x["XKUBEIMICROSERV04"].(string) {
+				se.Hosts = append(se.Hosts, enviro+"-"+x["XKUBEIMICROSERV04"].(string)+".local")
+			}
+			msOld = x["XKUBEIMICROSERV04"].(string)
 
 			// VS
 			var v VsDetails
@@ -733,6 +694,7 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 			vs.VsDetails = append(vs.VsDetails, v)
 		}
 	}
+
 	// azzecco i GW
 	gw.IntDominio = enviro + "-" + layerDue.AppName + ".local"
 	gw.Protocol = "HTTP"
