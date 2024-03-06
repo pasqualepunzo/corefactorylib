@@ -600,7 +600,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 				argsBld["$fullquery"] += " limit 1 "
 				fmt.Println(argsBld["$fullquery"])
 
-				restyKubeBldRes, errKubeBldRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsBld, "/api/"+os.Getenv("API_VERSION")+"ms"+devops, "/devops/custom/KUBEDKRBUILD/values", devopsToken, dominio, coreApiVersion)
+				restyKubeBldRes, errKubeBldRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsBld, "ms"+devops, "/api/"+os.Getenv("API_VERSION")+"/devops/custom/KUBEDKRBUILD/values", devopsToken, dominio, coreApiVersion)
 
 				//fmt.Println(restyKubeBldRes)
 				if errKubeBldRes != nil {
@@ -634,6 +634,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 					erro := errors.New("The component " + docker + " of the microservice " + microservices.Nome + " is MISSING - you have to build it first.")
 					return microservices, erro
 				}
+
 			}
 
 			Logga(ctx, os.Getenv("JsonLog"), "")
