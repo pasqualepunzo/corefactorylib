@@ -574,6 +574,7 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 	argsMs["source"] = "devops-8"
 	argsMs["$select"] = "XKUBEMICROSERV05"
 	argsMs["center_dett"] = "visualizza"
+	argsMs["$offset"] = "all"
 
 	MsRes, errMsRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsMs, "msdevops", "/api/"+os.Getenv("API_VERSION")+"/devops/KUBEMICROSERV", devopsToken, dominio, coreApiVersion)
 	if errMsRes != nil {
