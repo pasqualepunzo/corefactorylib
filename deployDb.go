@@ -907,6 +907,14 @@ func RenameDatabases(ctx context.Context, dbMetaName DbMetaConnMs, masterDb Mast
 	if err != nil {
 		fmt.Println(err)
 	}
+
+	query = "DROP DATABASE IF EXISTS " + dbMetaName.MetaName + "_METAOLD"
+	_, err = db.Exec(query)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println(query + "  ok")
+	}
 }
 func GetMasterConn(ctx context.Context, gruppoDeveloper, cluster, devopsToken, devopsTokenDst, enviro, dominio, coreApiVersion string, monolith int32) (MasterConn, error) {
 

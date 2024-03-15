@@ -826,15 +826,72 @@ func GetLayerTreDetails(ctx context.Context, tenant, DominioCluster, microservic
 	layerTre.Gw = gws
 
 	var vs Vs
-	if microservice == "msdevops" {
+	layerFt := LayerFt(tenant, enviro)
+
+	// se la combo tenant e enviro e true lavoro il gateway nel nuovo modo
+	if layerFt {
+		if microservice == "msdevops" {
+			vs.ExternalHost = extDominio
+		}
+	} else {
 		vs.ExternalHost = extDominio
 	}
+
 	vs.InternalHost = enviro + "-" + microservice + ".local"
 	layerTre.Vs = vs
 
 	Logga(ctx, os.Getenv("JsonLog"), "Get Layer Tre END")
 
 	return layerTre, nil
+}
+func LayerFt(tnt, enviro string) bool {
+
+	type FutToggle struct {
+		Int  bool `json:"int"`
+		Qa   bool `json:"qa"`
+		Uat  bool `json:"uat"`
+		Demo bool `json:"demo"`
+		Prod bool `json:"prod"`
+	}
+	type FutToggles map[string]FutToggle
+	var fToogles FutToggles
+
+	futureToggleFile, _ := os.ReadFile("layerFT.json")
+	_ = json.Unmarshal([]byte(futureToggleFile), &fToogles)
+
+	switch enviro {
+	case "int":
+		if fToogles[tnt].Int {
+			return true
+		} else {
+			return false
+		}
+	case "qa":
+		if fToogles[tnt].Qa {
+			return true
+		} else {
+			return false
+		}
+	case "uat":
+		if fToogles[tnt].Uat {
+			return true
+		} else {
+			return false
+		}
+	case "demo":
+		if fToogles[tnt].Demo {
+			return true
+		} else {
+			return false
+		}
+	case "prod":
+		if fToogles[tnt].Prod {
+			return true
+		} else {
+			return false
+		}
+	}
+	return false
 }
 
 // questo medoto è un harcoded di un futuro possibile MARKET PLACE

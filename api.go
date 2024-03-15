@@ -310,7 +310,6 @@ func ApiCallGET(ctx context.Context, debug string, args map[string]string, micro
 	//LogJson(resStruct)
 	return resStruct, nil
 }
-
 func ApiCallLOGIN(ctx context.Context, debug string, args map[string]interface{}, microservice, routing, dominio, coreApiVersion string) (map[string]interface{}, error) {
 
 	if !strings.Contains(dominio, "http") {
