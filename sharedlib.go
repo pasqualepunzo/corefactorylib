@@ -645,7 +645,7 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 	argsBr := make(map[string]string)
 	argsBr["source"] = "devops-8"
 
-	argsBr["$fullquery"] = "  select XKUBEIMICROSERV04,XKUBEENDPOINT09,XKUBECLUSTER15,XKUBECLUSTER22, XKUBEMICROSERV07 "
+	argsBr["$fullquery"] = "  select XKUBEIMICROSERV04,XKUBEENDPOINT09,XKUBECLUSTER15,XKUBECLUSTER22, XKUBEMICROSERV07, XKUBEMICROSERV20 "
 	argsBr["$fullquery"] += " from TB_ANAG_KUBEIMICROSERV00 "
 	argsBr["$fullquery"] += " join TB_ANAG_KUBEMICROSERV00 on (XKUBEMICROSERV05 = XKUBEIMICROSERV04) "
 	argsBr["$fullquery"] += " join TB_ANAG_KUBECLUSTER00 on (XKUBEIMICROSERV05 = XKUBECLUSTER03) "
@@ -691,6 +691,15 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 			// VS
 			var v VsDetails
 			v.DestinationHost = enviro + "-" + x["XKUBEIMICROSERV04"].(string) + ".local"
+			v.Authority = enviro + "-" + x["XKUBEIMICROSERV04"].(string) + ".local"
+
+			// SCALE TO ZERO
+			stz := int(x["XKUBEIMICROSERV04"].(float64))
+			if stz == 1 {
+				v.DestinationHost = "istio-ingressgateway.istio-system.svc.cluster.local"
+				v.Authority = x["XKUBEIMICROSERV04"].(string) + "." + enviro + "-" + team + "." + x["XKUBEIMICROSERV15"].(string)
+			}
+
 			v.Prefix = x["XKUBEENDPOINT09"].(string)
 			vs.VsDetails = append(vs.VsDetails, v)
 		}

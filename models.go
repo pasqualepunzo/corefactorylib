@@ -369,6 +369,7 @@ type Vs struct {
 type VsDetails struct {
 	DestinationHost string `json:"destinationHost"`
 	Prefix          string `json:"prefix"`
+	Authority       string `json:"authority"`
 }
 type AttributiMS struct {
 	Partner  string `json:"partner"`
