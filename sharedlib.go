@@ -843,7 +843,7 @@ func GetLayerTreDetails(ctx context.Context, tenant, DominioCluster, microservic
 			vs.ExternalHost = extDominio
 		}
 	} else {
-		vs.ExternalHost = extDominio
+		vs.ExternalHost = DominioCluster
 	}
 
 	vs.InternalHost = enviro + "-" + microservice + ".local"
