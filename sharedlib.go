@@ -694,7 +694,7 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 			v.Authority = enviro + "-" + x["XKUBEIMICROSERV04"].(string) + ".local"
 
 			// SCALE TO ZERO
-			stz := int(x["XKUBEIMICROSERV04"].(float64))
+			stz := int(x["XKUBEMICROSERV20"].(float64))
 			if stz == 1 {
 				v.DestinationHost = "istio-ingressgateway.istio-system.svc.cluster.local"
 				v.Authority = x["XKUBEIMICROSERV04"].(string) + "." + enviro + "-" + team + "." + x["XKUBEIMICROSERV15"].(string)
