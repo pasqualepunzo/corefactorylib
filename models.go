@@ -711,17 +711,17 @@ type MsgDetails struct {
 	Action       string `json:"action"`
 }
 type OutboxBody struct {
-	XOUTBOX01 int           `json:"XOUTBOX01"`
-	XOUTBOX02 int           `json:"XOUTBOX02"`
-	XOUTBOX03 string        `json:"XOUTBOX03"`
-	XOUTBOX04 string        `json:"XOUTBOX04"`
-	XOUTBOX05 string        `json:"XOUTBOX05"`
-	XOUTBOX06 []interface{} `json:"XOUTBOX06"`
-	XOUTBOX07 string        `json:"XOUTBOX07"`
-	XOUTBOX08 int           `json:"XOUTBOX08"`
-	XOUTBOX09 string        `json:"XOUTBOX09"`
-	XOUTBOX10 int           `json:"XOUTBOX10"`
-	XOUTBOX11 string        `json:"XOUTBOX11"`
-	XOUTBOX12 string        `json:"XOUTBOX12"`
-	XOUTBOX13 string        `json:"XOUTBOX13"`
+	XOUTBOX01 int         `json:"XOUTBOX01"`
+	XOUTBOX02 int         `json:"XOUTBOX02"`
+	XOUTBOX03 string      `json:"XOUTBOX03"`
+	XOUTBOX04 string      `json:"XOUTBOX04"`
+	XOUTBOX05 string      `json:"XOUTBOX05"`
+	XOUTBOX06 interface{} `json:"XOUTBOX06"`
+	XOUTBOX07 string      `json:"XOUTBOX07"`
+	XOUTBOX08 int         `json:"XOUTBOX08"`
+	XOUTBOX09 string      `json:"XOUTBOX09"`
+	XOUTBOX10 int         `json:"XOUTBOX10"`
+	XOUTBOX11 string      `json:"XOUTBOX11"`
+	XOUTBOX12 string      `json:"XOUTBOX12"`
+	XOUTBOX13 string      `json:"XOUTBOX13"`
 }
