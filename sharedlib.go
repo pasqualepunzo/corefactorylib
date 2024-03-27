@@ -696,7 +696,7 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 			// SCALE TO ZERO
 			stz := int(x["XKUBEMICROSERV20"].(float64))
 			if stz == 1 {
-				stzTeam, errStzTeam := GetTeamFromGroup(ctx, devopsToken, dominio, x["XKUBEIMICROSERV07"].(string))
+				stzTeam, errStzTeam := GetTeamFromGroup(ctx, devopsToken, dominio, x["XKUBEMICROSERV07"].(string))
 				if errStzTeam != nil {
 					Logga(ctx, os.Getenv("JsonLog"), errStzTeam.Error())
 					erro := errors.New(errStzTeam.Error())
