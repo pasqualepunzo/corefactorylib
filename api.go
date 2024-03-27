@@ -46,32 +46,7 @@ func ApiCallPOST(ctx context.Context, debug string, args []map[string]interface{
 		dominio = "https://" + dominio
 	}
 
-	type restyPOSTStruct struct {
-		Num0 struct {
-			Code  int `json:"code"`
-			Debug struct {
-				Body struct {
-					Xpackage03 string `json:"XPACKAGE03"`
-					Xpackage04 string `json:"XPACKAGE04"`
-					Xpackage05 string `json:"XPACKAGE05"`
-					Debug      bool   `json:"debug"`
-					Outbox     bool   `json:"outbox"`
-					Source     string `json:"source"`
-				} `json:"body"`
-				Fields struct {
-					Xpackage03 string `json:"XPACKAGE03"`
-					Xpackage04 string `json:"XPACKAGE04"`
-					Xpackage05 string `json:"XPACKAGE05"`
-				} `json:"fields"`
-				SQL string `json:"sql"`
-			} `json:"debug"`
-			InsertedID string `json:"insertedId"`
-			RowCount   int    `json:"rowCount"`
-		} `json:"0"`
-		Outbox int `json:"outbox"`
-	}
-
-	type _restyPOSTStruct []struct {
+	type restyPOSTStruct []struct {
 		Code   int         `json:"code"`
 		Errors interface{} `json:"errors"`
 		Debug  struct {
@@ -81,7 +56,8 @@ func ApiCallPOST(ctx context.Context, debug string, args []map[string]interface{
 		} `json:"debug"`
 		InsertedID string `json:"insertedId"`
 
-		RowCount int `json:"rowCount"`
+		RowCount int  `json:"rowCount"`
+		Outbox   bool `json:"outbox"`
 	}
 
 	var resStruct CallGetResponse
@@ -164,11 +140,11 @@ func ApiCallPOST(ctx context.Context, debug string, args []map[string]interface{
 				resStruct.Log = errJson.Error()
 
 			} else {
-				callResponse["InsertID"] = restyPOSTRes.Num0.InsertedID
+				callResponse["InsertID"] = restyPOSTRes[0].InsertedID
 				resStruct.Kind = "Json"
 				resStruct.BodyJson = callResponse
-				resStruct.DebugFields = restyPOSTRes.Num0.Debug.Fields
-				resStruct.DebugBody = restyPOSTRes.Num0.Debug.Body
+				resStruct.DebugFields = restyPOSTRes[0].Debug.Fields
+				resStruct.DebugBody = restyPOSTRes[0].Debug.Body
 			}
 		}
 	}
