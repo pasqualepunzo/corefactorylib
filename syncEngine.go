@@ -4,6 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"os"
+	"time"
+
+	"github.com/antelman107/net-wait-go/wait"
 )
 
 func FailOnError(ctx context.Context, err error, msg string) {
@@ -64,4 +67,17 @@ func GetMsgID(Body []byte) (MsgDetails, error) {
 	msg.Resource = body[0].XOUTBOX13
 	msg.Action = body[0].XOUTBOX05
 	return msg, nil
+}
+func NetAlive(host, port string) bool {
+	if !wait.New(
+		wait.WithProto("tcp"),
+		wait.WithWait(200*time.Millisecond),
+		wait.WithBreak(50*time.Millisecond),
+		wait.WithDeadline(25*time.Second),
+		wait.WithDebug(true),
+	).Do([]string{host + ":" + port}) {
+		return false
+	} else {
+		return true
+	}
 }

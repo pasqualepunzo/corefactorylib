@@ -40,6 +40,7 @@ require (
 
 require (
 	cloud.google.com/go/storage v1.31.0
+	github.com/antelman107/net-wait-go v0.0.0-20220211074630-12d8a944b87d
 	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e // indirect
 	github.com/fatih/color v1.7.0 // indirect
 	github.com/mattn/go-colorable v0.1.2 // indirect
