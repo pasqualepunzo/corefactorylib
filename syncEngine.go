@@ -82,7 +82,7 @@ func NetAlive(host, port string) bool {
 		return true
 	}
 }
-func PublishListenerError(ctx context.Context, d amqp.Delivery, exchange string) {
+func PublishQueueError(ctx context.Context, d amqp.Delivery, exchange string) {
 
 	conn, err := amqp.Dial("amqp://" + os.Getenv("userMQ") + ":" + os.Getenv("passwdMQ") + "@" + os.Getenv("hostMQ") + ":" + os.Getenv("portMQ") + "/" + os.Getenv("APP_ENV"))
 	FailOnError(ctx, err, "Failed to connect to rabbitmq")
