@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/antelman107/net-wait-go/wait"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 func FailOnError(ctx context.Context, err error, msg string) {
@@ -80,4 +81,42 @@ func NetAlive(host, port string) bool {
 	} else {
 		return true
 	}
+}
+func PublishListenerError(ctx context.Context, d amqp.Delivery, exchange string) {
+
+	conn, err := amqp.Dial("amqp://" + os.Getenv("userMQ") + ":" + os.Getenv("passwdMQ") + "@" + os.Getenv("hostMQ") + ":" + os.Getenv("portMQ") + "/" + os.Getenv("APP_ENV"))
+	FailOnError(ctx, err, "Failed to connect to rabbitmq")
+	defer conn.Close()
+
+	ch, err := conn.Channel()
+	FailOnError(ctx, err, "Failed to open a channel")
+	defer ch.Close()
+
+	err = ch.ExchangeDeclare(
+		exchange, // name
+		"fanout", // type
+		true,     // durable
+		false,    // auto-deleted
+		false,    // internal
+		false,    // no-wait
+		nil,      // arguments
+	)
+	FailOnError(ctx, err, "Failed to declare an exchange")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	errP := ch.PublishWithContext(ctx,
+		exchange, // exchange
+		"",       // routing key
+		false,    // mandatory
+		false,    // immediate
+		amqp.Publishing{
+			ContentType: "text/plain",
+			Body:        []byte(string(d.Body)),
+		})
+	if errP != nil {
+		Logga(ctx, os.Getenv("JsonLog"), " * ERROR Pubblish a message on "+exchange, "error")
+	}
+	Logga(ctx, os.Getenv("JsonLog"), " * Sent a message on exchange: "+exchange, "warn")
 }
