@@ -696,8 +696,14 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 			// SCALE TO ZERO
 			stz := int(x["XKUBEMICROSERV20"].(float64))
 			if stz == 1 {
+				stzTeam, errStzTeam := GetTeamFromGroup(ctx, devopsToken, dominio, x["XKUBEMICROSERV07"].(string))
+				if errStzTeam != nil {
+					Logga(ctx, os.Getenv("JsonLog"), errStzTeam.Error())
+					erro := errors.New(errStzTeam.Error())
+					return layerDue, erro
+				}
 				v.DestinationHost = "istio-ingressgateway.istio-system.svc.cluster.local"
-				v.Authority = x["XKUBEIMICROSERV04"].(string) + "." + enviro + "-" + team + "." + x["XKUBECLUSTER15"].(string)
+				v.Authority = x["XKUBEIMICROSERV04"].(string) + "." + enviro + "-" + stzTeam + "." + x["XKUBECLUSTER15"].(string)
 			}
 
 			v.Prefix = x["XKUBEENDPOINT09"].(string)
