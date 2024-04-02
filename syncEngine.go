@@ -82,7 +82,7 @@ func NetAlive(host, port string) bool {
 		return true
 	}
 }
-func PublishQueueError(ctx context.Context, d amqp.Delivery, exchange string) {
+func PublishQueueError(ctx context.Context, d amqp.Delivery, msgDtl MsgDetails, exchange string) {
 
 	conn, err := amqp.Dial("amqp://" + os.Getenv("userMQ") + ":" + os.Getenv("passwdMQ") + "@" + os.Getenv("hostMQ") + ":" + os.Getenv("portMQ") + "/" + os.Getenv("APP_ENV"))
 	FailOnError(ctx, err, "Failed to connect to rabbitmq")
@@ -106,12 +106,16 @@ func PublishQueueError(ctx context.Context, d amqp.Delivery, exchange string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
+	hd := make(map[string]interface{})
+	hd["slave"] = msgDtl.Microservice
+
 	errP := ch.PublishWithContext(ctx,
 		exchange, // exchange
 		"",       // routing key
 		false,    // mandatory
 		false,    // immediate
 		amqp.Publishing{
+			Headers:     hd,
 			ContentType: "text/plain",
 			Body:        []byte(string(d.Body)),
 		})
