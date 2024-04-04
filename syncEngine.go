@@ -107,7 +107,7 @@ func PublishQueueError(ctx context.Context, d amqp.Delivery, msgDtl MsgDetails, 
 	defer cancel()
 
 	hd := make(map[string]interface{})
-	hd["slave"] = msgDtl.Microservice
+	hd["Slave"] = msgDtl.Microservice
 
 	errP := ch.PublishWithContext(ctx,
 		exchange, // exchange

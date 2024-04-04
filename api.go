@@ -317,12 +317,12 @@ func ApiCallLOGIN(ctx context.Context, debug string, args map[string]interface{}
 		dominio = "https://" + dominio
 	}
 
-	JobID := ""
-	if ctx.Value("JobID") != nil {
-		JobID = ctx.Value("JobID").(string)
-	}
+	// JobID := ""
+	// if ctx.Value("JobID") != nil {
+	// 	JobID = ctx.Value("JobID").(string)
+	// }
 
-	args["JobID"] = JobID
+	// args["JobID"] = JobID
 
 	// dominio := getApiHost()
 
