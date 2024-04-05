@@ -922,22 +922,27 @@ func fillMarketPlaceRoute(layerDue *LayerMesh) {
 	if !found {
 		var vsD VsDetails
 		vsD.DestinationHost = "prod-mscoreservice.local"
+		vsD.Authority = "prod-mscoreservice.local"
 		vsD.Prefix = "/api/" + os.Getenv("API_VERSION") + "/core"
 		layerDue.Vs.VsDetails = append(layerDue.Vs.VsDetails, vsD)
 
 		vsD.DestinationHost = "prod-msauth.local"
+		vsD.Authority = "prod-msauth.local"
 		vsD.Prefix = "/api/" + os.Getenv("API_VERSION") + "/auth"
 		layerDue.Vs.VsDetails = append(layerDue.Vs.VsDetails, vsD)
 
 		vsD.DestinationHost = "prod-msusers.local"
+		vsD.Authority = "prod-msusers.local"
 		vsD.Prefix = "/api/" + os.Getenv("API_VERSION") + "/users"
 		layerDue.Vs.VsDetails = append(layerDue.Vs.VsDetails, vsD)
 
 		vsD.DestinationHost = "prod-mscoreservice.local"
+		vsD.Authority = "prod-mscoreservice.local"
 		vsD.Prefix = "/api/" + os.Getenv("API_VERSION") + "/document"
 		layerDue.Vs.VsDetails = append(layerDue.Vs.VsDetails, vsD)
 
 		vsD.DestinationHost = "prod-mscoreservice.local"
+		vsD.Authority = "prod-mscoreservice.local"
 		vsD.Prefix = "/ref-app-cs"
 		layerDue.Vs.VsDetails = append(layerDue.Vs.VsDetails, vsD)
 
