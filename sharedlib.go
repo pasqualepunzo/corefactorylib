@@ -862,15 +862,18 @@ func GetLayerTreDetails(ctx context.Context, tenant, DominioCluster, microservic
 
 		hostEnv := ""
 
-		ClusterDomainOvr := ctx.Value("ClusterDomainOvr").(bool)
-		ClusterDomainEnv := ctx.Value("ClusterDomainEnv").(string)
-		ClusterDomain := ctx.Value("ClusterDomain").(string)
+		dmns := ctx.Value("dominiEnv").(map[string]interface{})
+
+		ClusterDomainOvr := dmns["ClusterDomainOvr"].(bool)
+		ClusterDomainEnv := dmns["ClusterDomainEnv"].(string)
+		ClusterDomain := dmns["ClusterDomain"].(string)
 
 		// Se il dominio arriva da override messo in KUBECLUSTERENV allora non va messo il prefisso
 		if ClusterDomainOvr {
 			hostEnv = ClusterDomainEnv
 		}
 
+		var ExternalHostArr []string
 		host := ""
 		if enviro != "prod" {
 			if strings.HasPrefix(ClusterDomain, "ms-"+enviro+".") {
@@ -881,12 +884,9 @@ func GetLayerTreDetails(ctx context.Context, tenant, DominioCluster, microservic
 		} else {
 			host = ClusterDomain
 		}
-		hosts := "  - " + host + "\n"
 		if hostEnv != "" {
-			hosts += "  - " + hostEnv + "\n"
+			ExternalHostArr = append(ExternalHostArr, hostEnv)
 		}
-
-		var ExternalHostArr []string
 		ExternalHostArr = append(ExternalHostArr, host)
 		vs.ExternalHost = ExternalHostArr
 
