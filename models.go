@@ -351,19 +351,19 @@ type LayerMesh struct {
 	Se      Se     `json:"se"`
 }
 type Gw struct {
-	ExtDominio string `json:"extDominio"`
-	IntDominio string `json:"intDominio"`
-	Name       string `json:"name"`
-	Number     string `json:"number"`
-	Protocol   string `json:"protocol"`
+	ExtDominio []string `json:"extDominio"`
+	IntDominio []string `json:"intDominio"`
+	Name       string   `json:"name"`
+	Number     string   `json:"number"`
+	Protocol   string   `json:"protocol"`
 }
 type Se struct {
 	Ip    string   `json:"ip"`
 	Hosts []string `json:"hosts"`
 }
 type Vs struct {
-	ExternalHost string      `json:"externalHost"`
-	InternalHost string      `json:"internalHost"`
+	ExternalHost []string    `json:"externalHost"`
+	InternalHost []string    `json:"internalHost"`
 	VsDetails    []VsDetails `json:"vsDetails"`
 }
 type VsDetails struct {

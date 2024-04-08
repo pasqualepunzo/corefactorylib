@@ -671,7 +671,9 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 	// popolo le rotte con il gruppo al posto del team che calcolero successivamente
 	var se Se
 	var vs Vs
-	vs.InternalHost = enviro + "-" + layerDue.AppName + ".local"
+	var InternalHostArr []string
+	InternalHostArr = append(InternalHostArr, enviro+"-"+layerDue.AppName+".local")
+	vs.InternalHost = InternalHostArr
 	msOld := ""
 
 	// azzecco il dominio interno del layer uno
@@ -712,7 +714,9 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 	}
 
 	// azzecco i GW
-	gw.IntDominio = enviro + "-" + layerDue.AppName + ".local"
+	var intDominioArr []string
+	intDominioArr = append(intDominioArr, enviro+"-"+layerDue.AppName+".local")
+	gw.IntDominio = intDominioArr
 	gw.Protocol = "HTTP"
 	gw.Name = "http"
 	gw.Number = "80"
@@ -816,7 +820,9 @@ func GetLayerTreDetails(ctx context.Context, tenant, DominioCluster, microservic
 
 			if microservice == "msdevops" && x["XAPPSRV04"].(string) == "grpc-"+enviro {
 
-				gw.ExtDominio = extDominio
+				var extDominioArr []string
+				extDominioArr = append(extDominioArr, extDominio)
+				gw.ExtDominio = extDominioArr
 				gw.Name = x["XAPPSRV04"].(string)
 				gw.Number = strconv.Itoa(int(x["XAPPSRV05"].(float64)))
 				gw.Protocol = x["XAPPSRV06"].(string)
@@ -826,7 +832,9 @@ func GetLayerTreDetails(ctx context.Context, tenant, DominioCluster, microservic
 
 				// per i ms che non sono msdevops basta il dominio interno e la porta 80
 				if x["XAPPSRV06"].(string) == "HTTP" {
-					gw.IntDominio = enviro + "-" + microservice + ".local"
+					var intDominioArr []string
+					intDominioArr = append(intDominioArr, enviro+"-"+microservice+".local")
+					gw.IntDominio = intDominioArr
 					gw.Name = x["XAPPSRV04"].(string)
 					gw.Number = strconv.Itoa(int(x["XAPPSRV05"].(float64)))
 					gw.Protocol = x["XAPPSRV06"].(string)
@@ -846,13 +854,47 @@ func GetLayerTreDetails(ctx context.Context, tenant, DominioCluster, microservic
 	// se la combo tenant e enviro e true lavoro il gateway nel nuovo modo
 	if layerFt {
 		if microservice == "msdevops" {
-			vs.ExternalHost = extDominio
+			var ExternalHostArr []string
+			ExternalHostArr = append(ExternalHostArr, extDominio)
+			vs.ExternalHost = ExternalHostArr
 		}
 	} else {
-		vs.ExternalHost = DominioCluster
+
+		hostEnv := ""
+
+		ClusterDomainOvr := ctx.Value("ClusterDomainOvr").(bool)
+		ClusterDomainEnv := ctx.Value("ClusterDomainEnv").(string)
+		ClusterDomain := ctx.Value("ClusterDomain").(string)
+
+		// Se il dominio arriva da override messo in KUBECLUSTERENV allora non va messo il prefisso
+		if ClusterDomainOvr {
+			hostEnv = ClusterDomainEnv
+		}
+
+		host := ""
+		if enviro != "prod" {
+			if strings.HasPrefix(ClusterDomain, "ms-"+enviro+".") {
+				host = ClusterDomain
+			} else {
+				host = "ms-" + enviro + "." + ClusterDomain
+			}
+		} else {
+			host = ClusterDomain
+		}
+		hosts := "  - " + host + "\n"
+		if hostEnv != "" {
+			hosts += "  - " + hostEnv + "\n"
+		}
+
+		var ExternalHostArr []string
+		ExternalHostArr = append(ExternalHostArr, host)
+		vs.ExternalHost = ExternalHostArr
+
 	}
 
-	vs.InternalHost = enviro + "-" + microservice + ".local"
+	var InternalHostArr []string
+	InternalHostArr = append(InternalHostArr, enviro+"-"+microservice+".local")
+	vs.InternalHost = InternalHostArr
 	layerTre.Vs = vs
 
 	Logga(ctx, os.Getenv("JsonLog"), "Get Layer Tre END")
