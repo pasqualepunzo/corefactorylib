@@ -565,7 +565,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 			argsDeploy := make(map[string]string)
 			argsDeploy["source"] = "devops-8"
 			argsDeploy["$select"] = "XDEPLOYLOG08"
-			argsDeploy["center_dett"] = "visualizza"
+			argsDeploy["center_dett"] = "allviews"
 			argsDeploy["$filter"] = "equals(XDEPLOYLOG04,'" + prevIstanza + "') "
 			argsDeploy["$filter"] += " and equals(XDEPLOYLOG06,'1') "
 			argsDeploy["$filter"] += " and equals(XDEPLOYLOG05,'" + versione + "') "
