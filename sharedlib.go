@@ -988,6 +988,11 @@ func fillMarketPlaceRoute(layerDue *LayerMesh) {
 		vsD.Prefix = "/ref-app-cs"
 		layerDue.Vs.VsDetails = append(layerDue.Vs.VsDetails, vsD)
 
+		vsD.DestinationHost = "prod-msauth.local"
+		vsD.Authority = "prod-msauth.local"
+		vsD.Prefix = "/ref-app-login"
+		layerDue.Vs.VsDetails = append(layerDue.Vs.VsDetails, vsD)
+
 	}
 }
 func GetMsRoutes(ctx context.Context, routeJson RouteJson) (RouteMs, error) {

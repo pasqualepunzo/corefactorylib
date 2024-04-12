@@ -391,13 +391,13 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 	}
 
 	microservice := ""
-	//cluster := ""
+	cluster := ""
 	if len(restyKubeImicroservRes.BodyJson) > 0 {
 
 		microservice = restyKubeImicroservRes.BodyJson["XKUBEIMICROSERV04_COD"].(string)
 		microservices.VersMicroservice = restyKubeImicroservRes.BodyJson["XKUBEIMICROSERV07"].(string)
 
-		//cluster = restyKubeImicroservRes.BodyJson["XKUBEIMICROSERV05"].(string)
+		cluster = restyKubeImicroservRes.BodyJson["XKUBEIMICROSERV05"].(string)
 		Logga(ctx, os.Getenv("JsonLog"), "KUBEIMICROSERV OK")
 	} else {
 		Logga(ctx, os.Getenv("JsonLog"), "   !!!   KUBEIMICROSERV MISSING")
@@ -526,118 +526,103 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 			pod.Vpn = int(x["XSELKUBEDKRLIST09"].(float64))
 			pod.Workdir = x["XSELKUBEDKRLIST11"].(string)
 
+			// --------------------------------
+			// CERCHIAMO LE VERSIONI E GLI SHA
 			/* ************************************************************************************************ */
-			// KUBEDKRBUILD
-			Logga(ctx, os.Getenv("JsonLog"), "Getting KUBEDKRBUILD func.go 2")
-			argsBld := make(map[string]string)
+			// KUBESTAGE
+			Logga(ctx, os.Getenv("JsonLog"), "Getting KUBESTAGE sharedlib")
+
+			argsStage := make(map[string]string)
+			argsStage["source"] = "devops-8"
+			argsStage["$select"] = "XKUBESTAGE04,XKUBESTAGE05"
+			argsStage["center_dett"] = "visualizza"
+			argsStage["$filter"] = "equals(XKUBESTAGE03,'" + cluster + "') "
+
+			//$filter=contains(XART20,'(kg)') or contains(XART20,'pizza')
+			restyStageRes, _ := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsStage, "ms"+devops, "/api/"+os.Getenv("API_VERSION")+"/"+devops+"/KUBESTAGE", devopsToken, dominio, coreApiVersion)
+			if restyStageRes.Errore < 0 {
+				Logga(ctx, os.Getenv("JsonLog"), restyStageRes.Log)
+			}
+			prevStageMap := make(map[int]string)
+			prevStage := ""
+			curIndex := 0
+			if len(restyStageRes.BodyArray) > 0 {
+				for _, st := range restyStageRes.BodyArray {
+					if st["XKUBESTAGE04"].(string) == enviro {
+						curIndex = int(st["XKUBESTAGE05"].(float64))
+					}
+					prevStageMap[int(st["XKUBESTAGE05"].(float64))] = st["XKUBESTAGE04"].(string)
+				}
+				prevStage = prevStageMap[curIndex-1]
+				Logga(ctx, os.Getenv("JsonLog"), "KUBESTAGE: OK")
+				Logga(ctx, os.Getenv("JsonLog"), "Previous stage: "+prevStage)
+			} else {
+				Logga(ctx, os.Getenv("JsonLog"), "KUBESTAGE: MISSING")
+			}
+
+			prevIstanza := cluster + "-" + prevStage + "-" + strings.ToLower(team) + "-" + microservices.Nome
 
 			argsDeploy := make(map[string]string)
 			argsDeploy["source"] = "devops-8"
+			argsDeploy["$select"] = "XDEPLOYLOG08"
+			argsDeploy["center_dett"] = "visualizza"
+			argsDeploy["$filter"] = "equals(XDEPLOYLOG04,'" + prevIstanza + "') "
+			argsDeploy["$filter"] += " and equals(XDEPLOYLOG06,'1') "
+			argsDeploy["$filter"] += " and equals(XDEPLOYLOG05,'" + versione + "') "
+			argsDeploy["$order"] = "LDATA desc"
 
-			argsBld["$fullquery"] = "select XKUBEDKRBUILD06,XKUBEDKRBUILD04,XKUBEDKRBUILD07,XKUBEDKRBUILD09,XKUBEDKRBUILD10,XKUBEDKRBUILD12,XKUBEDKRBUILD13 "
-			argsBld["$fullquery"] += "from TB_ANAG_KUBEDKRBUILD00 "
-			argsBld["$fullquery"] += "where 1>0 "
-			argsBld["$fullquery"] += "AND XKUBEDKRBUILD03 = '" + docker + "' "
-			argsBld["$fullquery"] += "AND XKUBEDKRBUILD08 = '" + team + "' "
-			// if ftNewStageProcess_FAC530 {
-			// 	argsBld["$fullquery"] += "AND XKUBEDKRBUILD15 = '" + enviro + "' "
-			// } else {
-			//argsBld["$fullquery"] += "AND XKUBEDKRBUILD04 = '" + gitDevMaster + "' "
-			// }
-			// FAC-462 argsBld["$fullquery"] += "AND XKUBEDKRBUILD08 = '" + team + "' "
-			if versione != "" {
-				argsBld["$fullquery"] += " AND XKUBEDKRBUILD06 = '" + versione + "' "
+			restyDeployRes, err := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsDeploy, "msdevops", "/api/"+os.Getenv("API_VERSION")+"/devops/DEPLOYLOG", devopsToken, os.Getenv("apiDomain"), os.Getenv("coreApiVersion"))
+			if err != nil {
+				Logga(ctx, os.Getenv("JsonLog"), err.Error())
+			}
+			if restyDeployRes.Errore < 0 {
+				Logga(ctx, os.Getenv("JsonLog"), restyDeployRes.Log)
 			}
 
-			// 2023 04 13 - laszlo mwpo e scarp non ricordano il perche della esclusione dei master e la mandano a fanculo, cosi a puorc
-			// perche a prescindere riteniamo che in caso di build dobbiamo prendere
-			//argsBld["$fullquery"] += " order by (case when XKUBEDKRBUILD04 = 'master' then 0 else 1 end ) desc,cast(XKUBEDKRBUILD06 as unsigned) DESC "
-			argsBld["$fullquery"] += " order by cast(XKUBEDKRBUILD06 as unsigned) DESC "
-			argsBld["$fullquery"] += " limit 1 "
-			fmt.Println(argsBld["$fullquery"])
-
-			restyKubeBldRes, errKubeBldRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsBld, "ms"+devops, "/api/"+os.Getenv("API_VERSION")+"/"+devops+"/custom/KUBEDKRBUILD/values", devopsToken, dominio, coreApiVersion)
-
-			//fmt.Println(restyKubeBldRes)
-			if errKubeBldRes != nil {
-				//fmt.Println("A")
-				Logga(ctx, os.Getenv("JsonLog"), errKubeBldRes.Error())
-				return microservices, errKubeBldRes
+			type DockerShaVersion struct {
+				Docker       string `json:"docker"`
+				Versione     string `json:"versione"`
+				Merged       string `json:"merged"`
+				Tag          string `json:"tag"`
+				MasterDev    string `json:"masterDev"`
+				ReleaseNote  string `json:"releaseNote"`
+				SprintBranch string `json:"sprintBranch"`
+				Sha          string `json:"sha"`
 			}
 
-			if len(restyKubeBldRes.BodyArray) > 0 {
+			if len(restyDeployRes.BodyArray) > 0 {
+				for _, x := range restyDeployRes.BodyArray {
+					var dsvs []DockerShaVersion
 
-				// fmt.Println("B")
-				var branchs Branch
-				branchs.Branch = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD04"].(string)
-				branchs.Version = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD06"].(string)
-				branchs.Sha = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD07"].(string)
+					tipoDeploy := x["XDEPLOYLOG08"].(string)
+					_ = json.Unmarshal([]byte(tipoDeploy), &dsvs)
 
-				var podBuild PodBuild
-				podBuild.Versione = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD06"].(string)
-				podBuild.Merged = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD13"].(string)
-				podBuild.Tag = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD09"].(string)
-				podBuild.MasterDev = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD04"].(string)
-				podBuild.ReleaseNote = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD12"].(string)
-				podBuild.SprintBranch = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD10"].(string)
+					for _, dsv := range dsvs {
+						if dsv.Docker == docker {
+							var branchs Branch
+							branchs.Branch = dsv.SprintBranch
+							branchs.Version = dsv.Versione
+							branchs.Sha = dsv.Sha
 
-				pod.PodBuild = podBuild
-				pod.Branch = branchs
-				Logga(ctx, os.Getenv("JsonLog"), "KUBEDKRBUILD OK")
-			} else {
-				// se manca la build alla versione indicata proviamo a cercare l'ultima
-				// se manca anche questa allora errore mai fatta una build !!!!!
+							var podBuild PodBuild
+							podBuild.Versione = dsv.Versione
+							podBuild.Merged = dsv.Merged
+							podBuild.Tag = dsv.Tag
+							podBuild.MasterDev = dsv.MasterDev
+							podBuild.ReleaseNote = dsv.ReleaseNote
+							podBuild.SprintBranch = dsv.SprintBranch
 
-				Logga(ctx, os.Getenv("JsonLog"), "KUBEDKRBUILD MISSING ON "+versione+" seek for latest")
-				argsBld := make(map[string]string)
+							pod.PodBuild = podBuild
+							pod.Branch = branchs
 
-				argsBld["$fullquery"] = "select XKUBEDKRBUILD06,XKUBEDKRBUILD04,XKUBEDKRBUILD07,XKUBEDKRBUILD09,XKUBEDKRBUILD10,XKUBEDKRBUILD12,XKUBEDKRBUILD13 "
-				argsBld["$fullquery"] += "from TB_ANAG_KUBEDKRBUILD00 "
-				argsBld["$fullquery"] += "where 1>0 "
-				argsBld["$fullquery"] += "AND XKUBEDKRBUILD03 = '" + docker + "' "
-				argsBld["$fullquery"] += "AND XKUBEDKRBUILD08 = '" + team + "' "
-				argsBld["$fullquery"] += " order by (case when XKUBEDKRBUILD04 = 'master' then 0 else 1 end ) desc,cast(XKUBEDKRBUILD06 as unsigned) DESC "
-				argsBld["$fullquery"] += " limit 1 "
-				fmt.Println(argsBld["$fullquery"])
+						}
+					}
 
-				restyKubeBldRes, errKubeBldRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsBld, "ms"+devops, "/api/"+os.Getenv("API_VERSION")+"/devops/custom/KUBEDKRBUILD/values", devopsToken, dominio, coreApiVersion)
-
-				//fmt.Println(restyKubeBldRes)
-				if errKubeBldRes != nil {
-					//fmt.Println("A")
-					Logga(ctx, os.Getenv("JsonLog"), errKubeBldRes.Error())
-					return microservices, errKubeBldRes
 				}
-
-				if len(restyKubeBldRes.BodyArray) > 0 {
-
-					// fmt.Println("B")
-					var branchs Branch
-					branchs.Branch = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD04"].(string)
-					branchs.Version = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD06"].(string)
-					branchs.Sha = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD07"].(string)
-
-					var podBuild PodBuild
-					podBuild.Versione = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD06"].(string)
-					podBuild.Merged = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD13"].(string)
-					podBuild.Tag = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD09"].(string)
-					podBuild.MasterDev = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD04"].(string)
-					podBuild.ReleaseNote = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD12"].(string)
-					podBuild.SprintBranch = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD10"].(string)
-
-					pod.PodBuild = podBuild
-					pod.Branch = branchs
-					Logga(ctx, os.Getenv("JsonLog"), "KUBEDKRBUILD LATEST OK")
-				} else {
-
-					Logga(ctx, os.Getenv("JsonLog"), "   !!! "+docker+"  KUBEDKRBUILD MISSING")
-					erro := errors.New("The component " + docker + " of the microservice " + microservices.Nome + " is MISSING - you have to build it first.")
-					return microservices, erro
-				}
-
 			}
 
-			Logga(ctx, os.Getenv("JsonLog"), "")
+			/* ************************************************************************************************ */
+			// KUBEDKRBUILD
 
 			/* ************************************************************************************************ */
 
