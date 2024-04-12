@@ -391,13 +391,13 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 	}
 
 	microservice := ""
-	cluster := ""
+	//cluster := ""
 	if len(restyKubeImicroservRes.BodyJson) > 0 {
 
 		microservice = restyKubeImicroservRes.BodyJson["XKUBEIMICROSERV04_COD"].(string)
 		microservices.VersMicroservice = restyKubeImicroservRes.BodyJson["XKUBEIMICROSERV07"].(string)
 
-		cluster = restyKubeImicroservRes.BodyJson["XKUBEIMICROSERV05"].(string)
+		//cluster = restyKubeImicroservRes.BodyJson["XKUBEIMICROSERV05"].(string)
 		Logga(ctx, os.Getenv("JsonLog"), "KUBEIMICROSERV OK")
 	} else {
 		Logga(ctx, os.Getenv("JsonLog"), "   !!!   KUBEIMICROSERV MISSING")
@@ -529,49 +529,16 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 			// --------------------------------
 			// CERCHIAMO LE VERSIONI E GLI SHA
 			/* ************************************************************************************************ */
-			// KUBESTAGE
-			Logga(ctx, os.Getenv("JsonLog"), "Getting KUBESTAGE sharedlib")
-
-			argsStage := make(map[string]string)
-			argsStage["source"] = "devops-8"
-			argsStage["$select"] = "XKUBESTAGE04,XKUBESTAGE05"
-			argsStage["center_dett"] = "visualizza"
-			argsStage["$filter"] = "equals(XKUBESTAGE03,'" + cluster + "') "
-
-			//$filter=contains(XART20,'(kg)') or contains(XART20,'pizza')
-			restyStageRes, _ := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsStage, "ms"+devops, "/api/"+os.Getenv("API_VERSION")+"/"+devops+"/KUBESTAGE", devopsToken, dominio, coreApiVersion)
-			if restyStageRes.Errore < 0 {
-				Logga(ctx, os.Getenv("JsonLog"), restyStageRes.Log)
-			}
-			prevStageMap := make(map[int]string)
-			prevStage := ""
-			curIndex := 0
-			if len(restyStageRes.BodyArray) > 0 {
-				for _, st := range restyStageRes.BodyArray {
-					if st["XKUBESTAGE04_COD"].(string) == enviro {
-						curIndex = int(st["XKUBESTAGE05"].(float64))
-					}
-					prevStageMap[int(st["XKUBESTAGE05"].(float64))] = st["XKUBESTAGE04_COD"].(string)
-				}
-				prevStage = prevStageMap[curIndex-1]
-				Logga(ctx, os.Getenv("JsonLog"), "KUBESTAGE: OK")
-				Logga(ctx, os.Getenv("JsonLog"), "Previous stage: "+prevStage)
-			} else {
-				Logga(ctx, os.Getenv("JsonLog"), "KUBESTAGE: MISSING")
-			}
-
-			prevIstanza := cluster + "-" + prevStage + "-" + strings.ToLower(team) + "-" + microservices.Nome
 
 			argsDeploy := make(map[string]string)
-			argsDeploy["source"] = "devops-8"
-			argsDeploy["$select"] = "XDEPLOYLOG08"
-			argsDeploy["center_dett"] = "allviews"
-			argsDeploy["$filter"] = "equals(XDEPLOYLOG04,'" + prevIstanza + "') "
-			argsDeploy["$filter"] += " and equals(XDEPLOYLOG06,'1') "
-			argsDeploy["$filter"] += " and equals(XDEPLOYLOG05,'" + versione + "') "
-			argsDeploy["$order"] = "LDATA desc"
+			argsDeploy["$fullquery"] = " select XDEPLOYLOG08 "
+			argsDeploy["$fullquery"] += " from TB_ANAG_KUBEIMICROSERV00 "
+			argsDeploy["$fullquery"] += " join TB_ANAG_DEPLOYLOG00 tad ON (XKUBEIMICROSERV03 = XDEPLOYLOG04) "
+			argsDeploy["$fullquery"] += " where XKUBEIMICROSERV04 = '" + microservices.Nome + "' "
+			argsDeploy["$fullquery"] += " and XDEPLOYLOG05 = '" + versione + "' "
+			argsDeploy["$fullquery"] += " AND XDEPLOYLOG06 = '1' "
 
-			restyDeployRes, err := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsDeploy, "msdevops", "/api/"+os.Getenv("API_VERSION")+"/devops/DEPLOYLOG", devopsToken, os.Getenv("apiDomain"), os.Getenv("coreApiVersion"))
+			restyDeployRes, err := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsDeploy, "msdevops", "/api/"+os.Getenv("API_VERSION")+"/devops/custom/KUBEIMICROSERV/values", devopsToken, os.Getenv("apiDomain"), os.Getenv("coreApiVersion"))
 			if err != nil {
 				Logga(ctx, os.Getenv("JsonLog"), err.Error())
 			}
