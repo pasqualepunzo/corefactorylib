@@ -548,10 +548,10 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 			curIndex := 0
 			if len(restyStageRes.BodyArray) > 0 {
 				for _, st := range restyStageRes.BodyArray {
-					if st["XKUBESTAGE04"].(string) == enviro {
+					if st["XKUBESTAGE04_COD"].(string) == enviro {
 						curIndex = int(st["XKUBESTAGE05"].(float64))
 					}
-					prevStageMap[int(st["XKUBESTAGE05"].(float64))] = st["XKUBESTAGE04"].(string)
+					prevStageMap[int(st["XKUBESTAGE05"].(float64))] = st["XKUBESTAGE04_COD"].(string)
 				}
 				prevStage = prevStageMap[curIndex-1]
 				Logga(ctx, os.Getenv("JsonLog"), "KUBESTAGE: OK")
