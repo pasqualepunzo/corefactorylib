@@ -660,8 +660,15 @@ type BuildArgs struct {
 
 	Dominio string `json:"dominio"`
 }
+
 type DockerStruct struct {
-	Microservizio, Docker, GitRepo, Branch, Version, Tag, Dockerfile, Namespace, TipoGitRepo, DockerArgs string
+	Microservizio string `json:"microservizio"`
+	Docker        string `json:"docker"`
+	GitRepo       string `json:"gitRepo"`
+	Dockerfile    string `json:"dockerfile"`
+	DockerArgs    string `json:"dockerArgs"`
+	TipoGitRepo   string `json:"TipoGitRepo"`
+	DockerTmpl    string `json:"dockerTmpl"`
 }
 type RouteJson struct {
 	Microservice string `json:"microservice"`
