@@ -1848,7 +1848,13 @@ func CreaDirAndCloneDocker(ctx context.Context, dkr DockerStruct, dirToCreate, b
 	Logga(ctx, os.Getenv("JsonLog"), "Repo git branch: "+branch)
 
 	// REPO TEMPLATE DOCKER
-	repoDocker := "https://" + buildArgs.UserGit + ":" + buildArgs.TokenGit + "@" + buildArgs.UrlGit + "/" + buildArgs.ProjectGit + "/docker-tmpl.git"
+	// faccio override se il TMPL non e presente sul DB del tenant
+	repoDocker := ""
+	if dkr.ProjectGit != "" {
+		repoDocker = "https://" + dkr.UserGit + ":" + dkr.TokenGit + "@" + dkr.UrlGit + "/" + dkr.ProjectGit + "/docker-tmpl.git"
+	} else {
+		repoDocker = "https://" + buildArgs.UserGit + ":" + buildArgs.TokenGit + "@" + buildArgs.UrlGit + "/" + buildArgs.ProjectGit + "/docker-tmpl.git"
+	}
 	// REPO TU BUILD
 	repoproject := "https://" + buildArgs.UserGit + ":" + buildArgs.TokenGit + "@" + buildArgs.UrlGit + "/" + buildArgs.ProjectGit + "/" + dkr.GitRepo + ".git"
 

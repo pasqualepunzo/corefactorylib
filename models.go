@@ -669,6 +669,10 @@ type DockerStruct struct {
 	DockerArgs    string `json:"dockerArgs"`
 	TipoGitRepo   string `json:"TipoGitRepo"`
 	DockerTmpl    string `json:"dockerTmpl"`
+	UserGit       string `json:"userGit"`
+	TokenGit      string `json:"tokenGit"`
+	UrlGit        string `json:"urlGit"`
+	ProjectGit    string `json:"projectGit"`
 }
 type RouteJson struct {
 	Microservice string `json:"microservice"`
