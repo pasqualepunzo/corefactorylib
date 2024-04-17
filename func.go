@@ -353,6 +353,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 	Logga(ctx, os.Getenv("JsonLog"), " + + + + + + + + + + + + + + + + + + + + ")
 	Logga(ctx, os.Getenv("JsonLog"), "TEAM "+team)
 	Logga(ctx, os.Getenv("JsonLog"), "IMS "+ims)
+	Logga(ctx, os.Getenv("JsonLog"), "ENVIRO "+enviro)
 	Logga(ctx, os.Getenv("JsonLog"), "gitDevMaster "+gitDevMaster)
 	Logga(ctx, os.Getenv("JsonLog"), "BUILDVERSION "+buildVersion)
 	Logga(ctx, os.Getenv("JsonLog"), "getMicroserviceDetail begin")
@@ -533,7 +534,12 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 			// in caso di build leggo da KUBEDKRBUILD
 			/* ************************************************************************************************ */
 
-			if versione != "" {
+			Logga(ctx, os.Getenv("JsonLog"), " *** SCEGLIAMO SE PRENDERE I DETTAGLI DA DEPLOYLOG08 o KUBEDKRBUILD")
+			Logga(ctx, os.Getenv("JsonLog"), "versione: "+versione)
+			Logga(ctx, os.Getenv("JsonLog"), "enviro: "+enviro)
+			Logga(ctx, os.Getenv("JsonLog"), "se enviro == int e versione == \"\" siamo in BUILD, DELPOYLOG NON ESISTE E QUINDI VAI DI KUBEDKRBUILD")
+
+			if versione != "" && enviro == "int" {
 				argsDeploy := make(map[string]string)
 				argsDeploy["$fullquery"] = " select XDEPLOYLOG08 "
 				argsDeploy["$fullquery"] += " from TB_ANAG_KUBEIMICROSERV00 "
