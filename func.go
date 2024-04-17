@@ -528,68 +528,112 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 
 			// --------------------------------
 			// CERCHIAMO LE VERSIONI E GLI SHA
+			//
+			// in caso di promote leggo da deploylog
+			// in caso di build leggo da KUBEDKRBUILD
 			/* ************************************************************************************************ */
 
-			argsDeploy := make(map[string]string)
-			argsDeploy["$fullquery"] = " select XDEPLOYLOG08 "
-			argsDeploy["$fullquery"] += " from TB_ANAG_KUBEIMICROSERV00 "
-			argsDeploy["$fullquery"] += " join TB_ANAG_DEPLOYLOG00 tad ON (XKUBEIMICROSERV03 = XDEPLOYLOG04) "
-			argsDeploy["$fullquery"] += " where XKUBEIMICROSERV04 = '" + microservices.Nome + "' "
-			argsDeploy["$fullquery"] += " and XDEPLOYLOG05 = '" + versione + "' "
-			argsDeploy["$fullquery"] += " AND XDEPLOYLOG06 = '1' "
+			if versione != "" {
+				argsDeploy := make(map[string]string)
+				argsDeploy["$fullquery"] = " select XDEPLOYLOG08 "
+				argsDeploy["$fullquery"] += " from TB_ANAG_KUBEIMICROSERV00 "
+				argsDeploy["$fullquery"] += " join TB_ANAG_DEPLOYLOG00 tad ON (XKUBEIMICROSERV03 = XDEPLOYLOG04) "
+				argsDeploy["$fullquery"] += " where XKUBEIMICROSERV04 = '" + microservices.Nome + "' "
+				argsDeploy["$fullquery"] += " and XDEPLOYLOG05 = '" + versione + "' "
+				argsDeploy["$fullquery"] += " AND XDEPLOYLOG06 = '1' "
 
-			restyDeployRes, err := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsDeploy, "msdevops", "/api/"+os.Getenv("API_VERSION")+"/devops/custom/KUBEIMICROSERV/values", devopsToken, os.Getenv("apiDomain"), os.Getenv("coreApiVersion"))
-			if err != nil {
-				Logga(ctx, os.Getenv("JsonLog"), err.Error())
-			}
-			if restyDeployRes.Errore < 0 {
-				Logga(ctx, os.Getenv("JsonLog"), restyDeployRes.Log)
-			}
+				restyDeployRes, err := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsDeploy, "msdevops", "/api/"+os.Getenv("API_VERSION")+"/devops/custom/KUBEIMICROSERV/values", devopsToken, os.Getenv("apiDomain"), os.Getenv("coreApiVersion"))
+				if err != nil {
+					Logga(ctx, os.Getenv("JsonLog"), err.Error())
+				}
+				if restyDeployRes.Errore < 0 {
+					Logga(ctx, os.Getenv("JsonLog"), restyDeployRes.Log)
+				}
 
-			type DockerShaVersion struct {
-				Docker       string `json:"docker"`
-				Versione     string `json:"versione"`
-				Merged       string `json:"merged"`
-				Tag          string `json:"tag"`
-				MasterDev    string `json:"masterDev"`
-				ReleaseNote  string `json:"releaseNote"`
-				SprintBranch string `json:"sprintBranch"`
-				Sha          string `json:"sha"`
-			}
+				type DockerShaVersion struct {
+					Docker       string `json:"docker"`
+					Versione     string `json:"versione"`
+					Merged       string `json:"merged"`
+					Tag          string `json:"tag"`
+					MasterDev    string `json:"masterDev"`
+					ReleaseNote  string `json:"releaseNote"`
+					SprintBranch string `json:"sprintBranch"`
+					Sha          string `json:"sha"`
+				}
 
-			if len(restyDeployRes.BodyArray) > 0 {
-				for _, x := range restyDeployRes.BodyArray {
-					var dsvs []DockerShaVersion
+				if len(restyDeployRes.BodyArray) > 0 {
+					for _, x := range restyDeployRes.BodyArray {
+						var dsvs []DockerShaVersion
 
-					tipoDeploy := x["XDEPLOYLOG08"].(string)
-					_ = json.Unmarshal([]byte(tipoDeploy), &dsvs)
+						tipoDeploy := x["XDEPLOYLOG08"].(string)
+						_ = json.Unmarshal([]byte(tipoDeploy), &dsvs)
 
-					for _, dsv := range dsvs {
-						if dsv.Docker == docker {
-							var branchs Branch
-							branchs.Branch = dsv.SprintBranch
-							branchs.Version = dsv.Versione
-							branchs.Sha = dsv.Sha
+						for _, dsv := range dsvs {
+							if dsv.Docker == docker {
+								var branchs Branch
+								branchs.Branch = dsv.SprintBranch
+								branchs.Version = dsv.Versione
+								branchs.Sha = dsv.Sha
 
-							var podBuild PodBuild
-							podBuild.Versione = dsv.Versione
-							podBuild.Merged = dsv.Merged
-							podBuild.Tag = dsv.Tag
-							podBuild.MasterDev = dsv.MasterDev
-							podBuild.ReleaseNote = dsv.ReleaseNote
-							podBuild.SprintBranch = dsv.SprintBranch
+								var podBuild PodBuild
+								podBuild.Versione = dsv.Versione
+								podBuild.Merged = dsv.Merged
+								podBuild.Tag = dsv.Tag
+								podBuild.MasterDev = dsv.MasterDev
+								podBuild.ReleaseNote = dsv.ReleaseNote
+								podBuild.SprintBranch = dsv.SprintBranch
 
-							pod.PodBuild = podBuild
-							pod.Branch = branchs
+								pod.PodBuild = podBuild
+								pod.Branch = branchs
 
+							}
 						}
 					}
+				}
 
+			} else { // MANCA LA VERSIONE ERGO SIAMO IN POST BUILD E LA CERCHIAMO DA KUBEDKRBUILD
+
+				/* ************************************************************************************************ */
+				// KUBEDKRBUILD
+				Logga(ctx, os.Getenv("JsonLog"), "Getting KUBEDKRBUILD func.go 2")
+				argsBld := make(map[string]string)
+				argsBld["$fullquery"] = "select XKUBEDKRBUILD06,XKUBEDKRBUILD04,XKUBEDKRBUILD07,XKUBEDKRBUILD09,XKUBEDKRBUILD10,XKUBEDKRBUILD12,XKUBEDKRBUILD13 "
+				argsBld["$fullquery"] += "from TB_ANAG_KUBEDKRBUILD00 "
+				argsBld["$fullquery"] += "where 1>0 "
+				argsBld["$fullquery"] += "AND XKUBEDKRBUILD03 = '" + docker + "' "
+				argsBld["$fullquery"] += "AND XKUBEDKRBUILD08 = '" + team + "' "
+				argsBld["$fullquery"] += " order by cast(XKUBEDKRBUILD06 as unsigned) DESC "
+				argsBld["$fullquery"] += " limit 1 "
+				fmt.Println(argsBld["$fullquery"])
+
+				restyKubeBldRes, errKubeBldRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsBld, "ms"+devops, "/api/"+os.Getenv("API_VERSION")+"/"+devops+"/custom/KUBEDKRBUILD/values", devopsToken, dominio, coreApiVersion)
+
+				if errKubeBldRes != nil {
+					//fmt.Println("A")
+					Logga(ctx, os.Getenv("JsonLog"), errKubeBldRes.Error())
+					return microservices, errKubeBldRes
+				}
+				if len(restyKubeBldRes.BodyArray) > 0 {
+
+					// fmt.Println("B")
+					var branchs Branch
+					branchs.Branch = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD04"].(string)
+					branchs.Version = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD06"].(string)
+					branchs.Sha = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD07"].(string)
+
+					var podBuild PodBuild
+					podBuild.Versione = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD06"].(string)
+					podBuild.Merged = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD13"].(string)
+					podBuild.Tag = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD09"].(string)
+					podBuild.MasterDev = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD04"].(string)
+					podBuild.ReleaseNote = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD12"].(string)
+					podBuild.SprintBranch = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD10"].(string)
+
+					pod.PodBuild = podBuild
+					pod.Branch = branchs
+					Logga(ctx, os.Getenv("JsonLog"), "KUBEDKRBUILD OK")
 				}
 			}
-
-			/* ************************************************************************************************ */
-			// KUBEDKRBUILD
 
 			/* ************************************************************************************************ */
 
