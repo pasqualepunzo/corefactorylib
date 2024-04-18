@@ -321,11 +321,13 @@ func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, 
 		allCompareSql = append(allCompareSql, sqlCompare)
 
 		// TODO - PORTA FUORI
-		_, err = db2.Exec(sqlCompare)
-		if err != nil {
-			allCompareSqlError = append(allCompareSqlError, sqlCompare)
-		} else {
-			// Logga(ctx, os.Getenv("JsonLog"), sqlCompare+" ok")
+		if doQueryExec {
+			_, err = db2.Exec(sqlCompare)
+			if err != nil {
+				allCompareSqlError = append(allCompareSqlError, sqlCompare)
+			} else {
+				// Logga(ctx, os.Getenv("JsonLog"), sqlCompare+" ok")
+			}
 		}
 	}
 
