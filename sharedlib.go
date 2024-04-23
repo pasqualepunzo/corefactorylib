@@ -17,10 +17,12 @@ import (
 	"time"
 
 	"cloud.google.com/go/storage"
-	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing"
+
 	"github.com/go-resty/resty/v2"
 	"github.com/mozillazg/go-slugify"
+	git "gopkg.in/src-d/go-git.v4"
+	"gopkg.in/src-d/go-git.v4/plumbing"
+	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
 )
 
 func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction, dominio, coreApiVersion string) (IstanzaMicro, error) {
@@ -1873,21 +1875,29 @@ func CreaDirAndCloneDocker(ctx context.Context, dkr DockerStruct, dirToCreate, b
 		return err
 	}
 
+	fmt.Println("Cloning " + repoDocker + " on " + dir)
 	// mi porto a terra i dockerfile e tutto cio che mi serve per creare il docker
 	r, errClone := git.PlainClone(dir, false, &git.CloneOptions{
-		URL:      repoDocker,
-		Progress: os.Stdout,
+		SingleBranch: false,
+		Auth:         &http.BasicAuth{Username: buildArgs.UserGit, Password: buildArgs.TokenGit},
+		URL:          repoDocker,
+		Progress:     os.Stdout,
+		Tags:         git.NoTags,
 	})
+	fmt.Println("err:", errClone)
 	if errClone != nil {
 		return errClone
 	}
+	fmt.Println(r)
 	w, _ := r.Worktree()
+	fmt.Println(w)
 
 	branchName := plumbing.ReferenceName(dkr.Dockerfile)
 	errCheckout := w.Checkout(&git.CheckoutOptions{
 		Branch: branchName,
 		Force:  true,
 	})
+	fmt.Println("err:", errCheckout)
 	if errCheckout != nil {
 		return errCheckout
 	}
