@@ -1,4 +1,4 @@
-module corefactorylib
+module github.com/pasqualepunzo/corefactorylib
 
 go 1.21.5
 
