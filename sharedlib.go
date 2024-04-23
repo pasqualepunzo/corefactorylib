@@ -17,6 +17,8 @@ import (
 	"time"
 
 	"cloud.google.com/go/storage"
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-resty/resty/v2"
 	"github.com/mozillazg/go-slugify"
 )
@@ -1845,7 +1847,7 @@ func GitMergeApi(ctx context.Context, src, dst, repo, tipo string, bitbucketEnv 
 
 	return mergeRes.Log, mergeRes.Error
 }
-func CreaDirAndCloneDocker(ctx context.Context, dkr DockerStruct, dirToCreate, branch string, buildArgs BuildArgs) {
+func CreaDirAndCloneDocker(ctx context.Context, dkr DockerStruct, dirToCreate, branch string, buildArgs BuildArgs) error {
 
 	Logga(ctx, os.Getenv("JsonLog"), "Work on: "+dkr.Docker)
 	Logga(ctx, os.Getenv("JsonLog"), "Repo git: "+dkr.GitRepo)
@@ -1868,32 +1870,66 @@ func CreaDirAndCloneDocker(ctx context.Context, dkr DockerStruct, dirToCreate, b
 	// creo la dir del docker
 	err := os.MkdirAll(dir, 0755)
 	if err != nil {
-		Logga(ctx, os.Getenv("JsonLog"), err.Error(), "error")
+		return err
 	}
 
 	// mi porto a terra i dockerfile e tutto cio che mi serve per creare il docker
-	GitClone(dir, repoDocker)
-	GitCheckout(dir, dkr.Dockerfile)
+	r, errClone := git.PlainClone(dir, false, &git.CloneOptions{
+		URL:      repoDocker,
+		Progress: os.Stdout,
+	})
+	if errClone != nil {
+		return errClone
+	}
+	w, _ := r.Worktree()
+
+	branchName := plumbing.ReferenceName(dkr.Dockerfile)
+	errCheckout := w.Checkout(&git.CheckoutOptions{
+		Branch: branchName,
+		Force:  true,
+	})
+	if errCheckout != nil {
+		return errCheckout
+	}
+	// GitClone(dir, repoDocker)
+	//GitCheckout(dir, dkr.Dockerfile)
 
 	// remove .git
 	err = os.RemoveAll(dir + "/.git")
 	if err != nil {
-		Logga(ctx, os.Getenv("JsonLog"), err.Error(), "error")
+		return err
 	}
 
 	// creo la dir src
 	err = os.MkdirAll(dirSrc, 0755)
 	if err != nil {
-		Logga(ctx, os.Getenv("JsonLog"), err.Error(), "error")
+		return err
 	}
 
 	// mi porto a terra i file del progetto e mi porto al branch dichiarato
-	GitClone(dirSrc, repoproject)
-	GitCheckout(dirSrc, branch)
+	r2, errClone := git.PlainClone(dirSrc, false, &git.CloneOptions{
+		URL:      repoproject,
+		Progress: os.Stdout,
+	})
+	if errClone != nil {
+		return errClone
+	}
+	w2, _ := r2.Worktree()
+	branchName = plumbing.ReferenceName(dkr.Dockerfile)
+	errCheckout = w2.Checkout(&git.CheckoutOptions{
+		Branch: branchName,
+		Force:  true,
+	})
+	if errCheckout != nil {
+		return errCheckout
+	}
+	// GitClone(dirSrc, repoproject)
+	//GitCheckout(dirSrc, branch)
 
 	// remove .git
 	err = os.RemoveAll(dirSrc + "/.git")
 	if err != nil {
-		Logga(ctx, os.Getenv("JsonLog"), err.Error(), "error")
+		return err
 	}
+	return nil
 }
