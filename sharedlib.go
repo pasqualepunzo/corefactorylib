@@ -20,9 +20,6 @@ import (
 
 	"github.com/go-resty/resty/v2"
 	"github.com/mozillazg/go-slugify"
-	git "gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/plumbing"
-	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
 )
 
 func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction, dominio, coreApiVersion string) (IstanzaMicro, error) {
@@ -1877,7 +1874,7 @@ func CreaDirAndCloneDocker(ctx context.Context, dkr DockerStruct, dirToCreate, b
 
 	fmt.Println("Cloning " + repoDocker + " on " + dir)
 	// mi porto a terra i dockerfile e tutto cio che mi serve per creare il docker
-	r, errClone := git.PlainClone(dir, false, &git.CloneOptions{
+	/*r, errClone := git.PlainClone(dir, false, &git.CloneOptions{
 		SingleBranch: false,
 		Auth:         &http.BasicAuth{Username: buildArgs.UserGit, Password: buildArgs.TokenGit},
 		URL:          repoDocker,
@@ -1900,9 +1897,9 @@ func CreaDirAndCloneDocker(ctx context.Context, dkr DockerStruct, dirToCreate, b
 	fmt.Println("err:", errCheckout)
 	if errCheckout != nil {
 		return errCheckout
-	}
-	// GitClone(dir, repoDocker)
-	//GitCheckout(dir, dkr.Dockerfile)
+	}*/
+	GitClone(dir, repoDocker)
+	GitCheckout(dir, dkr.Dockerfile)
 
 	// remove .git
 	err = os.RemoveAll(dir + "/.git")
@@ -1917,7 +1914,7 @@ func CreaDirAndCloneDocker(ctx context.Context, dkr DockerStruct, dirToCreate, b
 	}
 
 	// mi porto a terra i file del progetto e mi porto al branch dichiarato
-	r2, errClone := git.PlainClone(dirSrc, false, &git.CloneOptions{
+	/*r2, errClone := git.PlainClone(dirSrc, false, &git.CloneOptions{
 		URL:      repoproject,
 		Progress: os.Stdout,
 	})
@@ -1932,9 +1929,9 @@ func CreaDirAndCloneDocker(ctx context.Context, dkr DockerStruct, dirToCreate, b
 	})
 	if errCheckout != nil {
 		return errCheckout
-	}
-	// GitClone(dirSrc, repoproject)
-	//GitCheckout(dirSrc, branch)
+	}*/
+	GitClone(dirSrc, repoproject)
+	GitCheckout(dirSrc, branch)
 
 	// remove .git
 	err = os.RemoveAll(dirSrc + "/.git")
