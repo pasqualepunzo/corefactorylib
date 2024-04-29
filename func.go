@@ -688,7 +688,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 			var cfgMap ConfigMap
 			argsCfgMap := make(map[string]string)
 			argsCfgMap["source"] = "devops-9"
-			argsCfgMap["center_dett"] = "dettaglio"
+			argsCfgMap["center_dett"] = "allviews"
 			argsCfgMap["$select"] = "XKUBEDKRCONFIGMAP06,XKUBEDKRCONFIGMAP07,XKUBEDKRCONFIGMAP08,XKUBEDKRCONFIGMAP09,XKUBEDKRCONFIGMAP10"
 			argsCfgMap["$filter"] = "equals(XKUBEDKRCONFIGMAP03,'" + cluster + "')"
 			argsCfgMap["$filter"] += " AND equals(XKUBEDKRCONFIGMAP04,'" + enviro + "')"
