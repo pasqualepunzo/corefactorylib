@@ -705,14 +705,15 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 				return microservices, erro
 			}
 
-			if len(restyKUBEDKRCONFIGMAPRes.BodyJson) > 0 {
-
-				cfgMap.Name = restyKUBEDKRCONFIGMAPRes.BodyJson["XKUBEDKRCONFIGMAP06"].(string)
-				cfgMap.ConfigType = restyKUBEDKRCONFIGMAPRes.BodyJson["XKUBEDKRCONFIGMAP07"].(string)
-				cfgMap.MountType = restyKUBEDKRCONFIGMAPRes.BodyJson["XKUBEDKRCONFIGMAP08"].(string)
-				cfgMap.MountPath = restyKUBEDKRCONFIGMAPRes.BodyJson["XKUBEDKRCONFIGMAP09"].(string)
-				cfgMap.Content = restyKUBEDKRCONFIGMAPRes.BodyJson["XKUBEDKRCONFIGMAP10"].(string)
-				pod.ConfigMap = cfgMap
+			if len(restyKUBEDKRCONFIGMAPRes.BodyArray) > 0 {
+				for _, x := range restyKubeMntRes.BodyArray {
+					cfgMap.Name = x["XKUBEDKRCONFIGMAP06"].(string)
+					cfgMap.ConfigType = x["XKUBEDKRCONFIGMAP07"].(string)
+					cfgMap.MountType = x["XKUBEDKRCONFIGMAP08"].(string)
+					cfgMap.MountPath = x["XKUBEDKRCONFIGMAP09"].(string)
+					cfgMap.Content = x["XKUBEDKRCONFIGMAP10"].(string)
+					pod.ConfigMap = cfgMap
+				}
 
 				Logga(ctx, os.Getenv("JsonLog"), "KUBEDKRCONFIGMAP OK")
 			} else {
