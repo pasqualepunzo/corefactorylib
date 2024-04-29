@@ -692,7 +692,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 			argsCfgMap["$select"] = "XKUBEDKRCONFIGMAP06,XKUBEDKRCONFIGMAP07,XKUBEDKRCONFIGMAP08,XKUBEDKRCONFIGMAP09,XKUBEDKRCONFIGMAP10"
 			argsCfgMap["$filter"] = "equals(XKUBEDKRCONFIGMAP03,'" + cluster + "')"
 			argsCfgMap["$filter"] += " AND equals(XKUBEDKRCONFIGMAP04,'" + enviro + "')"
-			argsCfgMap["$filter"] += " AND equals(XKUBEDKRCONFIGMAP04,'" + docker + "')"
+			argsCfgMap["$filter"] += " AND equals(XKUBEDKRCONFIGMAP05,'" + docker + "')"
 
 			restyKUBEDKRCONFIGMAPRes, errCfgMap := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsCfgMap, "msdevops", "/api/"+os.Getenv("API_VERSION")+"/devops/KUBEDKRCONFIGMAP", devopsToken, dominio, coreApiVersion)
 			if errCfgMap != nil {
