@@ -178,6 +178,7 @@ type Pod struct {
 	Resource   Resource  `json:"resource,omitempty"`
 	PodBuild   PodBuild  `json:"podBuild,omitempty"`
 	Probes     []Probes  `json:"probes,omitempty"`
+	ConfigMap  ConfigMap `json:"configMap,omitempty"`
 }
 type Probes struct {
 	Category            string
@@ -233,7 +234,13 @@ type Mount struct {
 	ClaimName  string
 	FromSecret bool
 }
-
+type ConfigMap struct {
+	ConfigType string `json:"configType,omitempty"`
+	MountType  string `json:"mountType,omitempty"`
+	MountPath  string `json:"mountPath,omitempty"`
+	Name       string `json:"name,omitempty"`
+	Content    string `json:"content,omitempty"`
+}
 type Service struct {
 	Tipo       string     `json:"tipo,omitempty"`
 	Port       string     `json:"port,omitempty"`

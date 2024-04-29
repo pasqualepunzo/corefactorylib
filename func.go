@@ -392,13 +392,13 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 	}
 
 	microservice := ""
-	//cluster := ""
+	cluster := ""
 	if len(restyKubeImicroservRes.BodyJson) > 0 {
 
 		microservice = restyKubeImicroservRes.BodyJson["XKUBEIMICROSERV04_COD"].(string)
 		microservices.VersMicroservice = restyKubeImicroservRes.BodyJson["XKUBEIMICROSERV07"].(string)
 
-		//cluster = restyKubeImicroservRes.BodyJson["XKUBEIMICROSERV05"].(string)
+		cluster = restyKubeImicroservRes.BodyJson["XKUBEIMICROSERV05"].(string)
 		Logga(ctx, os.Getenv("JsonLog"), "KUBEIMICROSERV OK")
 	} else {
 		Logga(ctx, os.Getenv("JsonLog"), "   !!!   KUBEIMICROSERV MISSING")
@@ -683,6 +683,41 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 			Logga(ctx, os.Getenv("JsonLog"), "")
 
 			/* ************************************************************************************************ */
+			// GET FUTURE TOGGLE
+
+			var cfgMap ConfigMap
+			argsCfgMap := make(map[string]string)
+			argsCfgMap["source"] = "devops-9"
+			argsCfgMap["center_dett"] = "dettaglio"
+			argsCfgMap["$select"] = "XKUBEDKRCONFIGMAP06,XKUBEDKRCONFIGMAP07,XKUBEDKRCONFIGMAP08,XKUBEDKRCONFIGMAP09,XKUBEDKRCONFIGMAP10"
+			argsCfgMap["$filter"] = "equals(XKUBEDKRCONFIGMAP03,'" + cluster + "')"
+			argsCfgMap["$filter"] += " AND equals(XKUBEDKRCONFIGMAP04,'" + enviro + "')"
+			argsCfgMap["$filter"] += " AND equals(XKUBEDKRCONFIGMAP04,'" + docker + "')"
+
+			restyKUBEDKRCONFIGMAPRes, errCfgMap := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsCfgMap, "msdevops", "/api/"+os.Getenv("API_VERSION")+"/devops/KUBEDKRCONFIGMAP", devopsToken, dominio, coreApiVersion)
+			if errCfgMap != nil {
+				Logga(ctx, os.Getenv("JsonLog"), errCfgMap.Error())
+				return microservices, errCfgMap
+			}
+			if restyKUBEDKRCONFIGMAPRes.Errore < 0 {
+				erro := errors.New(restyKUBEDKRCONFIGMAPRes.Log)
+				Logga(ctx, os.Getenv("JsonLog"), erro.Error())
+				return microservices, erro
+			}
+
+			if len(restyKUBEDKRCONFIGMAPRes.BodyJson) > 0 {
+
+				cfgMap.Name = restyKUBEDKRCONFIGMAPRes.BodyJson["XKUBEDKRCONFIGMAP06"].(string)
+				cfgMap.ConfigType = restyKUBEDKRCONFIGMAPRes.BodyJson["XKUBEDKRCONFIGMAP07"].(string)
+				cfgMap.MountType = restyKUBEDKRCONFIGMAPRes.BodyJson["XKUBEDKRCONFIGMAP08"].(string)
+				cfgMap.MountPath = restyKUBEDKRCONFIGMAPRes.BodyJson["XKUBEDKRCONFIGMAP09"].(string)
+				cfgMap.Content = restyKUBEDKRCONFIGMAPRes.BodyJson["XKUBEDKRCONFIGMAP10"].(string)
+				pod.ConfigMap = cfgMap
+
+				Logga(ctx, os.Getenv("JsonLog"), "KUBEDKRCONFIGMAP OK")
+			} else {
+				Logga(ctx, os.Getenv("JsonLog"), "KUBEDKRCONFIGMAP MISSING")
+			}
 
 			/* ************************************************************************************************ */
 			// KUBEDKRRESOURCE
