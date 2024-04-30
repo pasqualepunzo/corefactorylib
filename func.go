@@ -685,7 +685,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 			/* ************************************************************************************************ */
 			// GET FUTURE TOGGLE
 
-			var cfgMap ConfigMap
+			var cfgMaps []ConfigMap
 			argsCfgMap := make(map[string]string)
 			argsCfgMap["source"] = "devops-9"
 			argsCfgMap["center_dett"] = "allviews"
@@ -707,14 +707,15 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 
 			if len(restyKUBEDKRCONFIGMAPRes.BodyArray) > 0 {
 				for _, x := range restyKubeMntRes.BodyArray {
+					var cfgMap ConfigMap
 					cfgMap.Name = x["XKUBEDKRCONFIGMAP06"].(string)
 					cfgMap.ConfigType = x["XKUBEDKRCONFIGMAP07"].(string)
 					cfgMap.MountType = x["XKUBEDKRCONFIGMAP08"].(string)
 					cfgMap.MountPath = x["XKUBEDKRCONFIGMAP09"].(string)
 					cfgMap.Content = x["XKUBEDKRCONFIGMAP10"].(string)
-					pod.ConfigMap = cfgMap
+					cfgMaps = append(cfgMaps, cfgMap)
 				}
-
+				pod.ConfigMap = cfgMaps
 				Logga(ctx, os.Getenv("JsonLog"), "KUBEDKRCONFIGMAP OK")
 			} else {
 				Logga(ctx, os.Getenv("JsonLog"), "KUBEDKRCONFIGMAP MISSING")

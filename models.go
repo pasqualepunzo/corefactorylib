@@ -164,21 +164,21 @@ type Microservice struct {
 }
 
 type Pod struct {
-	Id         string    `json:"id,omitempty"`
-	Docker     string    `json:"docker,omitempty"`
-	GitRepo    string    `json:"gitRepo,omitempty"`
-	Descr      string    `json:"descr,omitempty"`
-	Dockerfile string    `json:"dockerfile,omitempty"`
-	Tipo       string    `json:"tipo,omitempty"`
-	Vpn        int       `json:"vpn,omitempty"`
-	Workdir    string    `json:"workdir,omitempty"`
-	Mount      []Mount   `json:"mount,omitempty"`
-	Service    []Service `json:"service,omitempty"`
-	Branch     Branch    `json:"branch,omitempty"`
-	Resource   Resource  `json:"resource,omitempty"`
-	PodBuild   PodBuild  `json:"podBuild,omitempty"`
-	Probes     []Probes  `json:"probes,omitempty"`
-	ConfigMap  ConfigMap `json:"configMap,omitempty"`
+	Id         string      `json:"id,omitempty"`
+	Docker     string      `json:"docker,omitempty"`
+	GitRepo    string      `json:"gitRepo,omitempty"`
+	Descr      string      `json:"descr,omitempty"`
+	Dockerfile string      `json:"dockerfile,omitempty"`
+	Tipo       string      `json:"tipo,omitempty"`
+	Vpn        int         `json:"vpn,omitempty"`
+	Workdir    string      `json:"workdir,omitempty"`
+	Mount      []Mount     `json:"mount,omitempty"`
+	Service    []Service   `json:"service,omitempty"`
+	Branch     Branch      `json:"branch,omitempty"`
+	Resource   Resource    `json:"resource,omitempty"`
+	PodBuild   PodBuild    `json:"podBuild,omitempty"`
+	Probes     []Probes    `json:"probes,omitempty"`
+	ConfigMap  []ConfigMap `json:"configMap,omitempty"`
 }
 type Probes struct {
 	Category            string
