@@ -660,16 +660,16 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 
 			if len(restyKubeMntRes.BodyArray) > 0 {
 				var mounts []Mount
-				for _, x := range restyKubeMntRes.BodyArray {
+				for _, xMnt := range restyKubeMntRes.BodyArray {
 
 					var mount Mount
-					mount.Nome = x["XKUBEDKRMOUNT04"].(string)
-					mount.Mount = x["XKUBEDKRMOUNT05"].(string)
-					mount.Subpath = x["XKUBEDKRMOUNT06"].(string)
-					mount.ClaimName = x["XKUBEDKRMOUNT07"].(string)
+					mount.Nome = xMnt["XKUBEDKRMOUNT04"].(string)
+					mount.Mount = xMnt["XKUBEDKRMOUNT05"].(string)
+					mount.Subpath = xMnt["XKUBEDKRMOUNT06"].(string)
+					mount.ClaimName = xMnt["XKUBEDKRMOUNT07"].(string)
 
-					if x["XKUBEDKRMOUNT08"] != nil {
-						fromSecretFloat := x["XKUBEDKRMOUNT08"].(float64)
+					if xMnt["XKUBEDKRMOUNT08"] != nil {
+						fromSecretFloat := xMnt["XKUBEDKRMOUNT08"].(float64)
 						mount.FromSecret = fromSecretFloat == 1
 					}
 
@@ -706,13 +706,13 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 			}
 
 			if len(restyKUBEDKRCONFIGMAPRes.BodyArray) > 0 {
-				for _, x := range restyKubeMntRes.BodyArray {
+				for _, xCfg := range restyKUBEDKRCONFIGMAPRes.BodyArray {
 					var cfgMap ConfigMap
-					cfgMap.Name = x["XKUBEDKRCONFIGMAP06"].(string)
-					cfgMap.ConfigType = x["XKUBEDKRCONFIGMAP07"].(string)
-					cfgMap.MountType = x["XKUBEDKRCONFIGMAP08"].(string)
-					cfgMap.MountPath = x["XKUBEDKRCONFIGMAP09"].(string)
-					cfgMap.Content = x["XKUBEDKRCONFIGMAP10"].(string)
+					cfgMap.Name = xCfg["XKUBEDKRCONFIGMAP06"].(string)
+					cfgMap.ConfigType = xCfg["XKUBEDKRCONFIGMAP07"].(string)
+					cfgMap.MountType = xCfg["XKUBEDKRCONFIGMAP08"].(string)
+					cfgMap.MountPath = xCfg["XKUBEDKRCONFIGMAP09"].(string)
+					cfgMap.Content = xCfg["XKUBEDKRCONFIGMAP10"].(string)
 					cfgMaps = append(cfgMaps, cfgMap)
 				}
 				pod.ConfigMap = cfgMaps
@@ -774,34 +774,34 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 			if len(restyKubePrbRes.BodyArray) > 0 {
 
 				var probes []Probes
-				for _, x := range restyKubePrbRes.BodyArray {
+				for _, xPrb := range restyKubePrbRes.BodyArray {
 
 					var elem Probes
 
-					elem.Category = x["XKUBEDKRPROBE04"].(string)
-					elem.Type = x["XKUBEDKRPROBE05"].(string)
-					if x["XKUBEDKRPROBE06"] == nil {
+					elem.Category = xPrb["XKUBEDKRPROBE04"].(string)
+					elem.Type = xPrb["XKUBEDKRPROBE05"].(string)
+					if xPrb["XKUBEDKRPROBE06"] == nil {
 						elem.Command = ""
 					} else {
-						elem.Command = x["XKUBEDKRPROBE06"].(string)
+						elem.Command = xPrb["XKUBEDKRPROBE06"].(string)
 					}
-					elem.HttpHost = x["XKUBEDKRPROBE07"].(string)
-					elem.HttpPort = int(x["XKUBEDKRPROBE08"].(float64))
-					elem.HttpPath = x["XKUBEDKRPROBE09"].(string)
-					if x["XKUBEDKRPROBE10"] == nil {
+					elem.HttpHost = xPrb["XKUBEDKRPROBE07"].(string)
+					elem.HttpPort = int(xPrb["XKUBEDKRPROBE08"].(float64))
+					elem.HttpPath = xPrb["XKUBEDKRPROBE09"].(string)
+					if xPrb["XKUBEDKRPROBE10"] == nil {
 						elem.HttpHeaders = ""
 					} else {
-						elem.HttpHeaders = x["XKUBEDKRPROBE10"].(string)
+						elem.HttpHeaders = xPrb["XKUBEDKRPROBE10"].(string)
 					}
-					elem.HttpScheme = x["XKUBEDKRPROBE11"].(string)
-					elem.TcpHost = x["XKUBEDKRPROBE12"].(string)
-					elem.TcpPort = int(x["XKUBEDKRPROBE13"].(float64))
-					elem.GrpcPort = int(x["XKUBEDKRPROBE14"].(float64))
-					elem.InitialDelaySeconds = int(x["XKUBEDKRPROBE15"].(float64))
-					elem.PeriodSeconds = int(x["XKUBEDKRPROBE16"].(float64))
-					elem.TimeoutSeconds = int(x["XKUBEDKRPROBE17"].(float64))
-					elem.SuccessThreshold = int(x["XKUBEDKRPROBE18"].(float64))
-					elem.FailureThreshold = int(x["XKUBEDKRPROBE19"].(float64))
+					elem.HttpScheme = xPrb["XKUBEDKRPROBE11"].(string)
+					elem.TcpHost = xPrb["XKUBEDKRPROBE12"].(string)
+					elem.TcpPort = int(xPrb["XKUBEDKRPROBE13"].(float64))
+					elem.GrpcPort = int(xPrb["XKUBEDKRPROBE14"].(float64))
+					elem.InitialDelaySeconds = int(xPrb["XKUBEDKRPROBE15"].(float64))
+					elem.PeriodSeconds = int(xPrb["XKUBEDKRPROBE16"].(float64))
+					elem.TimeoutSeconds = int(xPrb["XKUBEDKRPROBE17"].(float64))
+					elem.SuccessThreshold = int(xPrb["XKUBEDKRPROBE18"].(float64))
+					elem.FailureThreshold = int(xPrb["XKUBEDKRPROBE19"].(float64))
 					probes = append(probes, elem)
 
 				}
@@ -835,10 +835,10 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 			if len(restyKubeSrvDkrRes.BodyArray) > 0 {
 				var port, tipo string
 				var services []Service
-				for _, x := range restyKubeSrvDkrRes.BodyArray {
+				for _, xSrv := range restyKubeSrvDkrRes.BodyArray {
 
-					port = strconv.FormatFloat(x["XKUBESERVICEDKR06"].(float64), 'f', 0, 64)
-					tipo = x["XKUBESERVICEDKR05"].(string)
+					port = strconv.FormatFloat(xSrv["XKUBESERVICEDKR06"].(float64), 'f', 0, 64)
+					tipo = xSrv["XKUBESERVICEDKR05"].(string)
 
 					var service Service
 					service.Port = port
