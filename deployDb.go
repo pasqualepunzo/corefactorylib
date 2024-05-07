@@ -132,7 +132,6 @@ func DropDbData(ctx context.Context, dbDataName DbDataConnMs, db *sql.DB) error 
 	}
 	return nil
 }
-
 func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, db *sql.DB, db2 *sql.DB, doQueryExec bool) ([]string, []string, error) {
 
 	var allCompareSql []string
@@ -217,6 +216,10 @@ func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, 
 		dstTbls = append(dstTbls, tbl)
 	}
 
+	// fmt.Println("SRC")
+	// LogJson(srcTbls)
+	// fmt.Println("DST")
+	// LogJson(dstTbls)
 	// fmt.Println(srcTbls)
 	// fmt.Println(dstTbls)
 	// os.Exit(0)
@@ -299,6 +302,8 @@ func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, 
 
 		// fine ricerca tabelle mancanti
 	}
+	// fmt.Println("DIFF")
+	// LogJson(diffTbls)
 	// fmt.Println(diffTbls)
 	// os.Exit(0)
 
@@ -315,7 +320,8 @@ func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, 
 	// da qui in poi si applica cio che e stato calcolato
 
 	for k := range missingTbls {
-		sqlCompare := "CREATE TABLE IF NOT EXISTS " + dbDataDst + "." + k + " like " + dbDataSrc + "." + k
+		// sqlCompare := "CREATE TABLE IF NOT EXISTS " + dbDataDst + "." + k + " like " + dbDataSrc + "." + k
+		sqlCompare := "CREATE TABLE IF NOT EXISTS " + k + " like " + dbDataSrc + "." + k
 
 		// popolo un array con tutte le query da fare
 		allCompareSql = append(allCompareSql, sqlCompare)
@@ -330,9 +336,6 @@ func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, 
 			}
 		}
 	}
-
-	// fmt.Println(diffTbls)
-	// os.Exit(0)
 
 	var sqlCompare string
 	var columnExists bool
@@ -410,7 +413,6 @@ func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, 
 
 	return allCompareSql, allCompareSqlError, nil
 }
-
 func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db2 *sql.DB, db3 *sql.DB, doQueryExec bool) ([]string, []string, error) {
 	fmt.Println()
 	fmt.Println("Compare Index")
@@ -837,7 +839,6 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 
 	return allCompareIdx, allCompareIdxError, nil
 }
-
 func RenameDatabases(ctx context.Context, dbMetaName DbMetaConnMs, masterDb MasterConn, db *sql.DB) {
 
 	query := "DROP DATABASE IF EXISTS " + dbMetaName.MetaName + "_METAOLD"
