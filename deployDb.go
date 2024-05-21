@@ -368,9 +368,11 @@ func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, 
 		if vv.Tipo == "CHANGE" {
 			if columnExists {
 				if xxx[1] != "" {
-					sqlCompare = "ALTER TABLE " + dbDataName.DataName + "." + vv.Tbl + " CHANGE " + vv.Column_name + " " + vv.Column_name + " " + xxx[0] + " DEFAULT " + xxx[1]
+					// sqlCompare = "ALTER TABLE " + dbDataName.DataName + "." + vv.Tbl + " CHANGE " + vv.Column_name + " " + vv.Column_name + " " + xxx[0] + " DEFAULT " + xxx[1]
+					sqlCompare = "ALTER TABLE " + vv.Tbl + " CHANGE " + vv.Column_name + " " + vv.Column_name + " " + xxx[0] + " DEFAULT " + xxx[1]
 				} else {
-					sqlCompare = "ALTER TABLE " + dbDataName.DataName + "." + vv.Tbl + " CHANGE " + vv.Column_name + " " + vv.Column_name + " " + xxx[0]
+					// sqlCompare = "ALTER TABLE " + dbDataName.DataName + "." + vv.Tbl + " CHANGE " + vv.Column_name + " " + vv.Column_name + " " + xxx[0]
+					sqlCompare = "ALTER TABLE " + vv.Tbl + " CHANGE " + vv.Column_name + " " + vv.Column_name + " " + xxx[0]
 				}
 			} else {
 				allCompareSqlError = append(allCompareSqlError, sqlCompare+" - Cannot change "+vv.Column_name+" column missing")
@@ -380,9 +382,11 @@ func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, 
 		} else {
 			if !columnExists {
 				if xxx[1] != "" {
-					sqlCompare = "ALTER TABLE " + dbDataName.DataName + "." + vv.Tbl + " ADD " + vv.Column_name + " " + xxx[0] + " DEFAULT " + xxx[1]
+					// sqlCompare = "ALTER TABLE " + dbDataName.DataName + "." + vv.Tbl + " ADD " + vv.Column_name + " " + xxx[0] + " DEFAULT " + xxx[1]
+					sqlCompare = "ALTER TABLE " + vv.Tbl + " ADD " + vv.Column_name + " " + xxx[0] + " DEFAULT " + xxx[1]
 				} else {
-					sqlCompare = "ALTER TABLE " + dbDataName.DataName + "." + vv.Tbl + " ADD " + vv.Column_name + " " + xxx[0]
+					// sqlCompare = "ALTER TABLE " + dbDataName.DataName + "." + vv.Tbl + " ADD " + vv.Column_name + " " + xxx[0]
+					sqlCompare = "ALTER TABLE " + vv.Tbl + " ADD " + vv.Column_name + " " + xxx[0]
 				}
 			} else {
 				allCompareSqlError = append(allCompareSqlError, sqlCompare+" - Cannot add "+vv.Column_name+" column exists")
