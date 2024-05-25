@@ -1390,6 +1390,7 @@ func GetCfToolEnv(ctx context.Context, token, dominio, tenant, coreApiVersion, e
 		tntEnv.CoreGkeProject = envRes.BodyJson["XKUBECFTOOLENV16"].(string)
 		tntEnv.CoreGkeUrl = envRes.BodyJson["XKUBECFTOOLENV17"].(string)
 		tntEnv.CoreApiDominio = envRes.BodyJson["XKUBECFTOOLENV18"].(string)
+		tntEnv.WorkspaceToken = envRes.BodyJson["XKUBECFTOOLENV22"].(string)
 
 		Logga(ctx, os.Getenv("JsonLog"), "KUBECFTOOLENV OK")
 	} else {
@@ -1746,6 +1747,11 @@ func GetOverrideTenantEnv(ctx context.Context, bearerToken, team string, tntEnv 
 		if envRes.BodyJson["XKUBETEAMBRANCH17"].(string) != "" {
 			Logga(ctx, os.Getenv("JsonLog"), "overrdide 17")
 			tntEnv.TypeGit = envRes.BodyJson["XKUBETEAMBRANCH17"].(string)
+		}
+
+		if envRes.BodyJson["XKUBETEAMBRANCH18"].(string) != "" {
+			Logga(ctx, os.Getenv("JsonLog"), "overrdide 18")
+			tntEnv.WorkspaceToken = envRes.BodyJson["XKUBETEAMBRANCH18"].(string)
 		}
 
 		Logga(ctx, os.Getenv("JsonLog"), "KUBETEAMBRANCH OK")
