@@ -90,24 +90,26 @@ type Tenant struct {
 	Descrizione string `json:"Descrizione"`
 }
 type TenantEnv struct {
-	TelegramKey     string `json:"telegramKey"`
-	TelegramID      string `json:"TelegramID"`
-	CoreApiVersion  string `json:"coreApiVersion"`
-	CoreApiPort     string `json:"coreApiPort"`
-	CoreAccessToken string `json:"coreAccessToken"`
-	AtlassianHost   string `json:"atlassianHost"`
-	AtlassianUser   string `json:"atlassianUser"`
-	AtlassianToken  string `json:"atlassianToken"`
-	ApiHostGit      string `json:"apiHostGit"`
-	UrlGit          string `json:"urlGit"`
-	UserGit         string `json:"userGit"`
-	TokenGit        string `json:"tokenGit"`
-	ProjectGit      string `json:"projectGit"`
-	TypeGit         string `json:"typeGit"`
-	WorkspaceToken  string `json:"workspaceToken"`
-	CoreGkeProject  string `json:"coreGkeProject"`
-	CoreGkeUrl      string `json:"coreGkeUrl"`
-	CoreApiDominio  string `json:"coreApiDominio"`
+	TelegramKey           string `json:"telegramKey"`
+	TelegramID            string `json:"TelegramID"`
+	CoreApiVersion        string `json:"coreApiVersion"`
+	CoreApiPort           string `json:"coreApiPort"`
+	CoreAccessToken       string `json:"coreAccessToken"`
+	AtlassianHost         string `json:"atlassianHost"`
+	AtlassianUser         string `json:"atlassianUser"`
+	AtlassianToken        string `json:"atlassianToken"`
+	ApiHostGit            string `json:"apiHostGit"`
+	UrlGit                string `json:"urlGit"`
+	UserGit               string `json:"userGit"`
+	TokenGit              string `json:"tokenGit"`
+	ProjectGit            string `json:"projectGit"`
+	TypeGit               string `json:"typeGit"`
+	WorkspaceKey          string `json:"workspaceKey"`
+	WorkspaceSecret       string `json:"workspaceSecret"`
+	WorkspaceRefreshToken string `json:"WorkspaceRefreshToken"`
+	CoreGkeProject        string `json:"coreGkeProject"`
+	CoreGkeUrl            string `json:"coreGkeUrl"`
+	CoreApiDominio        string `json:"coreApiDominio"`
 }
 
 type SprintBranch struct {
