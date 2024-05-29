@@ -139,3 +139,8 @@ type RepoListStruct struct {
 	Repo  string
 	SwGit string
 }
+type CurrentSprintBranch struct {
+	CurrentBranch string `json:"currentBranch"`
+	Tipo          string `json:"tipo"`
+	Data          string `json:"data"`
+}

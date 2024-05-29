@@ -1940,3 +1940,47 @@ func CreaDirAndCloneDocker(ctx context.Context, dkr DockerStruct, dirToCreate, b
 	}
 	return nil
 }
+
+func GetCurrentBranchSprintApi(ctx context.Context, token, team string) (CurrentSprintBranch, error) {
+
+	var erro error
+
+	// io e ciccio il 29 05 2024 decidiamo di accannare il monolite
+	//
+
+	/* ************************************************************************************************ */
+	// KUBETEAMBRANCH
+	Logga(ctx, os.Getenv("JsonLog"), "Getting KUBETEAMBRANCH")
+	args := make(map[string]string)
+	args["center_dett"] = "allviews"
+	args["source"] = "devops-18"
+	args["$filter"] = "equals(XKUBETEAMBRANCH03,'" + team + "')"
+	args["$filter"] = "equals(XKUBETEAMBRANCH04,'MICROSERVICE')"
+	args["$order"] = "XKUBETEAMBRANCH04"
+
+	restyKubeTeamBranchRes, err := ApiCallGET(ctx, os.Getenv("RestyDebug"), args, "msdevops", "/api/"+os.Getenv("API_VERSION")+"/devops/KUBETEAMBRANCH", token, os.Getenv("apiDomain"), os.Getenv("coreApiVersion"))
+	if err != nil {
+		Logga(ctx, os.Getenv("JsonLog"), err.Error())
+	}
+	if restyKubeTeamBranchRes.Errore != 0 {
+		Logga(ctx, os.Getenv("JsonLog"), restyKubeTeamBranchRes.Log)
+	}
+
+	var CSB CurrentSprintBranch
+
+	if len(restyKubeTeamBranchRes.BodyArray) > 0 {
+		for _, x := range restyKubeTeamBranchRes.BodyArray {
+
+			CSB.CurrentBranch = x["XKUBETEAMBRANCH05"].(string)
+			CSB.Tipo = x["XKUBETEAMBRANCH04"].(string)
+			CSB.Data = x["XKUBETEAMBRANCH06"].(string)
+
+		}
+		Logga(ctx, os.Getenv("JsonLog"), "KUBETEAMBRANCH OK")
+	} else {
+		erro = errors.New("KUBETEAMBRANCH MISSING - getCurrentBranchSprintApi")
+		Logga(ctx, os.Getenv("JsonLog"), "KUBETEAMBRANCH MISSING - getCurrentBranchSprintApi")
+	}
+
+	return CSB, erro
+}
