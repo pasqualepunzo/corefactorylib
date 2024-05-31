@@ -1955,7 +1955,7 @@ func GetCurrentBranchSprintApi(ctx context.Context, token, team string) (Current
 	args["center_dett"] = "allviews"
 	args["source"] = "devops-18"
 	args["$filter"] = "equals(XKUBETEAMBRANCH03,'" + team + "')"
-	args["$filter"] = "equals(XKUBETEAMBRANCH04,'MICROSERVICE')"
+	args["$filter"] += "equals(XKUBETEAMBRANCH04,'MICROSERVICE')"
 	args["$order"] = "XKUBETEAMBRANCH04"
 
 	restyKubeTeamBranchRes, err := ApiCallGET(ctx, os.Getenv("RestyDebug"), args, "msdevops", "/api/"+os.Getenv("API_VERSION")+"/devops/KUBETEAMBRANCH", token, os.Getenv("apiDomain"), os.Getenv("coreApiVersion"))

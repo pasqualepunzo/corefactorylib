@@ -1682,10 +1682,12 @@ func DeleteObjectsApi(namespace, apiHost, apiToken, object, kind string, debug b
 
 	return erro
 }
-func GetOverrideTenantEnv(ctx context.Context, bearerToken, team string, tntEnv TenantEnv, dominio, coreApiVersion string) (TenantEnv, error) {
+func GetOverrideTenantEnv(ctx context.Context, bearerToken, team string, tntEnv TenantEnv, dominio, coreApiVersion string) (TenantEnv, string, error) {
 	// ho le env di default
 	// cerco per ogni valore su KUBETEAMBRANCH se trovo sovrascrivo
 	var erro error
+
+	var sprintBranch string
 
 	args := make(map[string]string)
 	args["center_dett"] = "dettaglio"
@@ -1695,6 +1697,8 @@ func GetOverrideTenantEnv(ctx context.Context, bearerToken, team string, tntEnv 
 	envRes, _ := ApiCallGET(ctx, os.Getenv("RestyDebug"), args, "msdevops", "/api/"+os.Getenv("API_VERSION")+"/devops/KUBETEAMBRANCH", bearerToken, dominio, coreApiVersion)
 
 	if len(envRes.BodyJson) > 0 {
+
+		sprintBranch = envRes.BodyJson["XKUBETEAMBRANCH05"].(string)
 
 		if envRes.BodyJson["XKUBETEAMBRANCH07"].(string) != "" {
 			Logga(ctx, os.Getenv("JsonLog"), "overrdide 07")
@@ -1769,7 +1773,7 @@ func GetOverrideTenantEnv(ctx context.Context, bearerToken, team string, tntEnv 
 		Logga(ctx, os.Getenv("JsonLog"), "KUBETEAMBRANCH MISSING")
 		erro = errors.New("KUBETEAMBRANCH MISSING")
 	}
-	return tntEnv, erro
+	return tntEnv, sprintBranch, erro
 }
 func GetApiHostAndToken(ctx context.Context, enviro, cluster, token, apiDomain, coreApiVersion, swmono string) (string, string, error) {
 	var erro error
