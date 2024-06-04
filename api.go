@@ -54,7 +54,7 @@ func ApiCallPOST(ctx context.Context, debug string, args []map[string]interface{
 			Fields interface{} `json:"fields"`
 			Body   interface{} `json:"body"`
 		} `json:"debug"`
-		InsertedID string `json:"insertedId"`
+		InsertedID interface{} `json:"insertedId"`
 
 		RowCount int  `json:"rowCount"`
 		Outbox   bool `json:"outbox"`

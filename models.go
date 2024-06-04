@@ -546,7 +546,7 @@ type CallPUTRes struct {
 		} `json:"fields"`
 		SQL string `json:"sql"`
 	} `json:"debug"`
-	ModifiedID string `json:"modifiedId"`
+	ModifiedID interface{} `json:"modifiedId"`
 }
 type MergeToMaster struct {
 	TelegramKey string `json:"telegramKey"`
