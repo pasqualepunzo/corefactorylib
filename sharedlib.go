@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"strconv"
@@ -19,6 +20,8 @@ import (
 	"cloud.google.com/go/storage"
 
 	"github.com/go-resty/resty/v2"
+	"github.com/golang-jwt/jwt"
+
 	"github.com/mozillazg/go-slugify"
 )
 
@@ -1515,6 +1518,61 @@ func GetGkeToken() (string, error) {
 	}
 	gkeToken := strings.TrimSuffix(string(stdout), "\n")
 	return gkeToken, err
+}
+func SingJWT(secret string) (string, error) {
+
+	now := time.Now()
+
+	signBytes, err := ioutil.ReadFile(os.Getenv("PEM_FILE"))
+	if err != nil {
+		return "", err
+	}
+
+	signKey, err := jwt.ParseRSAPrivateKeyFromPEM(signBytes)
+	if err != nil {
+		return "", err
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.MapClaims{
+		"iss":   os.Getenv("SERVICE_ACCOUNT"),
+		"aud":   "https://oauth2.googleapis.com/token",
+		"exp":   now.Add(15 * time.Minute).Unix(),
+		"iat":   now.Unix(),
+		"scope": "https://www.googleapis.com/auth/drive",
+	})
+	token.Header["kid"] = os.Getenv("SERVICE_ACCOUNT_KID")
+
+	jwtString, _ := token.SignedString(signKey)
+
+	return jwtString, err
+}
+func GetGkeBearerToken(jwtString string) (string, error) {
+
+	debool, errBool := strconv.ParseBool(os.Getenv("RestyDebug"))
+	if errBool != nil {
+		return "", errBool
+	}
+
+	data := "grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=" + jwtString
+
+	// lancio la BUILD
+	cliB := resty.New()
+	cliB.Debug = debool
+	cliB.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
+	restyResB, errApiB := cliB.R().
+		SetBody(data).
+		Post("https://oauth2.googleapis.com/token")
+
+	if errApiB != nil {
+		return "", errApiB
+	}
+
+	if restyResB.StatusCode() != 200 {
+		erro := errors.New("Statu Code: " + strconv.Itoa(restyResB.StatusCode()))
+		return "", erro
+	}
+
+	return string(restyResB.Body()), nil
 }
 func CloudBuils(ctx context.Context, docker, verPad, dirRepo string, bArgs []string, swMonolith bool, cftoolenv TenantEnv) (BuildRes, error) {
 
