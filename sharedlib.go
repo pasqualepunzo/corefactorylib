@@ -1519,7 +1519,7 @@ func GetGkeToken() (string, error) {
 	gkeToken := strings.TrimSuffix(string(stdout), "\n")
 	return gkeToken, err
 }
-func SingJWT(secret string) (string, error) {
+func GetJWT() (string, error) {
 
 	now := time.Now()
 
@@ -1574,7 +1574,90 @@ func GetGkeBearerToken(jwtString string) (string, error) {
 
 	return string(restyResB.Body()), nil
 }
-func CloudBuils(ctx context.Context, docker, verPad, dirRepo string, bArgs []string, swMonolith bool, cftoolenv TenantEnv) (BuildRes, error) {
+
+func CloudBuils(ctx context.Context, docker, verPad string, bArgs []string, cftoolenv TenantEnv, gkeToken string) (BuildRes, error) {
+
+	Logga(ctx, os.Getenv("JsonLog"), "")
+	Logga(ctx, os.Getenv("JsonLog"), "CLOUD BUILD for "+docker)
+	Logga(ctx, os.Getenv("JsonLog"), "")
+
+	var errBuild error
+
+	nomeBucket := "q01io-325908_cloudbuild"
+
+	tarFileName := docker + "_" + verPad + ".tar.gz"
+
+	// // ottengo un token
+	// gkeToken, errToken := GetGkeToken()
+	// if errToken != nil {
+	// }
+
+	// Prepariamo la struct per fare la BUILD
+	var cb CBuild
+	var step1 BuildStep
+	var step2 BuildStep
+	cb.Source.StorageSource.Bucket = nomeBucket
+	cb.Source.StorageSource.Object = "buildTgz/" + tarFileName
+	cb.Options.MachineType = "E2_HIGHCPU_8"
+
+	var img []string
+	img = append(img, cftoolenv.CoreGkeUrl+"/"+cftoolenv.CoreGkeProject+"/"+docker+":"+verPad)
+	cb.Images = img
+
+	var args1 []string
+	args1 = append(args1, "build")
+	for _, ar := range bArgs {
+		args1 = append(args1, ar)
+	}
+	args1 = append(args1, "-t")
+	args1 = append(args1, cftoolenv.CoreGkeUrl+"/"+cftoolenv.CoreGkeProject+"/"+docker+":"+verPad)
+	args1 = append(args1, ".")
+
+	step1.Name = "gcr.io/cloud-builders/docker"
+	step1.Args = args1
+
+	var args2 []string
+	args2 = append(args2, "push")
+	args2 = append(args2, cftoolenv.CoreGkeUrl+"/"+cftoolenv.CoreGkeProject+"/"+docker+":"+verPad)
+
+	step2.Name = "gcr.io/cloud-builders/docker"
+	step2.Args = args2
+
+	cb.Steps = append(cb.Steps, step1)
+	cb.Steps = append(cb.Steps, step2)
+
+	var bres BuildRes
+
+	debool, errBool := strconv.ParseBool(os.Getenv("RestyDebug"))
+	if errBool != nil {
+		return bres, errBool
+	}
+
+	// lancio la BUILD
+	cliB := resty.New()
+	cliB.Debug = debool
+	cliB.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
+	restyResB, errApiB := cliB.R().
+		SetAuthToken(gkeToken).
+		SetBody(cb).
+		Post("https://cloudbuild.googleapis.com/v1/projects/q01io-325908/locations/global/builds")
+	if errApiB != nil {
+
+	}
+
+	if restyResB.StatusCode() != 200 {
+		var brerr BuildError
+		json.Unmarshal([]byte(restyResB.Body()), &brerr)
+		errBuild = errors.New(brerr.Error.Message)
+		return bres, errBuild
+	}
+
+	// code 200
+	json.Unmarshal([]byte(restyResB.Body()), &bres)
+	return bres, errBuild
+}
+
+func _CloudBuils(ctx context.Context, docker, verPad, dirRepo string, bArgs []string, swMonolith bool, cftoolenv TenantEnv) (BuildRes, error) {
 
 	Logga(ctx, os.Getenv("JsonLog"), "")
 	Logga(ctx, os.Getenv("JsonLog"), "CLOUD BUILD for "+docker)
