@@ -1519,7 +1519,9 @@ func GetGkeToken() (string, error) {
 	gkeToken := strings.TrimSuffix(string(stdout), "\n")
 	return gkeToken, err
 }
-func GetJWT() (string, error) {
+func GetJWT(ctx context.Context) (string, error) {
+
+	Logga(ctx, os.Getenv("JsonLog"), "Getting JWT")
 
 	now := time.Now()
 
@@ -1527,6 +1529,8 @@ func GetJWT() (string, error) {
 	if err != nil {
 		return "", err
 	}
+
+	Logga(ctx, os.Getenv("JsonLog"), os.Getenv("PEM_FILE"))
 
 	signKey, err := jwt.ParseRSAPrivateKeyFromPEM(signBytes)
 	if err != nil {
@@ -1538,16 +1542,19 @@ func GetJWT() (string, error) {
 		"aud":   "https://oauth2.googleapis.com/token",
 		"exp":   now.Add(15 * time.Minute).Unix(),
 		"iat":   now.Unix(),
-		"scope": "https://www.googleapis.com/auth/drive",
+		"scope": "https://www.googleapis.com/auth/cloud-platform",
 	})
 	token.Header["kid"] = os.Getenv("SERVICE_ACCOUNT_KID")
+
+	Logga(ctx, os.Getenv("JsonLog"), token.Header["kid"])
 
 	jwtString, _ := token.SignedString(signKey)
 
 	return jwtString, err
 }
-func GetGkeBearerToken(jwtString string) (string, error) {
+func GetGkeBearerToken(ctx context.Context, jwtString string) (string, error) {
 
+	Logga(ctx, os.Getenv("JsonLog"), "GET ACCESS TOKEN")
 	debool, errBool := strconv.ParseBool(os.Getenv("RestyDebug"))
 	if errBool != nil {
 		return "", errBool
@@ -1560,6 +1567,7 @@ func GetGkeBearerToken(jwtString string) (string, error) {
 	cliB.Debug = debool
 	cliB.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 	restyResB, errApiB := cliB.R().
+		SetHeader("Content-Type", "application/x-www-form-urlencoded").
 		SetBody(data).
 		Post("https://oauth2.googleapis.com/token")
 
@@ -1568,7 +1576,7 @@ func GetGkeBearerToken(jwtString string) (string, error) {
 	}
 
 	if restyResB.StatusCode() != 200 {
-		erro := errors.New("Statu Code: " + strconv.Itoa(restyResB.StatusCode()))
+		erro := errors.New("Status Code: " + strconv.Itoa(restyResB.StatusCode()))
 		return "", erro
 	}
 
