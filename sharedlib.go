@@ -2,17 +2,12 @@ package lib
 
 import (
 	"context"
-	"crypto/sha256"
 	"crypto/tls"
-	"encoding/base64"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
-	"os/exec"
 	"strconv"
 	"strings"
 	"time"
@@ -20,7 +15,6 @@ import (
 	"cloud.google.com/go/storage"
 
 	"github.com/go-resty/resty/v2"
-	"github.com/golang-jwt/jwt"
 
 	"github.com/mozillazg/go-slugify"
 )
@@ -1451,6 +1445,27 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 	//os.Exit(0)
 	return nil
 }
+func UploadFileToBucket(bucket, tarPathFilename, fileBucket, accessToken string) error {
+
+	fileBytes, _ := os.ReadFile(tarPathFilename)
+	cliUp := resty.New()
+	cliUp.Debug = true
+	cliUp.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
+	restyResUp, errApiUp := cliUp.R().
+		SetHeader("Content-Type", "application/tar+gzip").
+		SetAuthToken(accessToken).
+		SetBody(fileBytes).
+		Post("https://storage.googleapis.com/upload/storage/v1/b/" + bucket + "/o?uploadType=media&name=" + fileBucket)
+	fmt.Println(restyResUp)
+	if errApiUp != nil {
+		return errApiUp
+	}
+	if restyResUp.StatusCode() != 200 {
+		erro := errors.New("STATUS CODE: " + strconv.Itoa(restyResUp.StatusCode()))
+		return erro
+	}
+	return nil
+}
 func UploadFileBucket(bucket, object, filename string) error {
 	// bucket := "bucket-name"
 	// object := "object-name"
@@ -1497,91 +1512,6 @@ func UploadFileBucket(bucket, object, filename string) error {
 	fmt.Println(filename + " uploaded in " + object)
 	return nil
 }
-func GetGkeDevopsToken(salt string) string {
-	ct := time.Now()
-	date := ct.Format("20060102")
-	year := date[0:4]
-	month := date[4:6]
-	day := date[6:8]
-	secret := year + "." + salt + "." + month + "." + day
-
-	h := sha256.New()
-	h.Write([]byte(secret))
-	sha1_hash := hex.EncodeToString(h.Sum(nil))
-	return base64.StdEncoding.EncodeToString([]byte(sha1_hash))
-}
-func GetGkeToken() (string, error) {
-	cmd := exec.Command("bash", "-c", "gcloud config config-helper --format='value(credential.access_token)'")
-	stdout, err := cmd.Output()
-	if err != nil {
-		return "", err
-	}
-	gkeToken := strings.TrimSuffix(string(stdout), "\n")
-	return gkeToken, err
-}
-func GetJWT(ctx context.Context) (string, error) {
-
-	Logga(ctx, os.Getenv("JsonLog"), "Getting JWT")
-
-	now := time.Now()
-
-	signBytes, err := ioutil.ReadFile(os.Getenv("PEM_FILE"))
-	if err != nil {
-		return "", err
-	}
-
-	Logga(ctx, os.Getenv("JsonLog"), os.Getenv("PEM_FILE"))
-
-	signKey, err := jwt.ParseRSAPrivateKeyFromPEM(signBytes)
-	if err != nil {
-		return "", err
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.MapClaims{
-		"iss":   os.Getenv("SERVICE_ACCOUNT"),
-		"aud":   "https://oauth2.googleapis.com/token",
-		"exp":   now.Add(15 * time.Minute).Unix(),
-		"iat":   now.Unix(),
-		"scope": "https://www.googleapis.com/auth/cloud-platform",
-	})
-	token.Header["kid"] = os.Getenv("SERVICE_ACCOUNT_KID")
-
-	Logga(ctx, os.Getenv("JsonLog"), token.Header["kid"])
-
-	jwtString, _ := token.SignedString(signKey)
-
-	return jwtString, err
-}
-func GetGkeBearerToken(ctx context.Context, jwtString string) (string, error) {
-
-	Logga(ctx, os.Getenv("JsonLog"), "GET ACCESS TOKEN")
-	debool, errBool := strconv.ParseBool(os.Getenv("RestyDebug"))
-	if errBool != nil {
-		return "", errBool
-	}
-
-	data := "grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=" + jwtString
-
-	// lancio la BUILD
-	cliB := resty.New()
-	cliB.Debug = debool
-	cliB.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
-	restyResB, errApiB := cliB.R().
-		SetHeader("Content-Type", "application/x-www-form-urlencoded").
-		SetBody(data).
-		Post("https://oauth2.googleapis.com/token")
-
-	if errApiB != nil {
-		return "", errApiB
-	}
-
-	if restyResB.StatusCode() != 200 {
-		erro := errors.New("Status Code: " + strconv.Itoa(restyResB.StatusCode()))
-		return "", erro
-	}
-
-	return string(restyResB.Body()), nil
-}
 
 func CloudBuils(ctx context.Context, docker, verPad string, bArgs []string, cftoolenv TenantEnv, gkeToken string) (BuildRes, error) {
 
@@ -1594,94 +1524,6 @@ func CloudBuils(ctx context.Context, docker, verPad string, bArgs []string, cfto
 	nomeBucket := "q01io-325908_cloudbuild"
 
 	tarFileName := docker + "_" + verPad + ".tar.gz"
-
-	// // ottengo un token
-	// gkeToken, errToken := GetGkeToken()
-	// if errToken != nil {
-	// }
-
-	// Prepariamo la struct per fare la BUILD
-	var cb CBuild
-	var step1 BuildStep
-	var step2 BuildStep
-	cb.Source.StorageSource.Bucket = nomeBucket
-	cb.Source.StorageSource.Object = "buildTgz/" + tarFileName
-	cb.Options.MachineType = "E2_HIGHCPU_8"
-
-	var img []string
-	img = append(img, cftoolenv.CoreGkeUrl+"/"+cftoolenv.CoreGkeProject+"/"+docker+":"+verPad)
-	cb.Images = img
-
-	var args1 []string
-	args1 = append(args1, "build")
-	for _, ar := range bArgs {
-		args1 = append(args1, ar)
-	}
-	args1 = append(args1, "-t")
-	args1 = append(args1, cftoolenv.CoreGkeUrl+"/"+cftoolenv.CoreGkeProject+"/"+docker+":"+verPad)
-	args1 = append(args1, ".")
-
-	step1.Name = "gcr.io/cloud-builders/docker"
-	step1.Args = args1
-
-	var args2 []string
-	args2 = append(args2, "push")
-	args2 = append(args2, cftoolenv.CoreGkeUrl+"/"+cftoolenv.CoreGkeProject+"/"+docker+":"+verPad)
-
-	step2.Name = "gcr.io/cloud-builders/docker"
-	step2.Args = args2
-
-	cb.Steps = append(cb.Steps, step1)
-	cb.Steps = append(cb.Steps, step2)
-
-	var bres BuildRes
-
-	debool, errBool := strconv.ParseBool(os.Getenv("RestyDebug"))
-	if errBool != nil {
-		return bres, errBool
-	}
-
-	// lancio la BUILD
-	cliB := resty.New()
-	cliB.Debug = debool
-	cliB.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
-	restyResB, errApiB := cliB.R().
-		SetAuthToken(gkeToken).
-		SetBody(cb).
-		Post("https://cloudbuild.googleapis.com/v1/projects/q01io-325908/locations/global/builds")
-	if errApiB != nil {
-
-	}
-
-	if restyResB.StatusCode() != 200 {
-		var brerr BuildError
-		json.Unmarshal([]byte(restyResB.Body()), &brerr)
-		errBuild = errors.New(brerr.Error.Message)
-		return bres, errBuild
-	}
-
-	// code 200
-	json.Unmarshal([]byte(restyResB.Body()), &bres)
-	return bres, errBuild
-}
-
-func _CloudBuils(ctx context.Context, docker, verPad, dirRepo string, bArgs []string, swMonolith bool, cftoolenv TenantEnv) (BuildRes, error) {
-
-	Logga(ctx, os.Getenv("JsonLog"), "")
-	Logga(ctx, os.Getenv("JsonLog"), "CLOUD BUILD for "+docker)
-	Logga(ctx, os.Getenv("JsonLog"), "")
-
-	var errBuild error
-	fmt.Println(dirRepo + "-" + docker + "-" + verPad)
-
-	nomeBucket := "q01io-325908_cloudbuild"
-
-	tarFileName := docker + "_" + verPad + ".tar.gz"
-
-	// ottengo un token
-	gkeToken, errToken := GetGkeToken()
-	if errToken != nil {
-	}
 
 	// Prepariamo la struct per fare la BUILD
 	var cb CBuild
@@ -1748,7 +1590,7 @@ func _CloudBuils(ctx context.Context, docker, verPad, dirRepo string, bArgs []st
 	return bres, errBuild
 }
 func GetBuildStatus(ID string, cftoolenv TenantEnv, token string) (BuildStatus, error) {
-
+	var bStatus BuildStatus
 	cli := resty.New()
 	cli.Debug = true
 	cli.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
@@ -1756,12 +1598,10 @@ func GetBuildStatus(ID string, cftoolenv TenantEnv, token string) (BuildStatus, 
 		SetAuthToken(token).
 		Get("https://cloudbuild.googleapis.com/v1/projects/q01io-325908/builds/" + ID)
 	if err != nil {
-
+		return bStatus, err
 	}
-	var bStatus BuildStatus
 	json.Unmarshal([]byte(restyRes.Body()), &bStatus)
-
-	return bStatus, err
+	return bStatus, nil
 }
 func UpdateDockerVersion(ctx context.Context, docker, ver, user, devMaster, sha, team, newTagName, releaseNote, parentBranch, cs, merged, tenant, devopsToken, dominio, coreApiVersion string) error {
 
