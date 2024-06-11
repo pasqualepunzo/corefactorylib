@@ -914,7 +914,7 @@ func GetProfileInfo(ctx context.Context, token, dominio, coreApiVersion string) 
 	info := make(map[string]interface{})
 
 	args := make(map[string]string)
-	infoRes, _ := ApiCallGET(ctx, os.Getenv("RestyDebug"), args, "msauth", "/api/"+os.Getenv("API_VERSION")+"/auth/getProfileInfo", token, dominio, coreApiVersion)
+	infoRes, _ := ApiCallGET(ctx, os.Getenv("RestyDebug"), args, "msauth", "/api/"+os.Getenv("API_VERSION")+"/auth/getProfileInfo?getDbInfo=true", token, dominio, coreApiVersion)
 
 	if len(infoRes.BodyJson) > 0 {
 		restyProfileInfoResponse := ProfileInfo{}
