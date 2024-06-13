@@ -13,7 +13,9 @@ import (
 	"time"
 
 	"cloud.google.com/go/storage"
-
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/go-resty/resty/v2"
 
 	"github.com/mozillazg/go-slugify"
@@ -1852,46 +1854,33 @@ func CreaDirAndCloneDocker(ctx context.Context, dkr DockerStruct, dirToCreate, b
 	// REPO TU BUILD
 	repoproject := "https://" + buildArgs.UserGit + ":" + buildArgs.TokenGit + "@" + buildArgs.UrlGit + "/" + buildArgs.ProjectGit + "/" + dkr.GitRepo + ".git"
 
-	dir := dirToCreate + "/" + dkr.Docker
-	dirSrc := dir + "/src"
+	dirTmpl := dirToCreate + "/" + dkr.Docker
+	dirSrc := dirTmpl + "/src"
 
 	// creo la dir del docker
-	err := os.MkdirAll(dir, 0755)
+	err := os.MkdirAll(dirTmpl, 0755)
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("Cloning " + repoDocker + " on " + dir)
+	fmt.Println("Cloning " + repoDocker + " on " + dirTmpl)
 	// mi porto a terra i dockerfile e tutto cio che mi serve per creare il docker
-	/*r, errClone := git.PlainClone(dir, false, &git.CloneOptions{
-		SingleBranch: false,
-		Auth:         &http.BasicAuth{Username: buildArgs.UserGit, Password: buildArgs.TokenGit},
-		URL:          repoDocker,
-		Progress:     os.Stdout,
-		Tags:         git.NoTags,
+	_, errClone := git.PlainClone(dirTmpl, false, &git.CloneOptions{
+		// Progress:      os.Stdout,
+		URL:           repoDocker,
+		Auth:          &http.BasicAuth{Username: buildArgs.UserGit, Password: buildArgs.TokenGit},
+		ReferenceName: plumbing.NewBranchReferenceName(dkr.Dockerfile),
+		SingleBranch:  true,
 	})
-	fmt.Println("err:", errClone)
 	if errClone != nil {
-		return errClone
+		return err
 	}
-	fmt.Println(r)
-	w, _ := r.Worktree()
-	fmt.Println(w)
 
-	branchName := plumbing.ReferenceName(dkr.Dockerfile)
-	errCheckout := w.Checkout(&git.CheckoutOptions{
-		Branch: branchName,
-		Force:  true,
-	})
-	fmt.Println("err:", errCheckout)
-	if errCheckout != nil {
-		return errCheckout
-	}*/
-	GitClone(dir, repoDocker)
-	GitCheckout(dir, dkr.Dockerfile)
+	// GitClone(dir, repoDocker)
+	// GitCheckout(dir, dkr.Dockerfile)
 
 	// remove .git
-	err = os.RemoveAll(dir + "/.git")
+	err = os.RemoveAll(dirTmpl + "/.git")
 	if err != nil {
 		return err
 	}
@@ -1903,24 +1892,18 @@ func CreaDirAndCloneDocker(ctx context.Context, dkr DockerStruct, dirToCreate, b
 	}
 
 	// mi porto a terra i file del progetto e mi porto al branch dichiarato
-	/*r2, errClone := git.PlainClone(dirSrc, false, &git.CloneOptions{
-		URL:      repoproject,
-		Progress: os.Stdout,
+	_, errClone = git.PlainClone(dirSrc, false, &git.CloneOptions{
+		// Progress:      os.Stdout,
+		URL:           repoproject,
+		Auth:          &http.BasicAuth{Username: buildArgs.UserGit, Password: buildArgs.TokenGit},
+		ReferenceName: plumbing.NewBranchReferenceName(branch),
+		SingleBranch:  true,
 	})
 	if errClone != nil {
-		return errClone
+		return err
 	}
-	w2, _ := r2.Worktree()
-	branchName = plumbing.ReferenceName(dkr.Dockerfile)
-	errCheckout = w2.Checkout(&git.CheckoutOptions{
-		Branch: branchName,
-		Force:  true,
-	})
-	if errCheckout != nil {
-		return errCheckout
-	}*/
-	GitClone(dirSrc, repoproject)
-	GitCheckout(dirSrc, branch)
+	// GitClone(dirSrc, repoproject)
+	// GitCheckout(dirSrc, branch)
 
 	// remove .git
 	err = os.RemoveAll(dirSrc + "/.git")
