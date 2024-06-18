@@ -758,8 +758,9 @@ func Compareidx(dbDataName DbDataConnMs, dbMetaName DbMetaConnMs, db *sql.DB, db
 					if UNIQUE_IDX == "1" {
 						createIdx += " UNIQUE "
 					}
-					dropIdx += NAME_IDX + " on " + dbDataName.DataName + "." + nomeIndiceArr[0]
-					createIdx += " INDEX " + NAME_IDX + " on " + dbDataName.DataName + "." + nomeIndiceArr[0] + " ( "
+
+					dropIdx += NAME_IDX + " on " + nomeIndiceArr[0]
+					createIdx += " INDEX " + NAME_IDX + " on " + nomeIndiceArr[0] + " ( "
 				}
 				createIdx += COLUMN_NAME + ", "
 
