@@ -727,6 +727,7 @@ type MsgDetails struct {
 	Microservice string `json:"microservice"`
 	Tenant       string `json:"tenant"`
 	Resource     string `json:"resource"`
+	Env          string `json:"env"`
 	Action       string `json:"action"`
 }
 type OutboxBody struct {
@@ -743,6 +744,7 @@ type OutboxBody struct {
 	XOUTBOX11 string      `json:"XOUTBOX11"`
 	XOUTBOX12 string      `json:"XOUTBOX12"`
 	XOUTBOX13 string      `json:"XOUTBOX13"`
+	XOUTBOX14 string      `json:"XOUTBOX14"`
 }
 type GkeToken struct {
 	AccessToken string `json:"access_token"`
