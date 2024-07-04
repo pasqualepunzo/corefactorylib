@@ -719,6 +719,7 @@ type ConfigMPQ struct {
 	Consumer        string `json:"consumer"`
 	Kind            string `json:"kind"`
 	PublishExchange string `json:"publishExchange"`
+	Env             string `json:"env"`
 }
 type MsgDetails struct {
 	UniquID      string `json:"uniquID"`
