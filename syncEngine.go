@@ -83,9 +83,9 @@ func NetAlive(host, port string) bool {
 		return true
 	}
 }
-func PublishQueueError(ctx context.Context, d amqp.Delivery, msgDtl MsgDetails, exchange string) {
+func PublishQueueError(ctx context.Context, d amqp.Delivery, msgDtl MsgDetails, exchange, env string) {
 
-	conn, err := amqp.Dial("amqp://" + os.Getenv("userMQ") + ":" + os.Getenv("passwdMQ") + "@" + os.Getenv("hostMQ") + ":" + os.Getenv("portMQ") + "/" + os.Getenv("APP_ENV"))
+	conn, err := amqp.Dial("amqp://" + os.Getenv("userMQ") + ":" + os.Getenv("passwdMQ") + "@" + os.Getenv("hostMQ") + ":" + os.Getenv("portMQ") + "/" + env)
 	FailOnError(ctx, err, "Failed to connect to rabbitmq")
 	defer conn.Close()
 
@@ -94,13 +94,13 @@ func PublishQueueError(ctx context.Context, d amqp.Delivery, msgDtl MsgDetails, 
 	defer ch.Close()
 
 	err = ch.ExchangeDeclare(
-		exchange, // name
-		"fanout", // type
-		true,     // durable
-		false,    // auto-deleted
-		false,    // internal
-		false,    // no-wait
-		nil,      // arguments
+		env+"-"+exchange, // name
+		"fanout",         // type
+		true,             // durable
+		false,            // auto-deleted
+		false,            // internal
+		false,            // no-wait
+		nil,              // arguments
 	)
 	FailOnError(ctx, err, "Failed to declare an exchange")
 
@@ -121,7 +121,7 @@ func PublishQueueError(ctx context.Context, d amqp.Delivery, msgDtl MsgDetails, 
 			Body:        []byte(string(d.Body)),
 		})
 	if errP != nil {
-		Logga(ctx, os.Getenv("JsonLog"), " * ERROR Pubblish a message on "+exchange, "error")
+		Logga(ctx, os.Getenv("JsonLog"), " * ERROR Pubblish a message on "+env+"-"+exchange, "error")
 	}
-	Logga(ctx, os.Getenv("JsonLog"), " * Sent a message on exchange: "+exchange, "warn")
+	Logga(ctx, os.Getenv("JsonLog"), " * Sent a message on exchange: "+env+"-"+exchange, "warn")
 }
