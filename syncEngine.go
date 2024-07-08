@@ -18,7 +18,10 @@ func FailOnError(ctx context.Context, err error, msg string) {
 			"p@lanificiodigitale.com",
 			"f@lanificiodigitale.com",
 		}
-		SyncSendMail("Sync - ERROR", msg+" - "+err.Error(), destEmail, "", nil)
+
+		hostname, _ := os.Hostname()
+		message := hostname + " " + os.Getenv("tenant") + " " + os.Getenv("hostMQ") + " - " + err.Error()
+		SyncSendMail("Sync - ERROR", message, destEmail, "", nil)
 	}
 }
 func GetConfigFile() ([]ConfigMPQ, error) {
