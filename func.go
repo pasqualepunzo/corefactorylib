@@ -1191,13 +1191,11 @@ func SetEnvironmentStatus(ctx context.Context, cluster, enviro, microserice, cus
 
 	keyvalueslices = append(keyvalueslices, keyvalueslice)
 
-	res := ApiCallPOST(ctx, os.Getenv("RestyDebug"), keyvalueslices, "msdevops", "/api/"+os.Getenv("API_VERSION")+"/devops/KUBEENVSTATUS", devopsToken, loginApiDomain, coreApiVersion)
+	_, erroPost := ApiCallPOST(ctx, os.Getenv("RestyDebug"), keyvalueslices, "msdevops", "/api/"+os.Getenv("API_VERSION")+"/devops/KUBEENVSTATUS", devopsToken, loginApiDomain, coreApiVersion)
 
-	if res.Errore < 0 {
-		Logga(ctx, os.Getenv("JsonLog"), res.Log)
-		erro = errors.New(res.Log)
-		return erro
-
+	if erroPost != nil {
+		Logga(ctx, os.Getenv("JsonLog"), erroPost.Error())
+		return erroPost
 	} else {
 		if toggle == "ON" {
 			erro = errors.New("Environment set to LOCK")

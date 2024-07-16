@@ -150,15 +150,13 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 
 				keyvalueslices = append(keyvalueslices, keyvalueslice)
 
-				resKubeims := ApiCallPOST(ctx, os.Getenv("RestyDebug"), keyvalueslices, "ms"+devops, "/api/"+os.Getenv("API_VERSION")+"/"+devops+"/KUBEIMICROSERV", devopsToken, dominio, coreApiVersion)
+				_, erroPost := ApiCallPOST(ctx, os.Getenv("RestyDebug"), keyvalueslices, "ms"+devops, "/api/"+os.Getenv("API_VERSION")+"/"+devops+"/KUBEIMICROSERV", devopsToken, dominio, coreApiVersion)
 
-				if resKubeims.Errore < 0 {
+				if erroPost != nil {
 					Logga(ctx, os.Getenv("JsonLog"), "")
-					Logga(ctx, os.Getenv("JsonLog"), "NON RIESCO A SCRIVRERE L'ISTANZA "+resKubeims.Log)
+					Logga(ctx, os.Getenv("JsonLog"), "NON RIESCO A SCRIVRERE L'ISTANZA "+erroPost.Error())
 					Logga(ctx, os.Getenv("JsonLog"), "")
-
-					erro = errors.New(resKubeims.Log)
-					return ims, erro
+					return ims, erroPost
 				}
 
 			} else {
@@ -1435,10 +1433,9 @@ func UpdateIstanzaMicroservice(ctx context.Context, canaryProduction, versioneMi
 	keyvalueslice["XDEPLOYLOG10"] = microfrontendJson
 	keyvalueslices = append(keyvalueslices, keyvalueslice)
 
-	resPOST := ApiCallPOST(ctx, os.Getenv("RestyDebug"), keyvalueslices, "ms"+devops, "/api/"+os.Getenv("API_VERSION")+"/"+devops+"/DEPLOYLOG", devopsToken, dominio, coreApiVersion)
-	if resPOST.Errore < 0 {
-		erro := errors.New(resPOST.Log)
-		return erro
+	_, erroPost := ApiCallPOST(ctx, os.Getenv("RestyDebug"), keyvalueslices, "ms"+devops, "/api/"+os.Getenv("API_VERSION")+"/"+devops+"/DEPLOYLOG", devopsToken, dominio, coreApiVersion)
+	if erroPost != nil {
+		return erroPost
 	}
 
 	Logga(ctx, os.Getenv("JsonLog"), "updateIstanzaMicroservice end")
@@ -1630,12 +1627,11 @@ func UpdateDockerVersion(ctx context.Context, docker, ver, user, devMaster, sha,
 
 	Logga(ctx, os.Getenv("JsonLog"), "beore ApiCallPOST")
 
-	res := ApiCallPOST(ctx, os.Getenv("RestyDebug"), keyvalueslices, "msdevops", "/api/"+os.Getenv("API_VERSION")+"/devops/KUBEDKRBUILD", devopsToken, dominio, coreApiVersion)
+	_, erroPost := ApiCallPOST(ctx, os.Getenv("RestyDebug"), keyvalueslices, "msdevops", "/api/"+os.Getenv("API_VERSION")+"/devops/KUBEDKRBUILD", devopsToken, dominio, coreApiVersion)
 	Logga(ctx, os.Getenv("JsonLog"), "after ApiCallPOST")
-	if res.Errore != 0 {
-		Logga(ctx, os.Getenv("JsonLog"), res.Log)
-		erro = errors.New(res.Log)
-		return erro
+	if erroPost != nil {
+		Logga(ctx, os.Getenv("JsonLog"), erroPost.Error())
+		return erroPost
 	}
 	Logga(ctx, os.Getenv("JsonLog"), "Insert TB_ANAG_KUBEDKRBUILD00 DONE")
 	return erro

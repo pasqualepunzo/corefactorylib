@@ -39,33 +39,16 @@ func (cliLogger *RestyClientLogger) Errorf(format string, v ...interface{}) {
 	}
 }
 
-func ApiCallPOST(ctx context.Context, debug string, args []map[string]interface{}, microservice, routing, token, dominio, coreApiVersion string) CallGetResponse {
+func ApiCallPOST(ctx context.Context, debug string, args []map[string]interface{}, microservice, routing, token, dominio, coreApiVersion string) ([]CorePostResponse, error) {
 
 	Logga(ctx, os.Getenv("JsonLog"), "apiCallPOST")
 	if !strings.Contains(dominio, "http") {
 		dominio = "https://" + dominio
 	}
 
-	type restyPOSTStruct []struct {
-		Code   int         `json:"code"`
-		Errors interface{} `json:"errors"`
-		Debug  struct {
-			SQL    string      `json:"sql"`
-			Fields interface{} `json:"fields"`
-			Body   interface{} `json:"body"`
-		} `json:"debug"`
-		InsertedID interface{} `json:"insertedId"`
-
-		RowCount int  `json:"rowCount"`
-		Outbox   bool `json:"outbox"`
-	}
-
-	var resStruct CallGetResponse
+	var erro error
 
 	Logga(ctx, os.Getenv("JsonLog"), dominio+"/"+routing+" - "+microservice)
-
-	var LoggaErrore LoggaErrore
-	LoggaErrore.Errore = 0
 
 	client := resty.New()
 
@@ -75,23 +58,14 @@ func ApiCallPOST(ctx context.Context, debug string, args []map[string]interface{
 
 	debool, errBool := strconv.ParseBool(debug)
 	if errBool != nil {
-		resStruct.Errore = -1
-		resStruct.Log = errBool.Error()
-		return resStruct
+		return nil, errBool
 	}
-	client.Debug = debool
-	// Set retry count to non zero to enable retries
-	client.SetRetryCount(2)
-	// You can override initial retry wait time.
-	// Default is 100 milliseconds.
-	client.SetRetryWaitTime(1 * time.Second)
-	// MaxWaitTime can be overridden as well.
-	// Default is 2 seconds.
-	client.AddRetryCondition(
-		// RetryConditionFunc type is for retry condition function
-		// input: non-nil Response OR request execution error
-		func(r *resty.Response, err error) bool {
 
+	client.Debug = debool
+	client.SetRetryCount(2)
+	client.SetRetryWaitTime(1 * time.Second)
+	client.AddRetryCondition(
+		func(r *resty.Response, err error) bool {
 			acceptedStatus := make(map[int]bool)
 			acceptedStatus[200] = true //BadRequest
 			acceptedStatus[201] = true //
@@ -99,57 +73,39 @@ func ApiCallPOST(ctx context.Context, debug string, args []map[string]interface{
 			acceptedStatus[203] = true
 			acceptedStatus[204] = true
 			acceptedStatus[401] = true
-
 			if ok := acceptedStatus[r.StatusCode()]; ok {
 				return false
 			} else {
 				return true // ho ricevuto uno status che non è tra quelli accepted, quindi faccio retry
 			}
-
 		},
 	)
 
 	client.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
-	res, err := client.R().
+	res, resErr := client.R().
 		SetHeader("Content-Type", "application/json").
 		SetHeader("Accept", "application/json").
-		//SetHeader("canary-mode", "on").
 		SetHeader("microservice", microservice).
 		SetAuthToken(token).
 		SetBody(args).
 		Post(dominio + routing)
 
-	// fmt.Println(res)
-	// LogJson(res)
-
-	if err != nil { // HTTP ERRORE
-		resStruct.Errore = -1
-		resStruct.Log = err.Error()
+	var postResponse []CorePostResponse
+	if resErr != nil { // HTTP ERRORE
+		return nil, resErr
 	} else {
 		if res.StatusCode() != 201 {
-			resStruct.Errore = -1
-			resStruct.Log = "Cannot update the record - Error code: " + strconv.Itoa(res.StatusCode()) + " " + string(res.Body())
-
+			erro = errors.New("Cannot update the record - Error code: " + strconv.Itoa(res.StatusCode()) + " " + string(res.Body()))
+			return nil, erro
 		} else {
-
-			var restyPOSTRes restyPOSTStruct
-			errJson := json.Unmarshal(res.Body(), &restyPOSTRes)
-			callResponse := map[string]interface{}{}
+			errJson := json.Unmarshal(res.Body(), &postResponse)
 			if errJson != nil {
-				resStruct.Errore = -1
-				resStruct.Log = errJson.Error()
-
+				return nil, errJson
 			} else {
-				callResponse["InsertID"] = restyPOSTRes[0].InsertedID
-				resStruct.Kind = "Json"
-				resStruct.BodyJson = callResponse
-				resStruct.DebugFields = restyPOSTRes[0].Debug.Fields
-				resStruct.DebugBody = restyPOSTRes[0].Debug.Body
+				return postResponse, nil
 			}
 		}
 	}
-
-	return resStruct
 }
 func ApiCallGET(ctx context.Context, debug string, args map[string]string, microservice, routing, token, dominio, coreApiVersion string) (CallGetResponse, error) {
 

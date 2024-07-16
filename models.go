@@ -255,6 +255,20 @@ type Endpoint struct {
 	Domain, Market, Partner, Customer, ClusterDomain, Priority, AllowedMethod              string
 }
 
+type CorePostResponse struct {
+	Code   int         `json:"code"`
+	Errors interface{} `json:"errors"`
+	Debug  struct {
+		SQL    string      `json:"sql"`
+		Fields interface{} `json:"fields"`
+		Body   interface{} `json:"body"`
+	} `json:"debug"`
+	InsertedID interface{} `json:"insertedId"`
+
+	RowCount int  `json:"rowCount"`
+	Outbox   bool `json:"outbox"`
+}
+
 type CallGetResponse struct {
 	Kind        string
 	BodyJson    map[string]interface{}
