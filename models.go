@@ -235,11 +235,11 @@ type Mount struct {
 	FromSecret bool
 }
 type ConfigMap struct {
-	ConfigType string      `json:"configType,omitempty"`
-	MountType  string      `json:"mountType,omitempty"`
-	MountPath  string      `json:"mountPath,omitempty"`
-	Name       string      `json:"name,omitempty"`
-	Content    interface{} `json:"content,omitempty"`
+	ConfigType string `json:"configType,omitempty"`
+	MountType  string `json:"mountType,omitempty"`
+	MountPath  string `json:"mountPath,omitempty"`
+	Name       string `json:"name,omitempty"`
+	Content    string `json:"content,omitempty"`
 }
 type Service struct {
 	Tipo       string     `json:"tipo,omitempty"`
@@ -362,7 +362,7 @@ type IstanzaMicro struct {
 	ApiToken                            string                 `json:"apiToken"`
 	Autopilot                           string                 `json:"autopilot"`
 	CloudNet                            string                 `json:"cloudNet"`
-	DepEnv                              interface{}            `json:"depEnv"`
+	DepEnv                              string                 `json:"depEnv"`
 	RefAppCode                          string                 `json:"refAppCode"`
 }
 type LayerMesh struct {
