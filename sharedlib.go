@@ -47,8 +47,6 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	profileDeployStr := iresReq.Enviro
 
 	tagsArr := []string{}
-	//rendo tags un array
-
 	tagsArrDirt := strings.Split(tags, ",")
 	for _, str := range tagsArrDirt {
 		if str != "" {
@@ -358,7 +356,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 		ims.ApiToken = clus[ims.Cluster].ApiToken
 		ims.Autopilot = clus[ims.Cluster].Autopilot
 		ims.CloudNet = clus[ims.Cluster].CloudNet
-		ims.DepEnv = clus[ims.Cluster].DepEnv
+		// ims.DepEnv = clus[ims.Cluster].DepEnv
 
 		Logga(ctx, os.Getenv("JsonLog"), "KUBECLUSTER OK")
 	} else {
