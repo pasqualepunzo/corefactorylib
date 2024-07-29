@@ -362,7 +362,7 @@ type IstanzaMicro struct {
 	ApiToken                            string                 `json:"apiToken"`
 	Autopilot                           string                 `json:"autopilot"`
 	CloudNet                            string                 `json:"cloudNet"`
-	DepEnv                              map[string]interface{} `json:"depEnv"`
+	DepEnv                              interface{}            `json:"depEnv"`
 	RefAppCode                          string                 `json:"refAppCode"`
 }
 type LayerMesh struct {
