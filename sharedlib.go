@@ -472,10 +472,6 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	} else {
 		argsAmb["cluster"] = ims.Cluster
 	}
-	if ims.Monolith == 1 {
-		argsAmb["refappID"] = ims.PodName // MWPO DICE CHE ANCHE SE CE SCRITTO refappID é GIUSTO PASSARE IL PODNAME
-		argsAmb["customerDomain"] = customerDomain
-	}
 	argsAmb["monolith"] = strconv.Itoa(int(ims.Monolith))
 	argsAmb["env"] = strconv.Itoa(int(ims.ProfileInt))
 	argsAmb["public"] = strconv.Itoa(microservicePublic)

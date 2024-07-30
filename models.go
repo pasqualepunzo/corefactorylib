@@ -338,6 +338,7 @@ type IstanzaMicro struct {
 	ClusterDomainStage                  string `json:"clusterDomainStage"`
 	Token                               string `json:"token"`
 	ClusterRefAppID                     string `json:"clusterRefAppID"`
+	ClusterExtIP                        string `json:"clusterExtIP"`
 	RefappCustomerID                    string `json:"refappCustomerID"`
 	Ambiente                            int32  `json:"ambiente"`
 	Tags                                []string
