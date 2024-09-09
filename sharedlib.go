@@ -245,7 +245,14 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 			}
 			clu.Profile = profile
 			clu.ProfileInt = int32(profileNum)
-			clu.DepEnv = depEnv
+
+			var depEnvStrus []DepEnv
+			var depEnvStru DepEnv
+			depEnvStru.Enviro = enviro
+			depEnvStru.DepEnv = depEnv
+			depEnvStrus = append(depEnvStrus, depEnvStru)
+
+			clu.DepEnv = depEnvStrus
 
 			clu.Domain = x["XKUBECLUSTER15"].(string)
 			if swProdStage == 0 && x["XKUBECLUSTER17"].(string) != "" {
