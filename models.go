@@ -240,6 +240,7 @@ type ConfigMap struct {
 	MountPath  string `json:"mountPath,omitempty"`
 	Name       string `json:"name,omitempty"`
 	Content    string `json:"content,omitempty"`
+	Env        string `json:"env,omitempty"`
 }
 type Service struct {
 	Tipo       string     `json:"tipo,omitempty"`
