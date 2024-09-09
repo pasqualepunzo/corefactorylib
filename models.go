@@ -364,8 +364,12 @@ type IstanzaMicro struct {
 	ApiToken                            string                 `json:"apiToken"`
 	Autopilot                           string                 `json:"autopilot"`
 	CloudNet                            string                 `json:"cloudNet"`
-	DepEnv                              string                 `json:"depEnv"`
+	DepEnv                              []DepEnv               `json:"depEnv"`
 	RefAppCode                          string                 `json:"refAppCode"`
+}
+type DepEnv struct {
+	Enviro string `json:"enviro"`
+	DepEnv string `json:"depEnv"`
 }
 type LayerMesh struct {
 	AppName string `json:"AppName"`
@@ -445,10 +449,7 @@ type ClusterSt struct {
 	DepEnv       []DepEnv `json:"depEnv"`
 	DomainOvr    bool     `json:"domainOvr"`
 }
-type DepEnv struct {
-	Enviro string `json:"enviro"`
-	DepEnv string `json:"depEnv"`
-}
+
 type ClusterAccess struct {
 	Domain            string `json="domain"`
 	AccessToken       string `json="accessToken"`
