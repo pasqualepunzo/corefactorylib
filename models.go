@@ -151,53 +151,7 @@ type RestyResConflict struct {
 	Page int `json:"page"`
 	Size int `json:"size"`
 }
-type Microservice struct {
-	Nome             string `json:"nome,omitempty"`
-	Descrizione      string `json:"descrizione,omitempty"`
-	Namespace        string `json:"namespace,omitempty"`
-	VersMicroservice string `json:"versMs,omitempty"`
-	Virtualservice   string `json:"virtualService,omitempty"`
-	Public           int    `json:"public,omitempty"`
-	DatabasebEnable  string `json:"databasebEnable,omitempty"`
-	Hpa              Hpa    `json:"hpa,omitempty"`
-	Pod              []Pod  `json:"pod,omitempty"`
-}
 
-type Pod struct {
-	Id         string      `json:"id,omitempty"`
-	Docker     string      `json:"docker,omitempty"`
-	GitRepo    string      `json:"gitRepo,omitempty"`
-	Descr      string      `json:"descr,omitempty"`
-	Dockerfile string      `json:"dockerfile,omitempty"`
-	Tipo       string      `json:"tipo,omitempty"`
-	Vpn        int         `json:"vpn,omitempty"`
-	Workdir    string      `json:"workdir,omitempty"`
-	Mount      []Mount     `json:"mount,omitempty"`
-	Service    []Service   `json:"service,omitempty"`
-	Branch     Branch      `json:"branch,omitempty"`
-	Resource   Resource    `json:"resource,omitempty"`
-	PodBuild   PodBuild    `json:"podBuild,omitempty"`
-	Probes     []Probes    `json:"probes,omitempty"`
-	ConfigMap  []ConfigMap `json:"configMap,omitempty"`
-}
-type Probes struct {
-	Category            string
-	Type                string
-	Command             string
-	HttpHost            string
-	HttpPort            int
-	HttpPath            string
-	HttpHeaders         string
-	HttpScheme          string
-	TcpHost             string
-	TcpPort             int
-	GrpcPort            int
-	InitialDelaySeconds int
-	PeriodSeconds       int
-	TimeoutSeconds      int
-	SuccessThreshold    int
-	FailureThreshold    int
-}
 type PodBuild struct {
 	Versione     string
 	Merged       string
@@ -213,47 +167,10 @@ type Resource struct {
 	MemLim string
 }
 
-type Hpa struct {
-	MinReplicas   string `json:"min"`
-	MaxReplicas   string `json:"max"`
-	CpuTipoTarget string `json:"cpuTipoTarget"`
-	CpuTarget     string `json:"cpuTarget"`
-	MemTipoTarget string `json:"memTipoTarget"`
-	MemTarget     string `json:"memTarget"`
-}
-
 type Branch struct {
 	Branch  string `json:"branch,omitempty"`
 	Version string `json:"version,omitempty"`
 	Sha     string `json:"sha,omitempty"`
-}
-type Mount struct {
-	Nome       string
-	Mount      string
-	Subpath    string
-	ClaimName  string
-	FromSecret bool
-}
-type ConfigMap struct {
-	ConfigType string `json:"configType,omitempty"`
-	MountType  string `json:"mountType,omitempty"`
-	MountPath  string `json:"mountPath,omitempty"`
-	Name       string `json:"name,omitempty"`
-	Content    string `json:"content,omitempty"`
-	Env        string `json:"env,omitempty"`
-}
-type Service struct {
-	Tipo       string     `json:"tipo,omitempty"`
-	Port       string     `json:"port,omitempty"`
-	Versione   string     `json:"versione,omitempty"`
-	TipoDeploy string     `json:"tipoDeploy,omitempty"`
-	Endpoint   []Endpoint `json:"endpoint,omitempty"`
-}
-
-type Endpoint struct {
-	MicroserviceSrc, DockerSrc, TypeSrvSrc, RouteSrc, RewriteSrc, NamespaceSrc, VersionSrc string
-	MicroserviceDst, DockerDst, TypeSrvDst, RouteDst, RewriteDst, NamespaceDst, VersionDst string
-	Domain, Market, Partner, Customer, ClusterDomain, Priority, AllowedMethod              string
 }
 
 type CorePostResponse struct {
@@ -316,61 +233,7 @@ type KillemallStruct struct {
 	DeploymentToKill string `json:"deploymentToKill"`
 	Namespace        string `json:"namespace"`
 }
-type IstanzaMicro struct {
-	Istanza                             string `json:"istanza"`
-	Cluster                             string `json:"cluster"`
-	Customer                            string `json:"customer"`
-	Microservice                        string `json:"microservice"`
-	ProjectID                           string `json:"projectID"`
-	Owner                               string `json:"owner"`
-	Profile                             string `json:"profile"`
-	Enviro                              string `json:"enviro"`
-	TipoDeploy                          string `json:"tipoDeploy"`
-	Version                             string `json:"version"`
-	CustomerSalt                        string `json:"customSalt"`
-	MonolithDomain                      string `json:"monolithDomain"`
-	NomeApp                             string `json:"nomeApp"`
-	RefappID                            string `json:"refappID"`
-	PodName                             string `json:"podName"`
-	ClusterDomain                       string `json:"clusterDomain"`
-	ClusterDomainOvr                    bool   `json:"clusterDomainOvr"`
-	ClusterDomainEnv                    string `json:"clusterDomainEnv"`
-	ClusterDomainProd                   string `json:"clusterDomainProd"` // Francesco - oltre a ClusterDomain, mi porto anche ClusterDomainProd e ClusterDomainStage
-	ClusterDomainStage                  string `json:"clusterDomainStage"`
-	Token                               string `json:"token"`
-	ClusterRefAppID                     string `json:"clusterRefAppID"`
-	ClusterExtIP                        string `json:"clusterExtIP"`
-	RefappCustomerID                    string `json:"refappCustomerID"`
-	Ambiente                            int32  `json:"ambiente"`
-	Tags                                []string
-	AmbID                               int `json:"ambID"`
-	Monolith, ProfileDeploy, ProfileInt int32
-	DbMetaConnMs                        []DbMetaConnMs         `json:"dbMetaConnMs"`
-	DbDataConnMs                        []DbDataConnMs         `json:"dbDataConnMs"`
-	MasterHost                          string                 `json:"masterHost"`
-	MasterName                          string                 `json:"masterName"`
-	MasterHostData                      string                 `json:"masterHostData"`
-	MasterHostMeta                      string                 `json:"masterHostMeta"`
-	MasterUser                          string                 `json:"masterUser"`
-	MasterPass                          string                 `json:"masterPass"`
-	SwMultiEnvironment                  string                 `json:"swMultiEnvironment"`
-	SwCore                              bool                   `json:"swCore"`
-	ScaleToZero                         bool                   `json:"scaleToZero"`
-	IsApp                               bool                   `json:"isApp"`
-	SwDb                                int                    `json:"swDb"`
-	IstanzaMicroVersioni                []IstanzaMicroVersioni `json:"istanzaMicroVersioni"`
-	AttributiMS                         []AttributiMS          `json:"attributiMS"`
-	ApiHost                             string                 `json:"apiHost"`
-	ApiToken                            string                 `json:"apiToken"`
-	Autopilot                           string                 `json:"autopilot"`
-	CloudNet                            string                 `json:"cloudNet"`
-	DepEnv                              []DepEnv               `json:"depEnv"`
-	RefAppCode                          string                 `json:"refAppCode"`
-}
-type DepEnv struct {
-	Enviro string `json:"enviro"`
-	DepEnv string `json:"depEnv"`
-}
+
 type LayerMesh struct {
 	AppName string `json:"AppName"`
 	Gw      []Gw   `json:"gw"`
@@ -397,33 +260,6 @@ type VsDetails struct {
 	DestinationHost string `json:"destinationHost"`
 	Prefix          string `json:"prefix"`
 	Authority       string `json:"authority"`
-}
-type AttributiMS struct {
-	Partner  string `json:"partner"`
-	Market   string `json:"market"`
-	Customer string `json:"customer"`
-}
-
-type DbMetaConnMs struct {
-	MetaHost     string `json:"metaHost"`
-	MetaName     string `json:"metaName"`
-	MetaUser     string `json:"metaUser"`
-	MetaPass     string `json:"metaPass"`
-	MetaMicroAmb string `json:"metaMicroAmb"`
-	Cluster      string `json:"cluster"`
-}
-type DbDataConnMs struct {
-	DataHost     string `json:"dataHost"`
-	DataName     string `json:"dataName"`
-	DataUser     string `json:"dataUser"`
-	DataPass     string `json:"dataPass"`
-	DataMicroAmb string `json:"dataMicroAmb"`
-	Cluster      string `json:"cluster"`
-}
-type IstanzaMicroVersioni struct {
-	Microservice string `json:"microservice"`
-	TipoVersione string `json:"tipoVersione"`
-	Versione     string `json:"versione"`
 }
 
 type ClusterSt struct {
@@ -711,21 +547,6 @@ type RouteJson struct {
 	ClusterHost  string `json:"clusterHost"`
 	DevopsToken  string `json:"devopsToken"`
 	IsRefapp     bool   `json:"isRefapp"`
-}
-
-type RouteMs struct {
-	Microservice string         `json:"microservice,omitempty"`
-	Istanza      string         `json:"istanza,omitempty"`
-	Docker       []RouteDocker  `json:"docker,omitempty"`
-	Version      []RouteVersion `json:"version,omitempty"`
-}
-type RouteDocker struct {
-	Docker  string    `json:"docker,omitempty"`
-	Service []Service `json:"service,omitempty"`
-}
-type RouteVersion struct {
-	CanaryProduction string `json:"canaryProduction,omitempty"`
-	Versione         string `json:"versione,omitempty"`
 }
 
 // SYNC
