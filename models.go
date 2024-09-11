@@ -263,27 +263,27 @@ type VsDetails struct {
 }
 
 type ClusterSt struct {
-	ProjectID    string   `json:"projectID"`
-	Owner        string   `json:"owner"`
-	Profile      string   `json:"profile"`
-	ProfileInt   int32    `json:"profileInt"`
-	Domain       string   `json:"domain"`
-	DomainStage  string   `json:"domainStage"`
-	DomainProd   string   `json:"domainProd"`
-	DomainEnv    string   `json:"domainEnv"`
-	Token        string   `json:"token"`
-	MasterHost   string   `json:"masterHost"`
-	MasterUser   string   `json:"masterUser"`
-	MasterPasswd string   `json:"masterPasswd"`
-	Ambiente     int32    `json:"ambiente"`
-	RefappID     string   `json:"refappID"`
-	AccessToken  string   `json:"accssToken"`
-	ApiHost      string   `json:"apiHost"`
-	ApiToken     string   `json:"apiToken"`
-	CloudNet     string   `json:"cloudNet"`
-	Autopilot    string   `json:"autopilot"`
-	DepEnv       []DepEnv `json:"depEnv"`
-	DomainOvr    bool     `json:"domainOvr"`
+	ProjectID    string `json:"projectID"`
+	Owner        string `json:"owner"`
+	Profile      string `json:"profile"`
+	ProfileInt   int32  `json:"profileInt"`
+	Domain       string `json:"domain"`
+	DomainStage  string `json:"domainStage"`
+	DomainProd   string `json:"domainProd"`
+	DomainEnv    string `json:"domainEnv"`
+	Token        string `json:"token"`
+	MasterHost   string `json:"masterHost"`
+	MasterUser   string `json:"masterUser"`
+	MasterPasswd string `json:"masterPasswd"`
+	Ambiente     int32  `json:"ambiente"`
+	RefappID     string `json:"refappID"`
+	AccessToken  string `json:"accssToken"`
+	ApiHost      string `json:"apiHost"`
+	ApiToken     string `json:"apiToken"`
+	CloudNet     string `json:"cloudNet"`
+	Autopilot    string `json:"autopilot"`
+	DepEnv       string `json:"depEnv"`
+	DomainOvr    bool   `json:"domainOvr"`
 }
 
 type ClusterAccess struct {
