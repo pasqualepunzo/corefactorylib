@@ -738,84 +738,168 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 func GetLayerTreDetails(ctx context.Context, tenant, DominioCluster, microservice, enviro, team, devopsToken, dominio, coreApiVersion string) (LayerMesh, error) {
 
 	var layerTre LayerMesh
+	var extDominio, appID string
 
 	Logga(ctx, os.Getenv("JsonLog"), "Get Layer Tre Start")
 	// entro su microservice per avere i ms
 
 	/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 	// qui cerco il dominio
-	argsApp := make(map[string]string)
+	if microservice == "msdevops" {
+		argsApp := make(map[string]string)
+		argsApp["$fullquery"] = "  select XREFAPPCUSTOMER12,XREFAPPNEW04 "
+		argsApp["$fullquery"] += " from TB_ANAG_REFAPPCUSTOMER00 "
+		argsApp["$fullquery"] += " join TB_ANAG_REFAPPNEW00 on (XREFAPPNEW03 = XREFAPPCUSTOMER04) "
+		argsApp["$fullquery"] += " where 1>0 "
+		argsApp["$fullquery"] += " AND XREFAPPCUSTOMER03  = '" + tenant + "' "
 
-	argsApp["$fullquery"] = "  select XREFAPPCUSTOMER12,XREFAPPNEW04 "
-	argsApp["$fullquery"] += " from TB_ANAG_REFAPPCUSTOMER00 "
-	argsApp["$fullquery"] += " join TB_ANAG_REFAPPNEW00 on (XREFAPPNEW03 = XREFAPPCUSTOMER04) "
-	argsApp["$fullquery"] += " where 1>0 "
-	argsApp["$fullquery"] += " AND XREFAPPCUSTOMER03  = '" + tenant + "' "
+		AppRes, errAppRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsApp, "msappman", "/api/"+os.Getenv("coreApiVersion")+"/appman/custom/REFAPPCUSTOMER/values", devopsToken, dominio, coreApiVersion)
+		if errAppRes != nil {
+			Logga(ctx, os.Getenv("JsonLog"), errAppRes.Error())
+			erro := errors.New(errAppRes.Error())
+			return layerTre, erro
+		}
 
-	AppRes, errAppRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsApp, "msappman", "/api/"+os.Getenv("coreApiVersion")+"/appman/custom/REFAPPCUSTOMER/values", devopsToken, dominio, coreApiVersion)
-	if errAppRes != nil {
-		Logga(ctx, os.Getenv("JsonLog"), errAppRes.Error())
-		erro := errors.New(errAppRes.Error())
+		var dominiCustomer string
+
+		if len(AppRes.BodyArray) > 0 {
+			for _, x := range AppRes.BodyArray {
+				dominiCustomer = x["XREFAPPCUSTOMER12"].(string)
+				appID = x["XREFAPPNEW04"].(string)
+			}
+		}
+
+		/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+		fmt.Println(dominiCustomer)
+		type Domini struct {
+			Env string `json:"env"`
+			Dom string `json:"dom"`
+		}
+		var dd []Domini
+		json.Unmarshal([]byte(dominiCustomer), &dd)
+
+		LogJson(dd)
+
+		for _, dom := range dd {
+			fmt.Println(dom.Env, enviro)
+			// qui prendo il dominio esterno
+			if dom.Env == enviro {
+				extDominio = dom.Dom
+			}
+		}
+	}
+
+	/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+	cliMd := resty.New()
+	cliMd.Debug, _ = strconv.ParseBool(os.Getenv("RestyDebug"))
+	cliMd.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
+
+	type Document struct {
+		Debug               bool        `json:"debug"`
+		Dim                 string      `json:"dim"`
+		Key                 string      `json:"key"`
+		ValKey              string      `json:"val_key"`
+		RelatedDim          interface{} `json:"related_dim"`
+		RelatedDimCondition interface{} `json:"related_dim_condition"`
+		Compact             bool        `json:"compact"`
+		UsePublicCode       bool        `json:"use_public_code"`
+		CenterDett          string      `json:"center_dett"`
+		Depth               int         `json:"depth"`
+		DimOccurrences      int         `json:"dim_occurrences"`
+	}
+
+	// DIM RELATIVE
+	relatedDimArr := make(map[string][]string)
+	relatedDimArr["KUBEMICROSERVDKR"] = make([]string, 0)
+	relatedDimArr["KUBEMICROSERVDKR"] = append(relatedDimArr["KUBEMICROSERVDKR"], "!XKUBEMICROSERVDKR03")
+	relatedDimArr["KUBEDKR"] = make([]string, 0)
+	relatedDimArr["KUBEDKR"] = append(relatedDimArr["KUBEDKR"], "!XKUBEDKR05", "!XKUBEDKR08", "!XKUBEDKR10", "!XKUBEDKR11", "!XKUBEDKR13", "!XKUBEDKR14", "!XKUBEDKR15", "!XKUBEDKR16", "!XKUBEDKR17", "!XKUBEDKR18")
+	relatedDimArr["KUBESERVICEDKR"] = make([]string, 0)
+	relatedDimArr["KUBESERVICEDKR"] = append(relatedDimArr["KUBESERVICEDKR"], "!CDATA", "!LDATA", "!OWNER", "!LOWNER", "!TREC", "XKUBESERVICEDKR05", "XKUBESERVICEDKR06", "XKUBESERVICEDKR07")
+
+	// CONDIZIONI SULLE DIM RELATIVE
+	relatedDimConditionArr := make(map[string][]string)
+	relatedDimConditionArr["KUBEMICROSERVDKR"] = append(relatedDimConditionArr["KUBEMICROSERVDKR"], "XKUBESERVICEDKR07 = 'rest'")
+
+	bocumentBody := Document{
+		Debug:               false,
+		Dim:                 "KUBEMICROSERVDKR",
+		Key:                 "XKUBEMICROSERVDKR03",
+		ValKey:              microservice,
+		CenterDett:          "allviews",
+		Depth:               2,
+		DimOccurrences:      1,
+		RelatedDim:          relatedDimArr,
+		RelatedDimCondition: relatedDimConditionArr,
+	}
+
+	resMd, errMd := cliMd.R().
+		SetHeader("Content-Type", "application/json").
+		SetHeader("microservice", "msdevops").
+		SetAuthToken(devopsToken).
+		SetBody(bocumentBody).
+		Post(os.Getenv("apiDomain") + "/api/v4/document")
+
+	if errMd != nil {
+		Logga(ctx, os.Getenv("JsonLog"), errMd.Error())
+		erro := errors.New(errMd.Error())
 		return layerTre, erro
 	}
 
-	var dominiCustomer, appID string
-
-	if len(AppRes.BodyArray) > 0 {
-		for _, x := range AppRes.BodyArray {
-			dominiCustomer = x["XREFAPPCUSTOMER12"].(string)
-			appID = x["XREFAPPNEW04"].(string)
-		}
+	// INTERCETTO UN DOCUMENTO VUOTO
+	if resMd.Size() <= 3 {
+		erro := errors.New("empty document")
+		return layerTre, erro
 	}
 
-	/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
-	fmt.Println(dominiCustomer)
-	type Domini struct {
-		Env string `json:"env"`
-		Dom string `json:"dom"`
-	}
-	var dd []Domini
-	// domini, errM := json.Marshal(dominiCustomer)
-	// if errM != nil {
-	// 	Logga(ctx, os.Getenv("JsonLog"), errM.Error())
-	// 	erro := errors.New(errM.Error())
-	// 	return layerTre, erro
-	// }
-	json.Unmarshal([]byte(dominiCustomer), &dd)
-	var extDominio string
+	mdResponse := []map[string]interface{}{}
+	errResponse := json.Unmarshal(resMd.Body(), &mdResponse)
 
-	LogJson(dd)
-
-	for _, dom := range dd {
-		fmt.Println(dom.Env, enviro)
-		// qui prendo il dominio esterno
-		if dom.Env == enviro {
-			extDominio = dom.Dom
-		}
-	}
-
-	/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
-	argsSr := make(map[string]string)
-	argsSr["source"] = "appman-8"
-	argsSr["$select"] = "XAPPSRV04,XAPPSRV05,XAPPSRV06"
-	argsSr["center_dett"] = "visualizza"
-	argsSr["$filter"] = "equals(XAPPSRV03,'" + appID + "') "
-
-	Logga(ctx, os.Getenv("JsonLog"), argsSr["$fullquery"])
-	SrRes, errSrRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsSr, "msappman", "/api/"+os.Getenv("coreApiVersion")+"/appman/APPSRV", devopsToken, dominio, coreApiVersion)
-	if errSrRes != nil {
-		Logga(ctx, os.Getenv("JsonLog"), errSrRes.Error())
-		erro := errors.New(errSrRes.Error())
+	if errResponse != nil {
+		Logga(ctx, os.Getenv("JsonLog"), errResponse.Error())
+		erro := errors.New(errResponse.Error())
 		return layerTre, erro
 	}
 
 	// POPOLO UN ARR con tutte le porte HTTP da mappare sul GW
 	var gws []Gw
-	if len(SrRes.BodyArray) > 0 {
-		for _, x := range SrRes.BodyArray {
+
+	for _, service := range mdResponse {
+		docker := service["XKUBEMICROSERVDKR04"].(map[string]interface{})
+		for _, v := range docker["XKUBEDKR12"].([]map[string]interface{}) {
+
 			var gw Gw
 
-			if microservice == "msdevops" && x["XAPPSRV04"].(string) == "grpc-"+enviro {
+			var intDominioArr []string
+			intDominioArr = append(intDominioArr, enviro+"-"+microservice+".local")
+			gw.IntDominio = intDominioArr
+			gw.Name = v["XKUBESERVICEDKR05"].(string) + "-" + strconv.Itoa(int(v["XKUBESERVICEDKR06"].(float64)))
+			gw.Number = strconv.Itoa(int(v["XKUBESERVICEDKR06"].(float64)))
+			gw.Protocol = "HTTP"
+			gws = append(gws, gw)
+		}
+	}
+
+	/* ++++++++++++++++++++ ECCEZIONE DEVOPS++++++++++++++++++++++++++++++++ */
+	if microservice == "msdevops" {
+		argsSr := make(map[string]string)
+		argsSr["source"] = "appman-8"
+		argsSr["$select"] = "XAPPSRV04,XAPPSRV05,XAPPSRV06"
+		argsSr["center_dett"] = "visualizza"
+		argsSr["$filter"] = "equals(XAPPSRV03,'" + appID + "') AND equals(XAPPSRV04,'grpc-" + enviro + "') "
+
+		Logga(ctx, os.Getenv("JsonLog"), argsSr["$fullquery"])
+		SrRes, errSrRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsSr, "msappman", "/api/"+os.Getenv("coreApiVersion")+"/appman/APPSRV", devopsToken, dominio, coreApiVersion)
+
+		if errSrRes != nil {
+			Logga(ctx, os.Getenv("JsonLog"), errSrRes.Error())
+			erro := errors.New(errSrRes.Error())
+			return layerTre, erro
+		}
+
+		if len(SrRes.BodyArray) > 0 {
+			for _, x := range SrRes.BodyArray {
+				var gw Gw
 
 				var extDominioArr []string
 				extDominioArr = append(extDominioArr, extDominio)
@@ -825,18 +909,6 @@ func GetLayerTreDetails(ctx context.Context, tenant, DominioCluster, microservic
 				gw.Protocol = x["XAPPSRV06"].(string)
 				gws = append(gws, gw)
 
-			} else {
-
-				// per i ms che non sono msdevops basta il dominio interno e la porta 80
-				if x["XAPPSRV06"].(string) == "HTTP" {
-					var intDominioArr []string
-					intDominioArr = append(intDominioArr, enviro+"-"+microservice+".local")
-					gw.IntDominio = intDominioArr
-					gw.Name = x["XAPPSRV04"].(string)
-					gw.Number = strconv.Itoa(int(x["XAPPSRV05"].(float64)))
-					gw.Protocol = x["XAPPSRV06"].(string)
-					gws = append(gws, gw)
-				}
 			}
 		}
 	}
