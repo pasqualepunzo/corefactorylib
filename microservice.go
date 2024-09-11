@@ -165,7 +165,7 @@ type IstanzaMicro struct {
 	ApiToken             string                 `json:"apiToken,omitempty"`
 	Autopilot            string                 `json:"autopilot,omitempty"`
 	CloudNet             string                 `json:"cloudNet,omitempty"`
-	DepEnv               DepEnv                 `json:"depEnv,omitempty"`
+	DepEnv               string                 `json:"depEnv,omitempty"`
 	RefAppCode           string                 `json:"refAppCode,omitempty"`
 }
 type DbMetaConnMs struct {
@@ -188,10 +188,6 @@ type IstanzaMicroVersioni struct {
 	Microservice string `json:"microservice,omitempty"`
 	TipoVersione string `json:"tipoVersione,omitempty"`
 	Versione     string `json:"versione,omitempty"`
-}
-type DepEnv struct {
-	Enviro string `json:"enviro,omitempty"`
-	DepEnv string `json:"depEnv,omitempty"`
 }
 type AttributiMS struct {
 	Partner  string `json:"partner,omitempty"`
