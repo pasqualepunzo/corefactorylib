@@ -10,7 +10,7 @@ type Microservice struct {
 	DatabasebEnable  string         `json:"databasebEnable,omitempty"`
 	Hpa              Hpa            `json:"hpa,omitempty"`
 	Pod              []Pod          `json:"pod,omitempty"`
-	Istanza          []IstanzaMicro `json:"stanza,omitempty"`
+	Istanza          []IstanzaMicro `json:"istanza,omitempty"`
 }
 type Hpa struct {
 	MinReplicas   string `json:"min,omitempty"`
@@ -165,7 +165,7 @@ type IstanzaMicro struct {
 	ApiToken             string                 `json:"apiToken,omitempty"`
 	Autopilot            string                 `json:"autopilot,omitempty"`
 	CloudNet             string                 `json:"cloudNet,omitempty"`
-	DepEnv               []DepEnv               `json:"depEnv,omitempty"`
+	DepEnv               DepEnv                 `json:"depEnv,omitempty"`
 	RefAppCode           string                 `json:"refAppCode,omitempty"`
 }
 type DbMetaConnMs struct {
