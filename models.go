@@ -234,34 +234,6 @@ type KillemallStruct struct {
 	Namespace        string `json:"namespace"`
 }
 
-type LayerMesh struct {
-	AppName string `json:"AppName"`
-	Gw      []Gw   `json:"gw"`
-	Vs      Vs     `json:"vs"`
-	Se      Se     `json:"se"`
-}
-type Gw struct {
-	ExtDominio []string `json:"extDominio"`
-	IntDominio []string `json:"intDominio"`
-	Name       string   `json:"name"`
-	Number     string   `json:"number"`
-	Protocol   string   `json:"protocol"`
-}
-type Se struct {
-	Ip    string   `json:"ip"`
-	Hosts []string `json:"hosts"`
-}
-type Vs struct {
-	ExternalHost []string    `json:"externalHost"`
-	InternalHost []string    `json:"internalHost"`
-	VsDetails    []VsDetails `json:"vsDetails"`
-}
-type VsDetails struct {
-	DestinationHost string `json:"destinationHost"`
-	Prefix          string `json:"prefix"`
-	Authority       string `json:"authority"`
-}
-
 type ClusterSt struct {
 	ProjectID    string `json:"projectID"`
 	Owner        string `json:"owner"`

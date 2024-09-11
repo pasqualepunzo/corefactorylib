@@ -167,6 +167,8 @@ type IstanzaMicro struct {
 	CloudNet             string                 `json:"cloudNet,omitempty"`
 	DepEnv               string                 `json:"depEnv,omitempty"`
 	RefAppCode           string                 `json:"refAppCode,omitempty"`
+	LayerDue             LayerMesh              `json:"layerMesh,omitempty"`
+	LayerTre             LayerMesh              `json:"layerMesh,omitempty"`
 }
 type DbMetaConnMs struct {
 	MetaHost     string `json:"metaHost,omitempty"`
@@ -193,4 +195,31 @@ type AttributiMS struct {
 	Partner  string `json:"partner,omitempty"`
 	Market   string `json:"market,omitempty"`
 	Customer string `json:"customer,omitempty"`
+}
+type LayerMesh struct {
+	AppName string `json:"AppName"`
+	Gw      []Gw   `json:"gw"`
+	Vs      Vs     `json:"vs"`
+	Se      Se     `json:"se"`
+}
+type Gw struct {
+	ExtDominio []string `json:"extDominio"`
+	IntDominio []string `json:"intDominio"`
+	Name       string   `json:"name"`
+	Number     string   `json:"number"`
+	Protocol   string   `json:"protocol"`
+}
+type Se struct {
+	Ip    string   `json:"ip"`
+	Hosts []string `json:"hosts"`
+}
+type Vs struct {
+	ExternalHost []string    `json:"externalHost"`
+	InternalHost []string    `json:"internalHost"`
+	VsDetails    []VsDetails `json:"vsDetails"`
+}
+type VsDetails struct {
+	DestinationHost string `json:"destinationHost"`
+	Prefix          string `json:"prefix"`
+	Authority       string `json:"authority"`
 }
