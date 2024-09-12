@@ -1010,10 +1010,10 @@ func GetLayerTreDetailsDoc(ctx context.Context, tenant, DominioCluster, microser
 	}
 
 	// INTERCETTO UN DOCUMENTO VUOTO
-	if resMd.Size() <= 3 {
-		erro := errors.New("empty document")
-		return layerTre, erro
-	}
+	// if resMd.Size() <= 3 {
+	// 	erro := errors.New("empty document")
+	// 	return layerTre, erro
+	// }
 
 	mdResponse := []map[string]interface{}{}
 	errResponse := json.Unmarshal(resMd.Body(), &mdResponse)
@@ -1029,15 +1029,16 @@ func GetLayerTreDetailsDoc(ctx context.Context, tenant, DominioCluster, microser
 
 	for _, service := range mdResponse {
 		docker := service["XKUBEMICROSERVDKR04"].(map[string]interface{})
-		for _, v := range docker["XKUBEDKR12"].([]map[string]interface{}) {
+		for _, v := range docker["XKUBEDKR12"].([]interface{}) {
 
+			vv := v.(map[string]interface{})
 			var gw Gw
 
 			var intDominioArr []string
 			intDominioArr = append(intDominioArr, enviro+"-"+microservice+".local")
 			gw.IntDominio = intDominioArr
-			gw.Name = v["XKUBESERVICEDKR05"].(string) + "-" + strconv.Itoa(int(v["XKUBESERVICEDKR06"].(float64)))
-			gw.Number = strconv.Itoa(int(v["XKUBESERVICEDKR06"].(float64)))
+			gw.Name = vv["XKUBESERVICEDKR05"].(string) + "-" + strconv.Itoa(int(vv["XKUBESERVICEDKR06"].(float64)))
+			gw.Number = strconv.Itoa(int(vv["XKUBESERVICEDKR06"].(float64)))
 			gw.Protocol = "HTTP"
 			gws = append(gws, gw)
 		}
@@ -2019,4 +2020,31 @@ func GetCurrentBranchSprintApi(ctx context.Context, token, team string) (Current
 	}
 
 	return CSB, erro
+}
+func GetStages(cluster, token, apiDomain, coreApiVersion string) ([]string, error) {
+
+	ctx := context.Background()
+
+	argsStage := make(map[string]string)
+	argsStage["source"] = "devops-8"
+	argsStage["$select"] = "XKUBESTAGE04"
+	argsStage["center_dett"] = "visualizza"
+	argsStage["$filter"] = "equals(XKUBESTAGE03,'" + cluster + "') "
+	argsStage["$order"] = "XKUBESTAGE05"
+
+	restyStageRes, err := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsStage, "msdevops", "/api/"+os.Getenv("coreApiVersion")+"/devops/KUBESTAGE", token, apiDomain, coreApiVersion)
+	if err != nil {
+		return []string{}, err
+	}
+
+	var stages []string
+	if len(restyStageRes.BodyArray) > 0 {
+		for _, stage := range restyStageRes.BodyArray {
+			stages = append(stages, stage["XKUBESTAGE04_COD"].(string))
+		}
+		return stages, nil
+	} else {
+		err = errors.New("No Stage found")
+		return []string{}, err
+	}
 }
