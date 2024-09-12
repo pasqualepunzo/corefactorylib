@@ -428,7 +428,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 		microservices.Nome = restyKubeMSRes.BodyJson["XKUBEMICROSERV05"].(string)
 		microservices.Descrizione = restyKubeMSRes.BodyJson["XKUBEMICROSERV03"].(string)
 		microservices.Public = int(restyKubeMSRes.BodyJson["XKUBEMICROSERV18"].(float64))
-		microservices.Namespace = restyKubeMSRes.BodyJson["XKUBEMICROSERV04_COD"].(string)
+		//microservices.Namespace = restyKubeMSRes.BodyJson["XKUBEMICROSERV04_COD"].(string)
 		microservices.Virtualservice = strconv.FormatFloat(restyKubeMSRes.BodyJson["XKUBEMICROSERV08"].(float64), 'f', 0, 64)
 
 		microservices.DatabasebEnable = strconv.FormatFloat(restyKubeMSRes.BodyJson["XKUBEMICROSERV15"].(float64), 'f', 0, 64)

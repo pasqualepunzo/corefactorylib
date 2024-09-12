@@ -990,7 +990,7 @@ func GetLayerTreDetailsDoc(ctx context.Context, tenant, DominioCluster, microser
 		Key:                 "XKUBEMICROSERVDKR03",
 		ValKey:              microservice,
 		CenterDett:          "allviews",
-		Depth:               2,
+		Depth:               3,
 		DimOccurrences:      1,
 		RelatedDim:          relatedDimArr,
 		RelatedDimCondition: relatedDimConditionArr,
