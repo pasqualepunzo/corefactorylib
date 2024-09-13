@@ -558,9 +558,9 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 
 // questo metodo restituisce cio che serve in caso in cui il MS e di tipo REFAPP
 // calcola il GW, SE e VS di tutti i MS della APP
-func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsToken, dominio, coreApiVersion string) (LayerMesh, error) {
+func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsToken, dominio, coreApiVersion string) (*LayerMesh, error) {
 
-	var layerDue LayerMesh
+	var layerDue *LayerMesh
 
 	Logga(ctx, os.Getenv("JsonLog"), "Get Layer Due Start")
 	// entro su microservice per avere i ms
@@ -729,13 +729,13 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 	// +++++++++++++++++++++++++++++++++
 
 	// cerco eventuali rotte esterne
-	fillMarketPlaceRoute(&layerDue)
+	fillMarketPlaceRoute(layerDue)
 
 	Logga(ctx, os.Getenv("JsonLog"), "Get Layer Due END")
 
 	return layerDue, nil
 }
-func GetLayerTreDetails(ctx context.Context, tenant, DominioCluster, microservice, enviro, team, devopsToken, dominio, coreApiVersion string) (LayerMesh, error) {
+func __DELMEGetLayerTreDetails(ctx context.Context, tenant, DominioCluster, microservice, enviro, team, devopsToken, dominio, coreApiVersion string) (LayerMesh, error) {
 
 	var layerTre LayerMesh
 
@@ -898,9 +898,9 @@ func GetLayerTreDetails(ctx context.Context, tenant, DominioCluster, microservic
 
 	return layerTre, nil
 }
-func GetLayerTreDetailsDoc(ctx context.Context, tenant, DominioCluster, microservice, enviro, team, devopsToken, dominio, coreApiVersion string) (LayerMesh, error) {
+func GetLayerTreDetailsDoc(ctx context.Context, tenant, DominioCluster, microservice, enviro, team, devopsToken, dominio, coreApiVersion string) (*LayerMesh, error) {
 
-	var layerTre LayerMesh
+	var layerTre *LayerMesh
 	var extDominio, appID string
 
 	Logga(ctx, os.Getenv("JsonLog"), "Get Layer Tre Start")
@@ -933,7 +933,6 @@ func GetLayerTreDetailsDoc(ctx context.Context, tenant, DominioCluster, microser
 		}
 
 		/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
-		fmt.Println(dominiCustomer)
 		type Domini struct {
 			Env string `json:"env"`
 			Dom string `json:"dom"`
@@ -941,10 +940,7 @@ func GetLayerTreDetailsDoc(ctx context.Context, tenant, DominioCluster, microser
 		var dd []Domini
 		json.Unmarshal([]byte(dominiCustomer), &dd)
 
-		LogJson(dd)
-
 		for _, dom := range dd {
-			fmt.Println(dom.Env, enviro)
 			// qui prendo il dominio esterno
 			if dom.Env == enviro {
 				extDominio = dom.Dom
@@ -1078,9 +1074,6 @@ func GetLayerTreDetailsDoc(ctx context.Context, tenant, DominioCluster, microser
 	}
 	/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
-	// gw OK
-	layerTre.Gw = gws
-
 	var vs Vs
 	layerFt := LayerFt(tenant, enviro)
 
@@ -1128,7 +1121,11 @@ func GetLayerTreDetailsDoc(ctx context.Context, tenant, DominioCluster, microser
 	var InternalHostArr []string
 	InternalHostArr = append(InternalHostArr, enviro+"-"+microservice+".local")
 	vs.InternalHost = InternalHostArr
-	layerTre.Vs = vs
+
+	layerTre = &LayerMesh{
+		Vs: vs,
+		Gw: gws,
+	}
 
 	Logga(ctx, os.Getenv("JsonLog"), "Get Layer Tre END")
 

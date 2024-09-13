@@ -167,8 +167,8 @@ type IstanzaMicro struct {
 	CloudNet             string                 `json:"cloudNet,omitempty"`
 	DepEnv               string                 `json:"depEnv,omitempty"`
 	RefAppCode           string                 `json:"refAppCode,omitempty"`
-	LayerDue             LayerMesh              `json:"layerDue,omitempty"`
-	LayerTre             LayerMesh              `json:"layerTre,omitempty"`
+	LayerDue             *LayerMesh             `json:"layerDue,omitempty"`
+	LayerTre             *LayerMesh             `json:"layerTre,omitempty"`
 }
 type DbMetaConnMs struct {
 	MetaHost     string `json:"metaHost,omitempty"`
