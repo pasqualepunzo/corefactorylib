@@ -738,7 +738,7 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 func GetLayerTreDetailsDoc(ctx context.Context, tenant, DominioCluster, microservice, enviro, team, devopsToken, dominio, coreApiVersion string) (*LayerMesh, error) {
 
 	var layerTre *LayerMesh
-	var extDominio, appID string
+	var extDominio string
 
 	Logga(ctx, os.Getenv("JsonLog"), "Get Layer Tre Start")
 	// entro su microservice per avere i ms
@@ -765,7 +765,6 @@ func GetLayerTreDetailsDoc(ctx context.Context, tenant, DominioCluster, microser
 		if len(AppRes.BodyArray) > 0 {
 			for _, x := range AppRes.BodyArray {
 				dominiCustomer = x["XREFAPPCUSTOMER12"].(string)
-				appID = x["XREFAPPNEW04"].(string)
 			}
 		}
 
@@ -815,7 +814,9 @@ func GetLayerTreDetailsDoc(ctx context.Context, tenant, DominioCluster, microser
 
 	// CONDIZIONI SULLE DIM RELATIVE
 	relatedDimConditionArr := make(map[string][]string)
-	relatedDimConditionArr["KUBEMICROSERVDKR"] = append(relatedDimConditionArr["KUBEMICROSERVDKR"], "XKUBESERVICEDKR07 = 'rest'")
+	if microservice != "msdevops" {
+		relatedDimConditionArr["KUBEMICROSERVDKR"] = append(relatedDimConditionArr["KUBEMICROSERVDKR"], "XKUBESERVICEDKR07 = 'rest'")
+	}
 
 	bocumentBody := Document{
 		Debug:               false,
@@ -867,49 +868,40 @@ func GetLayerTreDetailsDoc(ctx context.Context, tenant, DominioCluster, microser
 			vv := v.(map[string]interface{})
 			var gw Gw
 
-			var intDominioArr []string
-			intDominioArr = append(intDominioArr, enviro+"-"+microservice+".local")
-			gw.IntDominio = intDominioArr
+			var intDominioArr, extDominioArr []string
+			if microservice == "msdevops" && vv["XKUBESERVICEDKR07"].(string) != "rest" {
+				extDominioArr = append(extDominioArr, extDominio)
+				gw.ExtDominio = extDominioArr
+			} else {
+				intDominioArr = append(intDominioArr, enviro+"-"+microservice+".local")
+				gw.IntDominio = intDominioArr
+			}
+
 			gw.Name = vv["XKUBESERVICEDKR05"].(string) + "-" + strconv.Itoa(int(vv["XKUBESERVICEDKR06"].(float64)))
-			gw.Number = strconv.Itoa(int(vv["XKUBESERVICEDKR06"].(float64)))
-			gw.Protocol = "HTTP"
+
+			// porte
+			srvPort := strconv.Itoa(int(vv["XKUBESERVICEDKR06"].(float64)))
+			if vv["XKUBESERVICEDKR07"].(string) != "rest" {
+				switch enviro {
+				case "int":
+					srvPort = "51051"
+				case "qa":
+					srvPort = "52051"
+				default:
+					srvPort = "50051"
+				}
+			}
+			gw.Number = srvPort
+
+			switch vv["XKUBESERVICEDKR07"].(string) {
+			case "rest":
+				gw.Protocol = "HTTP"
+			case "grpc":
+				gw.Protocol = "TCP"
+			}
 			gws = append(gws, gw)
 		}
 	}
-
-	/* ++++++++++++++++++++ ECCEZIONE DEVOPS++++++++++++++++++++++++++++++++ */
-	if microservice == "msdevops" {
-		argsSr := make(map[string]string)
-		argsSr["source"] = "appman-8"
-		argsSr["$select"] = "XAPPSRV04,XAPPSRV05,XAPPSRV06"
-		argsSr["center_dett"] = "visualizza"
-		argsSr["$filter"] = "equals(XAPPSRV03,'" + appID + "') AND equals(XAPPSRV04,'grpc-" + enviro + "') "
-
-		Logga(ctx, os.Getenv("JsonLog"), argsSr["$fullquery"])
-		SrRes, errSrRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsSr, "msappman", "/api/"+os.Getenv("coreApiVersion")+"/appman/APPSRV", devopsToken, dominio, coreApiVersion)
-
-		if errSrRes != nil {
-			Logga(ctx, os.Getenv("JsonLog"), errSrRes.Error())
-			erro := errors.New(errSrRes.Error())
-			return layerTre, erro
-		}
-
-		if len(SrRes.BodyArray) > 0 {
-			for _, x := range SrRes.BodyArray {
-				var gw Gw
-
-				var extDominioArr []string
-				extDominioArr = append(extDominioArr, extDominio)
-				gw.ExtDominio = extDominioArr
-				gw.Name = x["XAPPSRV04"].(string)
-				gw.Number = strconv.Itoa(int(x["XAPPSRV05"].(float64)))
-				gw.Protocol = x["XAPPSRV06"].(string)
-				gws = append(gws, gw)
-
-			}
-		}
-	}
-	/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
 	var vs Vs
 	layerFt := LayerFt(tenant, enviro)

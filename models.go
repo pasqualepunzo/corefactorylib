@@ -159,6 +159,7 @@ type PodBuild struct {
 	MasterDev    string
 	ReleaseNote  string
 	SprintBranch string
+	Sha          string
 }
 type Resource struct {
 	CpuReq string
