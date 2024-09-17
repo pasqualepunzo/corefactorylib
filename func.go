@@ -1517,11 +1517,7 @@ func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, can
 	var erro error
 
 	microservice := ""
-	if ires.Monolith == 0 {
-		microservice = ires.Microservice
-	} else {
-		microservice = ires.PodName
-	}
+	microservice = ires.Microservice
 
 	debool, errBool := strconv.ParseBool(debug)
 	if errBool != nil {
@@ -1537,9 +1533,8 @@ func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, can
 	canFound := false
 	prodFound := false
 
-	msRoute := vsMsRoutes.Version
 	Logga(ctx, os.Getenv("JsonLog"), "VERSIONI ATTUALI: ")
-	for _, x := range msRoute {
+	for _, x := range ires.Version {
 		Logga(ctx, os.Getenv("JsonLog"), x.CanaryProduction+" - "+x.Versione)
 		if x.CanaryProduction == "canary" && !canFound {
 			canFound = true
@@ -1565,7 +1560,6 @@ func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, can
 	Logga(ctx, os.Getenv("JsonLog"), "Never kill Production: "+versioneProductionDb)
 
 	/* ************************************************************************************************ */
-
 	// ho recuperato le versioni canary e production che NON cancellero MAI :D
 
 	item, errDepl := GetDeploymentApi(namespace, ires.ApiHost, ires.ApiToken, ires.ScaleToZero, debool)
