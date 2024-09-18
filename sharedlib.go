@@ -877,11 +877,9 @@ func GetLayerTreDetailsDoc(ctx context.Context, tenant, DominioCluster, microser
 				gw.IntDominio = intDominioArr
 			}
 
-			gw.Name = vv["XKUBESERVICEDKR05"].(string) + "-" + strconv.Itoa(int(vv["XKUBESERVICEDKR06"].(float64)))
-
 			// porte
 			srvPort := strconv.Itoa(int(vv["XKUBESERVICEDKR06"].(float64)))
-			if vv["XKUBESERVICEDKR07"].(string) != "rest" {
+			if vv["XKUBESERVICEDKR07"].(string) == "grpc" && microservice == "msdevops" {
 				switch enviro {
 				case "int":
 					srvPort = "51051"
@@ -891,6 +889,7 @@ func GetLayerTreDetailsDoc(ctx context.Context, tenant, DominioCluster, microser
 					srvPort = "50051"
 				}
 			}
+			gw.Name = vv["XKUBESERVICEDKR05"].(string) + "-" + srvPort
 			gw.Number = srvPort
 
 			switch vv["XKUBESERVICEDKR07"].(string) {

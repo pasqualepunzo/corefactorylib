@@ -152,15 +152,6 @@ type RestyResConflict struct {
 	Size int `json:"size"`
 }
 
-type PodBuild struct {
-	Versione     string
-	Merged       string
-	Tag          string
-	MasterDev    string
-	ReleaseNote  string
-	SprintBranch string
-	Sha          string
-}
 type Resource struct {
 	CpuReq string
 	CpuLim string

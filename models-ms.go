@@ -37,6 +37,15 @@ type Pod struct {
 	Probes     []Probes    `json:"probes,omitempty"`
 	ConfigMap  []ConfigMap `json:"configMap,omitempty"`
 }
+type PodBuild struct {
+	Versione     string
+	Merged       string
+	Tag          string
+	MasterDev    string
+	ReleaseNote  string
+	SprintBranch string
+	Sha          string
+}
 type Mount struct {
 	Nome       string `json:"nome,omitempty"`
 	Mount      string `json:"mount,omitempty"`
