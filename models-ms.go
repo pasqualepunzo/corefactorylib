@@ -36,6 +36,12 @@ type Pod struct {
 	Service    []Service   `json:"service,omitempty"`
 	Probes     []Probes    `json:"probes,omitempty"`
 	ConfigMap  []ConfigMap `json:"configMap,omitempty"`
+	Affinity   []Affinity  `json:"affinity,omitempty"`
+}
+type Affinity struct {
+	Key string   `json:"key,omitempty"`
+	Ope string   `json:"ope,omitempty"`
+	Val []string `json:"val,omitempty"`
 }
 type PodBuild struct {
 	Versione     string
