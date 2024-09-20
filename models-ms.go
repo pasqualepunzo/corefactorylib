@@ -40,8 +40,8 @@ type Pod struct {
 }
 type Affinity struct {
 	Key      string   `json:"key,omitempty"`
-	Operator string   `json:"ope,omitempty"`
-	Values   []string `json:"val,omitempty"`
+	Operator string   `json:"operator,omitempty"`
+	Values   []string `json:"values,omitempty"`
 }
 type PodBuild struct {
 	Versione     string
