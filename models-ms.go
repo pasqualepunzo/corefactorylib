@@ -39,9 +39,9 @@ type Pod struct {
 	ConfigMap  []ConfigMap `json:"configMap,omitempty"`
 }
 type Affinity struct {
-	Key string   `json:"key,omitempty"`
-	Ope string   `json:"ope,omitempty"`
-	Val []string `json:"val,omitempty"`
+	Key      string   `json:"key,omitempty"`
+	Operator string   `json:"ope,omitempty"`
+	Values   []string `json:"val,omitempty"`
 }
 type PodBuild struct {
 	Versione     string
