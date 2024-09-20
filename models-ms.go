@@ -11,7 +11,7 @@ type Microservice struct {
 	Hpa              Hpa            `json:"hpa,omitempty"`
 	Pod              []Pod          `json:"pod,omitempty"`
 	Istanza          []IstanzaMicro `json:"istanza,omitempty"`
-	Affinity         Affinity       `json:"affinity,omitempty"`
+	Affinity         []Affinity     `json:"affinity,omitempty"`
 }
 type Hpa struct {
 	MinReplicas   string `json:"min,omitempty"`
