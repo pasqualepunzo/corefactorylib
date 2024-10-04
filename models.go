@@ -552,6 +552,7 @@ type OutboxBody struct {
 	XOUTBOX12 string      `json:"XOUTBOX12"`
 	XOUTBOX13 string      `json:"XOUTBOX13"`
 	XOUTBOX14 string      `json:"XOUTBOX14"`
+	XOUTBOX15 string      `json:"XOUTBOX15"`
 }
 type GkeToken struct {
 	AccessToken string `json:"access_token"`
