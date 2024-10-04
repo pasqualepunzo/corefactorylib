@@ -528,13 +528,14 @@ type ConfigMPQ struct {
 	Env             string `json:"env"`
 }
 type MsgDetails struct {
-	UniquID      string `json:"uniquID"`
-	Dim          string `json:"dim"`
-	Microservice string `json:"microservice"`
-	Tenant       string `json:"tenant"`
-	Resource     string `json:"resource"`
-	Env          string `json:"env"`
-	Action       string `json:"action"`
+	UniquID         string `json:"uniquID"`
+	Dim             string `json:"dim"`
+	Microservice    string `json:"microservice"`
+	Tenant          string `json:"tenant"`
+	ReferenceTenant string `json:"referenceTenantId"`
+	Resource        string `json:"resource"`
+	Env             string `json:"env"`
+	Action          string `json:"action"`
 }
 type OutboxBody struct {
 	XOUTBOX01 int         `json:"XOUTBOX01"`
