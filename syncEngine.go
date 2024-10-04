@@ -68,6 +68,7 @@ func GetMsgID(Body []byte) (MsgDetails, error) {
 	msg.Dim = body[0].XOUTBOX04
 	msg.Microservice = body[0].XOUTBOX11
 	msg.Tenant = body[0].XOUTBOX12
+	msg.ReferenceTenant = body[0].XOUTBOX15
 	msg.Resource = body[0].XOUTBOX13
 	msg.Env = body[0].XOUTBOX14
 	msg.Action = body[0].XOUTBOX05
