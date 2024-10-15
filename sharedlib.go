@@ -1753,14 +1753,15 @@ func CreaDirAndCloneDocker(ctx context.Context, dkr DockerStruct, dirToCreate, b
 		return err
 	}
 
-	fmt.Println("Cloning " + repoDocker + " on " + dirTmpl)
+	fmt.Println("Cloning " + repoDocker + " on " + dirTmpl + " branch " + dkr.Dockerfile + " in " + dirTmpl)
 	// mi porto a terra i dockerfile e tutto cio che mi serve per creare il docker
 	_, errClone := git.PlainClone(dirTmpl, false, &git.CloneOptions{
-		// Progress:      os.Stdout,
+		Progress:      os.Stdout,
 		URL:           repoDocker,
 		Auth:          &http.BasicAuth{Username: buildArgs.UserGit, Password: buildArgs.TokenGit},
 		ReferenceName: plumbing.NewBranchReferenceName(dkr.Dockerfile),
 		SingleBranch:  true,
+		Depth:         1,
 	})
 	if errClone != nil {
 		return err
@@ -1769,6 +1770,7 @@ func CreaDirAndCloneDocker(ctx context.Context, dkr DockerStruct, dirToCreate, b
 	// GitClone(dir, repoDocker)
 	// GitCheckout(dir, dkr.Dockerfile)
 
+	fmt.Println("Remove .git")
 	// remove .git
 	err = os.RemoveAll(dirTmpl + "/.git")
 	if err != nil {
@@ -1781,13 +1783,15 @@ func CreaDirAndCloneDocker(ctx context.Context, dkr DockerStruct, dirToCreate, b
 		return err
 	}
 
+	fmt.Println("Cloning " + repoproject + " on " + dirTmpl + " branch " + branch + " in " + dirSrc)
 	// mi porto a terra i file del progetto e mi porto al branch dichiarato
 	_, errClone = git.PlainClone(dirSrc, false, &git.CloneOptions{
-		// Progress:      os.Stdout,
+		Progress:      os.Stdout,
 		URL:           repoproject,
 		Auth:          &http.BasicAuth{Username: buildArgs.UserGit, Password: buildArgs.TokenGit},
 		ReferenceName: plumbing.NewBranchReferenceName(branch),
 		SingleBranch:  true,
+		Depth:         1,
 	})
 	if errClone != nil {
 		return err
@@ -1795,6 +1799,7 @@ func CreaDirAndCloneDocker(ctx context.Context, dkr DockerStruct, dirToCreate, b
 	// GitClone(dirSrc, repoproject)
 	// GitCheckout(dirSrc, branch)
 
+	fmt.Println("Remove .git")
 	// remove .git
 	err = os.RemoveAll(dirSrc + "/.git")
 	if err != nil {
@@ -1855,6 +1860,7 @@ func GetStages(cluster, token, apiDomain, coreApiVersion string) ([]string, erro
 	argsStage["$select"] = "XKUBESTAGE04"
 	argsStage["center_dett"] = "visualizza"
 	argsStage["$filter"] = "equals(XKUBESTAGE03,'" + cluster + "') "
+	argsStage["$filter"] += " and XKUBESTAGE05 gt 0"
 	argsStage["$order"] = "XKUBESTAGE05"
 
 	restyStageRes, err := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsStage, "msdevops", "/api/"+os.Getenv("coreApiVersion")+"/devops/KUBESTAGE", token, apiDomain, coreApiVersion)

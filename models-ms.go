@@ -1,17 +1,17 @@
 package lib
 
 type Microservice struct {
-	Nome             string         `json:"nome,omitempty"`
-	Descrizione      string         `json:"descrizione,omitempty"`
-	Namespace        string         `json:"namespace,omitempty"`
-	VersMicroservice string         `json:"versMs,omitempty"`
-	Virtualservice   string         `json:"virtualService,omitempty"`
-	Public           int            `json:"public,omitempty"`
-	DatabasebEnable  string         `json:"databasebEnable,omitempty"`
-	Hpa              Hpa            `json:"hpa,omitempty"`
-	Pod              []Pod          `json:"pod,omitempty"`
-	Istanza          []IstanzaMicro `json:"istanza,omitempty"`
-	Affinity         []Affinity     `json:"affinity,omitempty"`
+	Nome             string       `json:"nome,omitempty"`
+	Descrizione      string       `json:"descrizione,omitempty"`
+	Namespace        string       `json:"namespace,omitempty"`
+	VersMicroservice string       `json:"versMs,omitempty"`
+	Virtualservice   string       `json:"virtualService,omitempty"`
+	Public           int          `json:"public,omitempty"`
+	DatabasebEnable  string       `json:"databasebEnable,omitempty"`
+	Hpa              Hpa          `json:"hpa,omitempty"`
+	Pod              []Pod        `json:"pod,omitempty"`
+	Istanza          IstanzaMicro `json:"istanza,omitempty"`
+	Affinity         []Affinity   `json:"affinity,omitempty"`
 }
 type Hpa struct {
 	MinReplicas   string `json:"min,omitempty"`
