@@ -397,7 +397,7 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 	if len(restyKubeImicroservRes.BodyJson) > 0 {
 
 		microservice = restyKubeImicroservRes.BodyJson["XKUBEIMICROSERV04_COD"].(string)
-		microservices.VersMicroservice = restyKubeImicroservRes.BodyJson["XKUBEIMICROSERV07"].(string)
+		microservices.Versione = restyKubeImicroservRes.BodyJson["XKUBEIMICROSERV07"].(string)
 
 		cluster = restyKubeImicroservRes.BodyJson["XKUBEIMICROSERV05"].(string)
 		Logga(ctx, os.Getenv("JsonLog"), "KUBEIMICROSERV OK")
