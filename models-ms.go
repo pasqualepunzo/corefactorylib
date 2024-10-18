@@ -4,7 +4,7 @@ type Microservice struct {
 	Nome            string       `json:"nome,omitempty"`
 	Descrizione     string       `json:"descrizione,omitempty"`
 	Namespace       string       `json:"namespace,omitempty"`
-	Versione        string       `json:"versione,omitempty"`
+	BuildVersione   string       `json:"buildVersione,omitempty"`
 	Virtualservice  string       `json:"virtualService,omitempty"`
 	Public          int          `json:"public,omitempty"`
 	DatabasebEnable string       `json:"databasebEnable,omitempty"`
