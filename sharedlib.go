@@ -558,7 +558,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 
 // questo metodo restituisce cio che serve in caso in cui il MS e di tipo REFAPP
 // calcola il GW, SE e VS di tutti i MS della APP
-func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsToken, dominio, coreApiVersion string) (*LayerMesh, error) {
+func GetLayerDueDetails(ctx context.Context, tenant, refappname, enviro, team, devopsToken, dominio, coreApiVersion string) (*LayerMesh, error) {
 
 	var layerDue *LayerMesh
 
@@ -669,12 +669,12 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 	var se Se
 	var vs Vs
 	var InternalHostArr []string
-	InternalHostArr = append(InternalHostArr, enviro+"-"+layerDue.AppName+".local")
+	InternalHostArr = append(InternalHostArr, enviro+"-"+tenant+"-"+layerDue.AppName+".local")
 	vs.InternalHost = InternalHostArr
 	msOld := ""
 
 	// azzecco il dominio interno del layer uno
-	se.Hosts = append(se.Hosts, enviro+"-"+appName+".local")
+	se.Hosts = append(se.Hosts, enviro+"-"+tenant+"-"+appName+".local")
 
 	if len(BrRes.BodyArray) > 0 {
 		for _, x := range BrRes.BodyArray {
@@ -683,14 +683,14 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 
 			// SE
 			if msOld == "" || msOld != x["XKUBEIMICROSERV04"].(string) {
-				se.Hosts = append(se.Hosts, enviro+"-"+x["XKUBEIMICROSERV04"].(string)+".local")
+				se.Hosts = append(se.Hosts, enviro+"-"+tenant+"-"+x["XKUBEIMICROSERV04"].(string)+".local")
 			}
 			msOld = x["XKUBEIMICROSERV04"].(string)
 
 			// VS
 			var v VsDetails
-			v.DestinationHost = enviro + "-" + x["XKUBEIMICROSERV04"].(string) + ".local"
-			v.Authority = enviro + "-" + x["XKUBEIMICROSERV04"].(string) + ".local"
+			v.DestinationHost = enviro + "-" + tenant + "-" + x["XKUBEIMICROSERV04"].(string) + ".local"
+			v.Authority = enviro + "-" + tenant + "-" + x["XKUBEIMICROSERV04"].(string) + ".local"
 
 			// SCALE TO ZERO
 			stz := int(x["XKUBEMICROSERV20"].(float64))
@@ -712,7 +712,7 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 
 	// azzecco i GW
 	var intDominioArr []string
-	intDominioArr = append(intDominioArr, enviro+"-"+layerDue.AppName+".local")
+	intDominioArr = append(intDominioArr, enviro+"-"+tenant+"-"+layerDue.AppName+".local")
 	gw.IntDominio = intDominioArr
 	gw.Protocol = "HTTP"
 	gw.Name = "http"
@@ -873,7 +873,7 @@ func GetLayerTreDetailsDoc(ctx context.Context, tenant, DominioCluster, microser
 				extDominioArr = append(extDominioArr, extDominio)
 				gw.ExtDominio = extDominioArr
 			} else {
-				intDominioArr = append(intDominioArr, enviro+"-"+microservice+".local")
+				intDominioArr = append(intDominioArr, enviro+"-"+tenant+"-"+microservice+".local")
 				gw.IntDominio = intDominioArr
 			}
 
@@ -947,7 +947,7 @@ func GetLayerTreDetailsDoc(ctx context.Context, tenant, DominioCluster, microser
 	}
 
 	var InternalHostArr []string
-	InternalHostArr = append(InternalHostArr, enviro+"-"+microservice+".local")
+	InternalHostArr = append(InternalHostArr, enviro+"-"+tenant+"-"+microservice+".local")
 	vs.InternalHost = InternalHostArr
 
 	layerTre = &LayerMesh{
