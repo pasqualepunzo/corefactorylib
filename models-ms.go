@@ -14,36 +14,12 @@ type Microservice struct {
 	Affinity        []Affinity   `json:"affinity,omitempty"`
 }
 type Hpa struct {
-	APIVersion string       `json:"apiVersion,omitempty"`
-	Kind       string       `json:"kind,omitempty"`
-	Metadata   *MetadataHpa `json:"metadata,omitempty"`
-	Spec       *SpecHpa     `json:"spec,omitempty"`
-}
-type SpecHpa struct {
-	MaxReplicas    int                `json:"maxReplicas,omitempty"`
-	Metrics        []Metrics          `json:"metrics,omitempty"`
-	MinReplicas    int                `json:"minReplicas,omitempty"`
-	ScaleTargetRef *ScaleTargetRefHpa `json:"scaleTargetRef,omitempty"`
-}
-type ScaleTargetRefHpa struct {
-	APIVersion string `json:"apiVersion,omitempty"`
-	Kind       string `json:"kind,omitempty"`
-	Name       string `json:"name,omitempty"`
-}
-type Metrics struct {
-	Resource struct {
-		Name   string `json:"name,omitempty"`
-		Target struct {
-			AverageUtilization int    `json:"averageUtilization,omitempty"`
-			Type               string `json:"type,omitempty"`
-		} `json:"target,omitempty"`
-	} `json:"resource,omitempty"`
-	Type string `json:"type,omitempty"`
-}
-type MetadataHpa struct {
-	Name            string `json:"name,omitempty"`
-	Namespace       string `json:"namespace,omitempty"`
-	ResourceVersion string `json:"resourceVersion,omitempty"`
+	MinReplicas   string `json:"min,omitempty"`
+	MaxReplicas   string `json:"max,omitempty"`
+	CpuTipoTarget string `json:"cpuTipoTarget,omitempty"`
+	CpuTarget     string `json:"cpuTarget,omitempty"`
+	MemTipoTarget string `json:"memTipoTarget,omitempty"`
+	MemTarget     string `json:"memTarget,omitempty"`
 }
 type Pod struct {
 	Id         string      `json:"id,omitempty"`

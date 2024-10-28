@@ -6,9 +6,41 @@ type ChartLayerTre struct {
 	Service         ServiceChart    `json:"service"`
 	ConfigMap       ConfigMapChart  `json:"configmap"`
 	Deployment      Deployment      `json:"deployment"`
-	Hpa             Hpa             `json:"hpa"`
+	Hpa             HpaChart        `json:"hpa"`
 	VirtualService  VirtualService  `json:"virtualservice"`
 	DestinationRule Destinationrule `json:"destinationrule"`
+}
+type HpaChart struct {
+	APIVersion string       `json:"apiVersion,omitempty"`
+	Kind       string       `json:"kind,omitempty"`
+	Metadata   *MetadataHpa `json:"metadata,omitempty"`
+	Spec       *SpecHpa     `json:"spec,omitempty"`
+}
+type SpecHpa struct {
+	MaxReplicas    int                `json:"maxReplicas,omitempty"`
+	Metrics        []Metrics          `json:"metrics,omitempty"`
+	MinReplicas    int                `json:"minReplicas,omitempty"`
+	ScaleTargetRef *ScaleTargetRefHpa `json:"scaleTargetRef,omitempty"`
+}
+type ScaleTargetRefHpa struct {
+	APIVersion string `json:"apiVersion,omitempty"`
+	Kind       string `json:"kind,omitempty"`
+	Name       string `json:"name,omitempty"`
+}
+type Metrics struct {
+	Resource struct {
+		Name   string `json:"name,omitempty"`
+		Target struct {
+			AverageUtilization int    `json:"averageUtilization,omitempty"`
+			Type               string `json:"type,omitempty"`
+		} `json:"target,omitempty"`
+	} `json:"resource,omitempty"`
+	Type string `json:"type,omitempty"`
+}
+type MetadataHpa struct {
+	Name            string `json:"name,omitempty"`
+	Namespace       string `json:"namespace,omitempty"`
+	ResourceVersion string `json:"resourceVersion,omitempty"`
 }
 
 // --- NAMESPACE ---
