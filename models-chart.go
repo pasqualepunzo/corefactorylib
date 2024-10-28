@@ -10,6 +10,8 @@ type ChartLayerTre struct {
 	VirtualService  VirtualService  `json:"virtualservice"`
 	DestinationRule Destinationrule `json:"destinationrule"`
 }
+
+// --- NAMESPACE ---
 type Namespace struct {
 	APIVersion string `json:"apiVersion"`
 	Kind       string `json:"kind"`
