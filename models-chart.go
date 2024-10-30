@@ -1,14 +1,14 @@
 package lib
 
 type ChartLayerTre struct {
-	Namespace       Namespace       `json:"namespace"`
-	Gateway         Gateway         `json:"gateway"`
-	Service         ServiceChart    `json:"service"`
-	ConfigMap       ConfigMapChart  `json:"configmap"`
-	Deployment      Deployment      `json:"deployment"`
-	Hpa             HpaChart        `json:"hpa"`
-	VirtualService  VirtualService  `json:"virtualservice"`
-	DestinationRule Destinationrule `json:"destinationrule"`
+	Namespace       Namespace        `json:"namespace"`
+	Gateway         Gateway          `json:"gateway"`
+	Service         ServiceChart     `json:"service"`
+	ConfigMap       []ConfigMapChart `json:"configmap"`
+	Deployment      Deployment       `json:"deployment"`
+	Hpa             HpaChart         `json:"hpa"`
+	VirtualService  VirtualService   `json:"virtualservice"`
+	DestinationRule Destinationrule  `json:"destinationrule"`
 }
 type HpaChart struct {
 	APIVersion string       `json:"apiVersion,omitempty"`
