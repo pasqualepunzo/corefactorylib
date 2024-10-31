@@ -469,19 +469,16 @@ func ApiCallDELETE(ctx context.Context, debug string, args map[string]string, mi
 		resStruct.Errore = -1
 		resStruct.Log = err.Error()
 	} else {
-		if res.StatusCode() != 205 {
+		if res.StatusCode() != 200 {
 			resStruct.Errore = -1
 			resStruct.Log = "Cannot delete the record"
-
 		} else {
-
 			var restyPOSTRes restyPOSTStruct
 			errJson := json.Unmarshal(res.Body(), &restyPOSTRes)
 			callResponse := map[string]interface{}{}
 			if errJson != nil {
 				resStruct.Errore = -1
 				resStruct.Log = errJson.Error()
-
 			} else {
 				callResponse["code"] = restyPOSTRes.Code
 				resStruct.Kind = "Json"
@@ -489,6 +486,5 @@ func ApiCallDELETE(ctx context.Context, debug string, args map[string]string, mi
 			}
 		}
 	}
-
 	return resStruct
 }
