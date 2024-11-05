@@ -40,7 +40,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	//istanzaDst := iresReq.IstanzaDst
 	microservice := iresReq.Microservice
 	enviro := iresReq.Enviro
-	refAppID := iresReq.RefAppID
+	// refAppID := iresReq.RefAppID
 	customerDomain := iresReq.CustomerDomain
 	monolithArg := iresReq.Monolith
 	tags := iresReq.Tags
@@ -68,7 +68,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	ims.Istanza = istanza
 
 	ims.PodName = iresReq.PodName
-	ims.RefappID = refAppID
+	// ims.RefappID = refAppID
 
 	devops := "devops"
 	auth := "auth"
@@ -416,37 +416,37 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 
 	microservicePublic := 0
 	if len(restyKubeMSRes.BodyJson) > 0 {
-		var swCoreBool bool
-		swCoreFloat := restyKubeMSRes.BodyJson["XKUBEMICROSERV09"].(float64)
-		if swCoreFloat == 0 {
-			swCoreBool = false
-		} else {
-			swCoreBool = true
-		}
-		ims.SwCore = swCoreBool
+		// var swCoreBool bool
+		// swCoreFloat := restyKubeMSRes.BodyJson["XKUBEMICROSERV09"].(float64)
+		// if swCoreFloat == 0 {
+		// 	swCoreBool = false
+		// } else {
+		// 	swCoreBool = true
+		// }
+		// ims.SwCore = swCoreBool
 
-		isRefappFloat := restyKubeMSRes.BodyJson["XKUBEMICROSERV21"].(float64)
-		if isRefappFloat == 0 {
-			ims.IsApp = false
-		} else {
-			ims.IsApp = true
-		}
+		// isRefappFloat := restyKubeMSRes.BodyJson["XKUBEMICROSERV21"].(float64)
+		// if isRefappFloat == 0 {
+		// 	ims.IsApp = false
+		// } else {
+		// 	ims.IsApp = true
+		// }
 
-		ims.RefAppCode = strings.ToLower(slugify.Slugify(restyKubeMSRes.BodyJson["XKUBEMICROSERV22"].(string)))
+		// ims.RefAppCode = strings.ToLower(slugify.Slugify(restyKubeMSRes.BodyJson["XKUBEMICROSERV22"].(string)))
 
-		var scaleToZero bool
-		scaleToZeroFloat := restyKubeMSRes.BodyJson["XKUBEMICROSERV20"].(float64)
-		if scaleToZeroFloat == 0 {
-			scaleToZero = false
-		} else {
-			scaleToZero = true
-		}
-		ims.ScaleToZero = scaleToZero
+		// var scaleToZero bool
+		// scaleToZeroFloat := restyKubeMSRes.BodyJson["XKUBEMICROSERV20"].(float64)
+		// if scaleToZeroFloat == 0 {
+		// 	scaleToZero = false
+		// } else {
+		// 	scaleToZero = true
+		// }
+		// ims.ScaleToZero = scaleToZero
 
-		swDb := int(restyKubeMSRes.BodyJson["XKUBEMICROSERV15"].(float64))
+		// swDb := int(restyKubeMSRes.BodyJson["XKUBEMICROSERV15"].(float64))
 		microservicePublic = int(restyKubeMSRes.BodyJson["XKUBEMICROSERV18"].(float64))
 
-		ims.SwDb = swDb
+		// ims.SwDb = swDb
 		Logga(ctx, os.Getenv("JsonLog"), "KUBEMICROSERV OK")
 	} else {
 		Logga(ctx, os.Getenv("JsonLog"), "KUBEMICROSERV MISSING")
