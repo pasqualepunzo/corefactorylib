@@ -1512,106 +1512,106 @@ func CheckPodHealth(microservice, versione, namespace, apiHost, apiToken string,
 	}
 }
 
-func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, canaryProduction, namespace, enviro, tenant, devopsToken string, vsMsRoutes RouteMs, dominio, coreApiVersion string, debug string) error {
+// func DeleteObsoleteObjects(ctx context.Context, ires IstanzaMicro, versione, canaryProduction, namespace, enviro, tenant, devopsToken string, vsMsRoutes RouteMs, dominio, coreApiVersion string, debug string) error {
 
-	var erro error
+// 	var erro error
 
-	microservice := ""
-	microservice = ires.Microservice
+// 	microservice := ""
+// 	microservice = ires.Microservice
 
-	debool, errBool := strconv.ParseBool(debug)
-	if errBool != nil {
-		return errBool
-	}
+// 	debool, errBool := strconv.ParseBool(debug)
+// 	if errBool != nil {
+// 		return errBool
+// 	}
 
-	Logga(ctx, os.Getenv("JsonLog"), "****************************************************************************************")
-	Logga(ctx, os.Getenv("JsonLog"), "DELETING OBSOLETE PODS")
+// 	Logga(ctx, os.Getenv("JsonLog"), "****************************************************************************************")
+// 	Logga(ctx, os.Getenv("JsonLog"), "DELETING OBSOLETE PODS")
 
-	versioneProductionDb := ""
-	versioneCanaryDb := ""
+// 	versioneProductionDb := ""
+// 	versioneCanaryDb := ""
 
-	canFound := false
-	prodFound := false
+// 	canFound := false
+// 	prodFound := false
 
-	Logga(ctx, os.Getenv("JsonLog"), "VERSIONI ATTUALI: ")
-	for _, x := range ires.Version {
-		Logga(ctx, os.Getenv("JsonLog"), x.CanaryProduction+" - "+x.Versione)
-		if x.CanaryProduction == "canary" && !canFound {
-			canFound = true
-			vrs := x.Versione
-			if vrs[0:1] == "v" {
-				vrs = strings.Replace(vrs, "v", "", -1)
-			}
-			versioneCanaryDb = "v" + vrs
-		}
-		if x.CanaryProduction == "production" && !prodFound {
-			prodFound = true
-			vrs := x.Versione
-			if vrs[0:1] == "v" {
-				vrs = strings.Replace(vrs, "v", "", -1)
-			}
-			versioneProductionDb = "v" + vrs
-		}
-	}
+// 	Logga(ctx, os.Getenv("JsonLog"), "VERSIONI ATTUALI: ")
+// 	for _, x := range ires.Version {
+// 		Logga(ctx, os.Getenv("JsonLog"), x.CanaryProduction+" - "+x.Versione)
+// 		if x.CanaryProduction == "canary" && !canFound {
+// 			canFound = true
+// 			vrs := x.Versione
+// 			if vrs[0:1] == "v" {
+// 				vrs = strings.Replace(vrs, "v", "", -1)
+// 			}
+// 			versioneCanaryDb = "v" + vrs
+// 		}
+// 		if x.CanaryProduction == "production" && !prodFound {
+// 			prodFound = true
+// 			vrs := x.Versione
+// 			if vrs[0:1] == "v" {
+// 				vrs = strings.Replace(vrs, "v", "", -1)
+// 			}
+// 			versioneProductionDb = "v" + vrs
+// 		}
+// 	}
 
-	Logga(ctx, os.Getenv("JsonLog"), "=== NEVER DELETE INNOCENT DEPLOYMENTS === ")
-	Logga(ctx, os.Getenv("JsonLog"), "eventually to kill: "+microservice)
-	Logga(ctx, os.Getenv("JsonLog"), "Never kill Canary: "+versioneCanaryDb)
-	Logga(ctx, os.Getenv("JsonLog"), "Never kill Production: "+versioneProductionDb)
+// 	Logga(ctx, os.Getenv("JsonLog"), "=== NEVER DELETE INNOCENT DEPLOYMENTS === ")
+// 	Logga(ctx, os.Getenv("JsonLog"), "eventually to kill: "+microservice)
+// 	Logga(ctx, os.Getenv("JsonLog"), "Never kill Canary: "+versioneCanaryDb)
+// 	Logga(ctx, os.Getenv("JsonLog"), "Never kill Production: "+versioneProductionDb)
 
-	/* ************************************************************************************************ */
-	// ho recuperato le versioni canary e production che NON cancellero MAI :D
+// 	/* ************************************************************************************************ */
+// 	// ho recuperato le versioni canary e production che NON cancellero MAI :D
 
-	item, errDepl := GetDeploymentApi(namespace, ires.ApiHost, ires.ApiToken, ires.ScaleToZero, debool)
-	if errDepl != nil {
-		return errDepl
-	} else {
+// 	item, errDepl := GetDeploymentApi(namespace, ires.ApiHost, ires.ApiToken, ires.ScaleToZero, debool)
+// 	if errDepl != nil {
+// 		return errDepl
+// 	} else {
 
-		if len(item.Items) == 0 {
-			erro = errors.New("no Deployment Found in Namespace")
-			return erro
-		}
+// 		if len(item.Items) == 0 {
+// 			erro = errors.New("no Deployment Found in Namespace")
+// 			return erro
+// 		}
 
-		Logga(ctx, os.Getenv("JsonLog"), "API returns : "+strconv.Itoa(len(item.Items))+" ITEMS")
+// 		Logga(ctx, os.Getenv("JsonLog"), "API returns : "+strconv.Itoa(len(item.Items))+" ITEMS")
 
-		// se non abbiamo ne la versione canary ne quella production
-		// stiamo al primo giro di giostra e non sevo cancellare anything
-		if versioneCanaryDb == "" && versioneProductionDb == "" {
-			Logga(ctx, os.Getenv("JsonLog"), "First Deploy - no items to kill, of course ")
-			return nil
-		}
-		for _, item := range item.Items {
+// 		// se non abbiamo ne la versione canary ne quella production
+// 		// stiamo al primo giro di giostra e non sevo cancellare anything
+// 		if versioneCanaryDb == "" && versioneProductionDb == "" {
+// 			Logga(ctx, os.Getenv("JsonLog"), "First Deploy - no items to kill, of course ")
+// 			return nil
+// 		}
+// 		for _, item := range item.Items {
 
-			Logga(ctx, os.Getenv("JsonLog"), "item yaml: "+item.Spec.Template.Metadata.Labels.App)
-			Logga(ctx, os.Getenv("JsonLog"), "version: "+item.Spec.Template.Metadata.Labels.Version)
-			Logga(ctx, os.Getenv("JsonLog"), "item ires: "+microservice)
-			// primo filtro sulla refapp giusta
-			if item.Spec.Template.Metadata.Labels.App == microservice {
+// 			Logga(ctx, os.Getenv("JsonLog"), "item yaml: "+item.Spec.Template.Metadata.Labels.App)
+// 			Logga(ctx, os.Getenv("JsonLog"), "version: "+item.Spec.Template.Metadata.Labels.Version)
+// 			Logga(ctx, os.Getenv("JsonLog"), "item ires: "+microservice)
+// 			// primo filtro sulla refapp giusta
+// 			if item.Spec.Template.Metadata.Labels.App == microservice {
 
-				Logga(ctx, os.Getenv("JsonLog"), "Kill everything with different version of canary: "+versioneCanaryDb+" or production: "+versioneProductionDb+" - Current version: "+item.Spec.Selector.MatchLabels.Version)
-				// secondo filtro sulle versione
-				if item.Spec.Template.Metadata.Labels.Version == versioneCanaryDb || item.Spec.Template.Metadata.Labels.Version == versioneProductionDb {
-					// SKIP
-				} else {
+// 				Logga(ctx, os.Getenv("JsonLog"), "Kill everything with different version of canary: "+versioneCanaryDb+" or production: "+versioneProductionDb+" - Current version: "+item.Spec.Selector.MatchLabels.Version)
+// 				// secondo filtro sulle versione
+// 				if item.Spec.Template.Metadata.Labels.Version == versioneCanaryDb || item.Spec.Template.Metadata.Labels.Version == versioneProductionDb {
+// 					// SKIP
+// 				} else {
 
-					deployment := item.Spec.Template.Metadata.Labels.App + "-" + item.Spec.Template.Metadata.Labels.Version
-					Logga(ctx, os.Getenv("JsonLog"), "KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL")
-					Logga(ctx, os.Getenv("JsonLog"), "I DO KILL: "+deployment)
+// 					deployment := item.Spec.Template.Metadata.Labels.App + "-" + item.Spec.Template.Metadata.Labels.Version
+// 					Logga(ctx, os.Getenv("JsonLog"), "KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL-KILL")
+// 					Logga(ctx, os.Getenv("JsonLog"), "I DO KILL: "+deployment)
 
-					if ires.ScaleToZero {
-						DeleteObjectsApi(namespace, ires.ApiHost, ires.ApiToken, deployment, "knservice", debool)
-					} else {
-						// delete deployment
-						DeleteObjectsApi(namespace, ires.ApiHost, ires.ApiToken, deployment, "deployment", debool)
-						// delete HPA
-						DeleteObjectsApi(namespace, ires.ApiHost, ires.ApiToken, deployment, "hpa", debool)
-					}
-				}
-			}
-		}
-	}
-	return erro
-}
+//						// if ires.ScaleToZero {
+//						// 	DeleteObjectsApi(namespace, ires.ApiHost, ires.ApiToken, deployment, "knservice", debool)
+//						// } else {
+//						// 	// delete deployment
+//						// 	DeleteObjectsApi(namespace, ires.ApiHost, ires.ApiToken, deployment, "deployment", debool)
+//						// 	// delete HPA
+//						// 	DeleteObjectsApi(namespace, ires.ApiHost, ires.ApiToken, deployment, "hpa", debool)
+//						// }
+//					}
+//				}
+//			}
+//		}
+//		return erro
+//	}
 func DeleteObjectsApi(namespace, apiHost, apiToken, object, kind string, debug bool) error {
 
 	/* *************************************** */
