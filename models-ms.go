@@ -1,17 +1,25 @@
 package lib
 
 type Microservice struct {
-	Nome            string       `json:"nome,omitempty"`
-	Descrizione     string       `json:"descrizione,omitempty"`
-	Namespace       string       `json:"namespace,omitempty"`
-	BuildVersione   string       `json:"buildVersione,omitempty"`
-	Virtualservice  string       `json:"virtualService,omitempty"`
-	Public          int          `json:"public,omitempty"`
-	DatabasebEnable string       `json:"databasebEnable,omitempty"`
-	Hpa             Hpa          `json:"hpa,omitempty"`
-	Pod             []Pod        `json:"pod,omitempty"`
-	Istanza         IstanzaMicro `json:"istanza,omitempty"`
-	Affinity        []Affinity   `json:"affinity,omitempty"`
+	Nome             string       `json:"nome,omitempty"`
+	Descrizione      string       `json:"descrizione,omitempty"`
+	Namespace        string       `json:"namespace,omitempty"`
+	BuildVersione    string       `json:"buildVersione,omitempty"`
+	Virtualservice   string       `json:"virtualService,omitempty"`
+	Public           int          `json:"public,omitempty"`
+	DatabasebEnable  string       `json:"databasebEnable,omitempty"`
+	Hpa              Hpa          `json:"hpa,omitempty"`
+	Pod              []Pod        `json:"pod,omitempty"`
+	Istanza          IstanzaMicro `json:"istanza,omitempty"`
+	Affinity         []Affinity   `json:"affinity,omitempty"`
+	SwCore           bool         `json:"swCore,omitempty"`
+	ScaleToZero      bool         `json:"scaleToZero,omitempty"`
+	IsApp            bool         `json:"isApp,omitempty"`
+	SwDb             int          `json:"swDb,omitempty"`
+	NomeApp          string       `json:"nomeApp,omitempty"`
+	RefappID         string       `json:"refappID,omitempty"`
+	RefappCustomerID string       `json:"refappCustomerID,omitempty"`
+	RefAppCode       string       `json:"refAppCode,omitempty"`
 }
 type Hpa struct {
 	MinReplicas   string `json:"min,omitempty"`
@@ -142,9 +150,6 @@ type IstanzaMicro struct {
 	TipoDeploy         string          `json:"tipoDeploy,omitempty"`
 	Version            []RouteVersion  `json:"version,omitempty"`
 	CustomerSalt       string          `json:"customSalt,omitempty"`
-	MonolithDomain     string          `json:"monolithDomain,omitempty"`
-	NomeApp            string          `json:"nomeApp,omitempty"`
-	RefappID           string          `json:"refappID,omitempty"`
 	PodName            string          `json:"podName,omitempty"`
 	ClusterDomain      string          `json:"clusterDomain,omitempty"`
 	ClusterDomainOvr   bool            `json:"clusterDomainOvr,omitempty"`
@@ -154,7 +159,6 @@ type IstanzaMicro struct {
 	Token              string          `json:"token,omitempty"`
 	ClusterRefAppID    string          `json:"clusterRefAppID,omitempty"`
 	ClusterExtIP       string          `json:"clusterExtIP,omitempty"`
-	RefappCustomerID   string          `json:"refappCustomerID,omitempty"`
 	Ambiente           int32           `json:"ambiente,omitempty"`
 	Tags               []string        `json:"tags,omitempty"`
 	AmbID              int             `json:"ambID,omitempty"`
@@ -170,17 +174,12 @@ type IstanzaMicro struct {
 	MasterUser         string          `json:"masterUser,omitempty"`
 	MasterPass         string          `json:"masterPass,omitempty"`
 	SwMultiEnvironment string          `json:"swMultiEnvironment,omitempty"`
-	SwCore             bool            `json:"swCore,omitempty"`
-	ScaleToZero        bool            `json:"scaleToZero,omitempty"`
-	IsApp              bool            `json:"isApp,omitempty"`
-	SwDb               int             `json:"swDb,omitempty"`
 	AttributiMS        []AttributiMS   `json:"attributiMS,omitempty"`
 	ApiHost            string          `json:"apiHost,omitempty"`
 	ApiToken           string          `json:"apiToken,omitempty"`
 	Autopilot          string          `json:"autopilot,omitempty"`
 	CloudNet           string          `json:"cloudNet,omitempty"`
 	DeploymentEnv      []DeploymentEnv `json:"deploymentEnv,omitempty"`
-	RefAppCode         string          `json:"refAppCode,omitempty"`
 	LayerDue           *LayerMesh      `json:"layerDue,omitempty"`
 	LayerTre           *LayerMesh      `json:"layerTre,omitempty"`
 }
