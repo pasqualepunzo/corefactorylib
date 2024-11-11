@@ -627,6 +627,7 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 				return layerDue, erro
 			}
 
+			fmt.Println(x["XAPP04"].(string))
 			appName = strings.ToLower(slugify.Slugify(x["XAPP04"].(string)))
 			pkgs += "'" + x["XBOXPKG04"].(string) + "', "
 			//mms = append(mms, x["XBOXPKG04"].(string))
@@ -635,7 +636,10 @@ func GetLayerDueDetails(ctx context.Context, refappname, enviro, team, devopsTok
 	}
 	/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
-	layerDue.AppName = appName
+	aName := LayerMesh{
+		AppName: appName,
+	}
+	layerDue = &aName
 
 	// QUESTA QUERY MI DA TUTTE LE INFO PER CREARE IL LAYER 2
 	// quindi le rotte per accedere al layer 3
@@ -1039,6 +1043,11 @@ func fillMarketPlaceRoute(layerDue *LayerMesh) {
 		vsD.DestinationHost = "prod-mscoreservice.local"
 		vsD.Authority = "prod-mscoreservice.local"
 		vsD.Prefix = "/api/" + os.Getenv("coreApiVersion") + "/document"
+		layerDue.Vs.VsDetails = append(layerDue.Vs.VsDetails, vsD)
+
+		vsD.DestinationHost = "prod-msadpbchain.local"
+		vsD.Authority = "prod-msadpbchain.local"
+		vsD.Prefix = "/api/" + os.Getenv("coreApiVersion") + "/adpbchain"
 		layerDue.Vs.VsDetails = append(layerDue.Vs.VsDetails, vsD)
 
 		vsD.DestinationHost = "prod-mscoreservice.local"
