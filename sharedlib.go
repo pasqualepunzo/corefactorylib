@@ -867,42 +867,45 @@ func GetLayerTreDetailsDoc(ctx context.Context, tenant, DominioCluster, microser
 
 	for _, service := range mdResponse {
 		docker := service["XKUBEMICROSERVDKR04"].(map[string]interface{})
-		for _, v := range docker["XKUBEDKR12"].([]interface{}) {
 
-			vv := v.(map[string]interface{})
-			var gw Gw
+		if docker["XKUBEDKR12"] != nil {
+			for _, v := range docker["XKUBEDKR12"].([]interface{}) {
 
-			var intDominioArr, extDominioArr []string
-			if microservice == "msdevops" && vv["XKUBESERVICEDKR07"].(string) != "rest" {
-				extDominioArr = append(extDominioArr, extDominio)
-				gw.ExtDominio = extDominioArr
-			} else {
-				intDominioArr = append(intDominioArr, enviro+"-"+microservice+".local")
-				gw.IntDominio = intDominioArr
-			}
+				vv := v.(map[string]interface{})
+				var gw Gw
 
-			// porte
-			srvPort := strconv.Itoa(int(vv["XKUBESERVICEDKR06"].(float64)))
-			if vv["XKUBESERVICEDKR07"].(string) == "grpc" && microservice == "msdevops" && vv["XKUBESERVICEDKR05"].(string) == "grpc" {
-				switch enviro {
-				case "int":
-					srvPort = "51051"
-				case "qa":
-					srvPort = "52051"
-				default:
-					srvPort = "50051"
+				var intDominioArr, extDominioArr []string
+				if microservice == "msdevops" && vv["XKUBESERVICEDKR07"].(string) != "rest" {
+					extDominioArr = append(extDominioArr, extDominio)
+					gw.ExtDominio = extDominioArr
+				} else {
+					intDominioArr = append(intDominioArr, enviro+"-"+microservice+".local")
+					gw.IntDominio = intDominioArr
 				}
-			}
-			gw.Name = vv["XKUBESERVICEDKR05"].(string) + "-" + srvPort
-			gw.Number = srvPort
 
-			switch vv["XKUBESERVICEDKR07"].(string) {
-			case "rest":
-				gw.Protocol = "HTTP"
-			case "grpc":
-				gw.Protocol = "TCP"
+				// porte
+				srvPort := strconv.Itoa(int(vv["XKUBESERVICEDKR06"].(float64)))
+				if vv["XKUBESERVICEDKR07"].(string) == "grpc" && microservice == "msdevops" && vv["XKUBESERVICEDKR05"].(string) == "grpc" {
+					switch enviro {
+					case "int":
+						srvPort = "51051"
+					case "qa":
+						srvPort = "52051"
+					default:
+						srvPort = "50051"
+					}
+				}
+				gw.Name = vv["XKUBESERVICEDKR05"].(string) + "-" + srvPort
+				gw.Number = srvPort
+
+				switch vv["XKUBESERVICEDKR07"].(string) {
+				case "rest":
+					gw.Protocol = "HTTP"
+				case "grpc":
+					gw.Protocol = "TCP"
+				}
+				gws = append(gws, gw)
 			}
-			gws = append(gws, gw)
 		}
 	}
 
