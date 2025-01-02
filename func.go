@@ -1351,7 +1351,7 @@ func GetCustomerToken(ctx context.Context, accessToken, refappCustomer, resource
 
 func GetCfToolEnv(ctx context.Context, token, dominio, tenant, coreApiVersion, enviro string, monolith bool) (TenantEnv, error) {
 
-	Logga(ctx, os.Getenv("JsonLog"), "Getting KUBECFTOOLENV")
+	Logga(ctx, os.Getenv("JsonLog"), "Getting KUBETENANTENV")
 
 	var erro error
 	devops := "devops"
@@ -1362,41 +1362,41 @@ func GetCfToolEnv(ctx context.Context, token, dominio, tenant, coreApiVersion, e
 	args := make(map[string]string)
 	args["center_dett"] = "dettaglio"
 	args["source"] = "devops-8"
-	args["$filter"] = "equals(XKUBECFTOOLENV03,'" + strings.Replace(dominio, "https://", "", -1) + "') "
-	args["$filter"] += " and equals(XKUBECFTOOLENV19,'" + tenant + "') "
-	args["$filter"] += " and equals(XKUBECFTOOLENV18,'" + enviro + "') "
+	args["$filter"] = "equals(XKUBETENANTENV03,'" + strings.Replace(dominio, "https://", "", -1) + "') "
+	args["$filter"] += " and equals(XKUBETENANTENV19,'" + tenant + "') "
+	args["$filter"] += " and equals(XKUBETENANTENV18,'" + enviro + "') "
 
-	envRes, _ := ApiCallGET(ctx, os.Getenv("RestyDebug"), args, "ms"+devops, "/api/"+os.Getenv("coreApiVersion")+"/"+devops+"/KUBECFTOOLENV", token, dominio, coreApiVersion)
+	envRes, _ := ApiCallGET(ctx, os.Getenv("RestyDebug"), args, "ms"+devops, "/api/"+os.Getenv("coreApiVersion")+"/"+devops+"/KUBETENANTENV", token, dominio, coreApiVersion)
 
 	var tntEnv TenantEnv
 
 	if len(envRes.BodyJson) > 0 {
 
-		tntEnv.TelegramKey = envRes.BodyJson["XKUBECFTOOLENV04"].(string)
-		tntEnv.TelegramID = envRes.BodyJson["XKUBECFTOOLENV05"].(string)
-		tntEnv.CoreApiVersion = envRes.BodyJson["XKUBECFTOOLENV06"].(string)
-		tntEnv.CoreApiPort = envRes.BodyJson["XKUBECFTOOLENV07"].(string)
-		tntEnv.CoreAccessToken = envRes.BodyJson["XKUBECFTOOLENV08"].(string)
-		tntEnv.AtlassianHost = envRes.BodyJson["XKUBECFTOOLENV09"].(string)
-		tntEnv.AtlassianUser = envRes.BodyJson["XKUBECFTOOLENV10"].(string)
-		tntEnv.AtlassianToken = envRes.BodyJson["XKUBECFTOOLENV11"].(string)
-		tntEnv.ApiHostGit = envRes.BodyJson["XKUBECFTOOLENV12"].(string)
-		tntEnv.UrlGit = envRes.BodyJson["XKUBECFTOOLENV20"].(string)
-		tntEnv.TypeGit = envRes.BodyJson["XKUBECFTOOLENV21"].(string)
-		tntEnv.UserGit = envRes.BodyJson["XKUBECFTOOLENV13"].(string)
-		tntEnv.TokenGit = envRes.BodyJson["XKUBECFTOOLENV14"].(string)
-		tntEnv.ProjectGit = envRes.BodyJson["XKUBECFTOOLENV15"].(string)
-		tntEnv.CoreGkeProject = envRes.BodyJson["XKUBECFTOOLENV16"].(string)
-		tntEnv.CoreGkeUrl = envRes.BodyJson["XKUBECFTOOLENV17"].(string)
-		tntEnv.CoreApiDominio = envRes.BodyJson["XKUBECFTOOLENV18"].(string)
-		tntEnv.WorkspaceKey = envRes.BodyJson["XKUBECFTOOLENV22"].(string)
-		tntEnv.WorkspaceSecret = envRes.BodyJson["XKUBECFTOOLENV23"].(string)
-		tntEnv.WorkspaceRefreshToken = envRes.BodyJson["XKUBECFTOOLENV24"].(string)
+		tntEnv.TelegramKey = envRes.BodyJson["XKUBETENANTENV04"].(string)
+		tntEnv.TelegramID = envRes.BodyJson["XKUBETENANTENV05"].(string)
+		tntEnv.CoreApiVersion = envRes.BodyJson["XKUBETENANTENV06"].(string)
+		tntEnv.CoreApiPort = envRes.BodyJson["XKUBETENANTENV07"].(string)
+		tntEnv.CoreAccessToken = envRes.BodyJson["XKUBETENANTENV08"].(string)
+		tntEnv.AtlassianHost = envRes.BodyJson["XKUBETENANTENV09"].(string)
+		tntEnv.AtlassianUser = envRes.BodyJson["XKUBETENANTENV10"].(string)
+		tntEnv.AtlassianToken = envRes.BodyJson["XKUBETENANTENV11"].(string)
+		tntEnv.ApiHostGit = envRes.BodyJson["XKUBETENANTENV12"].(string)
+		tntEnv.UrlGit = envRes.BodyJson["XKUBETENANTENV20"].(string)
+		tntEnv.TypeGit = envRes.BodyJson["XKUBETENANTENV21"].(string)
+		tntEnv.UserGit = envRes.BodyJson["XKUBETENANTENV13"].(string)
+		tntEnv.TokenGit = envRes.BodyJson["XKUBETENANTENV14"].(string)
+		tntEnv.ProjectGit = envRes.BodyJson["XKUBETENANTENV15"].(string)
+		tntEnv.CoreGkeProject = envRes.BodyJson["XKUBETENANTENV16"].(string)
+		tntEnv.CoreGkeUrl = envRes.BodyJson["XKUBETENANTENV17"].(string)
+		tntEnv.CoreApiDominio = envRes.BodyJson["XKUBETENANTENV18"].(string)
+		tntEnv.WorkspaceKey = envRes.BodyJson["XKUBETENANTENV22"].(string)
+		tntEnv.WorkspaceSecret = envRes.BodyJson["XKUBETENANTENV23"].(string)
+		tntEnv.WorkspaceRefreshToken = envRes.BodyJson["XKUBETENANTENV24"].(string)
 
-		Logga(ctx, os.Getenv("JsonLog"), "KUBECFTOOLENV OK")
+		Logga(ctx, os.Getenv("JsonLog"), "KUBETENANTENV OK")
 	} else {
-		Logga(ctx, os.Getenv("JsonLog"), "KUBECFTOOLENV MISSING")
-		erro = errors.New("KUBECFTOOLENV MISSING")
+		Logga(ctx, os.Getenv("JsonLog"), "KUBETENANTENV MISSING")
+		erro = errors.New("KUBETENANTENV MISSING")
 	}
 
 	return tntEnv, erro
