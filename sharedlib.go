@@ -1358,27 +1358,21 @@ func GetIstanzaVersioni(ctx context.Context, istanza, enviro, devopsToken, canpr
 			}
 		}
 
-		versionMap := make(map[string]string) // Mappa per tenere traccia delle versioni viste
+		var versold string
 
 		for _, v := range vrss {
-			// Se la versione è già presente nella mappa
-			if existingType, exists := versionMap[v.Versione]; exists {
-				// Mantieni solo se corrisponde al valore passato
-				if existingType == canprodPassed {
-					continue
-				}
-				// Rimuovi la versione duplicata non corrispondente a `canprodPassed`
-				for i, fv := range filtered {
-					if fv.Versione == v.Versione && fv.CanaryProduction != canprodPassed {
-						filtered = append(filtered[:i], filtered[i+1:]...)
-						break
-					}
+			if versold != "" && v.Versione == versold {
+				// Se le versioni sono uguali
+				if canprodPassed == v.CanaryProduction {
+					// Sostituisci nella lista filtrata con la versione desiderata
+					filtered[len(filtered)-1] = v
 				}
 			} else {
-				// Nuova versione, aggiungila
-				versionMap[v.Versione] = v.CanaryProduction
+				// Aggiungi al risultato se non è un duplicato
 				filtered = append(filtered, v)
 			}
+			// Aggiorna l'ultima versione processata
+			versold = v.Versione
 		}
 
 		Logga(ctx, os.Getenv("JsonLog"), "DEPLOYLOG OK")
