@@ -1065,7 +1065,7 @@ func fillMarketPlaceRoute(layerDue *LayerMesh) {
 
 	}
 }
-func GetMsRoutes(ctx context.Context, routeJson RouteJson) (RouteMs, error) {
+func GetMsRoutes(ctx context.Context, routeJson RouteJson, canprodPassed string) (RouteMs, error) {
 
 	Logga(ctx, os.Getenv("JsonLog"), "GetMsRoutes")
 	var erro error
@@ -1307,7 +1307,7 @@ func GetMsRoutes(ctx context.Context, routeJson RouteJson) (RouteMs, error) {
 		ms.Docker = dkrs
 
 		// CERCA LE VERSIONI
-		allMsVers, errV := GetIstanzaVersioni(ctx, istanza, routeJson.Enviro, devopsToken)
+		allMsVers, errV := GetIstanzaVersioni(ctx, istanza, routeJson.Enviro, devopsToken, canprodPassed)
 		if errV != nil {
 			Logga(ctx, os.Getenv("JsonLog"), errV.Error())
 			return ms, errV
@@ -1317,11 +1317,12 @@ func GetMsRoutes(ctx context.Context, routeJson RouteJson) (RouteMs, error) {
 	return ms, erro
 }
 
-func GetIstanzaVersioni(ctx context.Context, istanza, enviro, devopsToken string) ([]RouteVersion, error) {
+func GetIstanzaVersioni(ctx context.Context, istanza, enviro, devopsToken, canprodPassed string) ([]RouteVersion, error) {
 
 	Logga(ctx, os.Getenv("JsonLog"), "GetIstanzaVersioni - Getting DEPLOYLOG")
 	var erro error
 	var vrss []RouteVersion
+	var filtered []RouteVersion
 	argsDeploy := make(map[string]string)
 	argsDeploy["source"] = "devops-8"
 	argsDeploy["center_dett"] = "visualizza"
@@ -1356,11 +1357,35 @@ func GetIstanzaVersioni(ctx context.Context, istanza, enviro, devopsToken string
 				vrss = append(vrss, vrs)
 			}
 		}
+
+		versionMap := make(map[string]string) // Mappa per tenere traccia delle versioni viste
+
+		for _, v := range vrss {
+			// Se la versione è già presente nella mappa
+			if existingType, exists := versionMap[v.Versione]; exists {
+				// Mantieni solo se corrisponde al valore passato
+				if existingType == canprodPassed {
+					continue
+				}
+				// Rimuovi la versione duplicata non corrispondente a `canprodPassed`
+				for i, fv := range filtered {
+					if fv.Versione == v.Versione && fv.CanaryProduction != canprodPassed {
+						filtered = append(filtered[:i], filtered[i+1:]...)
+						break
+					}
+				}
+			} else {
+				// Nuova versione, aggiungila
+				versionMap[v.Versione] = v.CanaryProduction
+				filtered = append(filtered, v)
+			}
+		}
+
 		Logga(ctx, os.Getenv("JsonLog"), "DEPLOYLOG OK")
 	} else {
 		Logga(ctx, os.Getenv("JsonLog"), "DEPLOYLOG MISSING")
 	}
-	return vrss, erro
+	return filtered, erro
 }
 
 func UploadFileToBucket(bucket, tarPathFilename, fileBucket, accessToken string) error {
