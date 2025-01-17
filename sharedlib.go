@@ -371,7 +371,7 @@ func GetIstanceDetail(ctx context.Context, iresReq IresRequest, canaryProduction
 	Logga(ctx, os.Getenv("JsonLog"), "Getting AMBDOMAIN")
 
 	argsAmbdomain := make(map[string]string)
-	argsAmbdomain["source"] = "auth-1"
+	argsAmbdomain["source"] = "auths-1"
 	argsAmbdomain["$select"] = "XAMBDOMAIN05,XAMBDOMAIN07,XAMBDOMAIN08,XAMBDOMAIN09,XAMBDOMAIN10,XAMBDOMAIN11"
 	argsAmbdomain["center_dett"] = "dettaglio"
 	argsAmbdomain["$filter"] += "  equals(XAMBDOMAIN04,'" + customerDomain + "') "
@@ -1337,11 +1337,24 @@ func GetIstanzaVersioni(ctx context.Context, istanza, enviro, devopsToken string
 		return vrss, erro
 	}
 	if len(restyDeployRes.BodyArray) > 0 {
+
+		seen := map[string]bool{}
+
 		for _, x := range restyDeployRes.BodyArray {
-			var vrs RouteVersion
-			vrs.CanaryProduction = x["XDEPLOYLOG03"].(string) // canary production
-			vrs.Versione = x["XDEPLOYLOG05"].(string)
-			vrss = append(vrss, vrs)
+			canaryProduction, ok := x["XDEPLOYLOG03"].(string)
+			if !ok || (canaryProduction != "canary" && canaryProduction != "production") {
+				continue // Ignora valori non validi
+			}
+
+			// Aggiungi solo se non già visto
+			if !seen[canaryProduction] {
+				seen[canaryProduction] = true
+				vrs := RouteVersion{
+					CanaryProduction: canaryProduction,
+					Versione:         x["XDEPLOYLOG05"].(string),
+				}
+				vrss = append(vrss, vrs)
+			}
 		}
 		Logga(ctx, os.Getenv("JsonLog"), "DEPLOYLOG OK")
 	} else {

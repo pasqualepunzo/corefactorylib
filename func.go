@@ -265,7 +265,7 @@ func StrPad(input string, padLength int, padString string, padType string) strin
 }
 func GetUserGroup(ctx context.Context, token, gruppo, dominio, coreApiVersion string) (map[string]string, error) {
 
-	Logga(ctx, os.Getenv("JsonLog"), "", "Getting GRU")
+	Logga(ctx, os.Getenv("JsonLog"), "", "Getting GRU +")
 
 	var erro error
 
@@ -1750,6 +1750,8 @@ func GeneraBuildDirectory(ctx context.Context, microservice, jobID string) (stri
 	return dirToCreate, erro
 }
 func GetTeamFromGroup(ctx context.Context, devopsToken, dominio, group string) (string, error) {
+
+	Logga(ctx, os.Getenv("JsonLog"), "Getting GRU ++")
 	// ottengo da gru il nome del team
 	argsGru := make(map[string]string)
 	argsGru["source"] = "devops-8"
