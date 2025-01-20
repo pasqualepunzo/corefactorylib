@@ -183,46 +183,9 @@ type IstanzaMicro struct {
 	LayerDue           *LayerMesh      `json:"layerDue,omitempty"`
 	LayerTre           *LayerMesh      `json:"layerTre,omitempty"`
 }
-type DeployEnv struct {
-	APIVersion            string `json:"API_VERSION"`
-	EnableChildmost       string `json:"ENABLE_CHILDMOST"`
-	EnableOutbox          string `json:"ENABLE_OUTBOX"`
-	CoreAPIHost           string `json:"CORE_API_HOST"`
-	CoreAPIPort           string `json:"CORE_API_PORT"`
-	CoreAPIVersion        string `json:"CORE_API_VERSION"`
-	CoreAPIPath           string `json:"CORE_API_PATH"`
-	AuthAPIHost           string `json:"AUTH_API_HOST"`
-	AuthAPIPort           string `json:"AUTH_API_PORT"`
-	AuthAPIPath           string `json:"AUTH_API_PATH"`
-	AuthAPIVersion        string `json:"AUTH_API_VERSION"`
-	WAPIHost              string `json:"W_API_HOST"`
-	WAPIPort              string `json:"W_API_PORT"`
-	WAPIVersion           string `json:"W_API_VERSION"`
-	RAPIHost              string `json:"R_API_HOST"`
-	RAPIPort              string `json:"R_API_PORT"`
-	RAPIVersion           string `json:"R_API_VERSION"`
-	PltAdminDbType        string `json:"plt_admin_db_type"`
-	PltAdminDbHost        string `json:"plt_admin_db_host"`
-	PltAdminDbName        string `json:"plt_admin_db_name"`
-	PltAdminDbUser        string `json:"plt_admin_db_user"`
-	PltAdminDbPasswd      string `json:"plt_admin_db_passwd"`
-	MsauthDbType          string `json:"msauth_db_type"`
-	MsauthDbHost          string `json:"msauth_db_host"`
-	MsauthDbName          string `json:"msauth_db_name"`
-	MsauthDbUser          string `json:"msauth_db_user"`
-	MsauthDbPasswd        string `json:"msauth_db_passwd"`
-	Charset               string `json:"charset"`
-	Collate               string `json:"collate"`
-	JwtDuration           string `json:"JWT_DURATION"`
-	JwtInactivity         string `json:"JWT_INACTIVITY"`
-	BucketNameMedia       string `json:"BUCKET_NAME_MEDIA"`
-	BucketNameMediaPublic string `json:"BUCKET_NAME_MEDIA_PUBLIC"`
-	Logdebug              string `json:"LOGDEBUG"`
-	Mssync                string `json:"MSSYNC"`
-}
 type DeploymentEnv struct {
-	Env           string    `json:"env,omitempty"`
-	DeploymentEnv DeployEnv `json:"deploymentEnv,omitempty"`
+	Env           string `json:"env,omitempty"`
+	DeploymentEnv string `json:"deploymentEnv,omitempty"`
 }
 type DbMetaConnMs struct {
 	MetaHost     string `json:"metaHost,omitempty"`
