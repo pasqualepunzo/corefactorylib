@@ -40,7 +40,7 @@ type Pod struct {
 	Workdir    string      `json:"workdir,omitempty"`
 	Branch     Branch      `json:"branch,omitempty"`
 	Resource   Resource    `json:"resource,omitempty"`
-	PodBuild   PodBuild    `json:"podBuild,omitempty"`
+	PodBuild   *PodBuild   `json:"podBuild,omitempty"`
 	Mount      []Mount     `json:"mount,omitempty"`
 	Service    []Service   `json:"service,omitempty"`
 	Probes     []Probes    `json:"probes,omitempty"`

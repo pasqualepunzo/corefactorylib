@@ -582,13 +582,22 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 								branchs.Version = dsv.Versione
 								branchs.Sha = dsv.Sha
 
-								var podBuild PodBuild
-								podBuild.Versione = dsv.Versione
-								podBuild.Merged = dsv.Merged
-								podBuild.Tag = dsv.Tag
-								podBuild.MasterDev = dsv.MasterDev
-								podBuild.ReleaseNote = dsv.ReleaseNote
-								podBuild.SprintBranch = dsv.SprintBranch
+								podBuild := &PodBuild{
+									Versione:     dsv.Versione,
+									Merged:       dsv.Merged,
+									Tag:          dsv.Tag,
+									MasterDev:    dsv.MasterDev,
+									ReleaseNote:  dsv.ReleaseNote,
+									SprintBranch: dsv.SprintBranch,
+								}
+								pod.PodBuild = podBuild
+								// var podBuild PodBuild
+								// podBuild.Versione = dsv.Versione
+								// podBuild.Merged = dsv.Merged
+								// podBuild.Tag = dsv.Tag
+								// podBuild.MasterDev = dsv.MasterDev
+								// podBuild.ReleaseNote = dsv.ReleaseNote
+								// podBuild.SprintBranch = dsv.SprintBranch
 
 								pod.PodBuild = podBuild
 								pod.Branch = branchs
@@ -628,13 +637,21 @@ func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVe
 					branchs.Version = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD06"].(string)
 					branchs.Sha = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD07"].(string)
 
-					var podBuild PodBuild
-					podBuild.Versione = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD06"].(string)
-					podBuild.Merged = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD13"].(string)
-					podBuild.Tag = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD09"].(string)
-					podBuild.MasterDev = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD04"].(string)
-					podBuild.ReleaseNote = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD12"].(string)
-					podBuild.SprintBranch = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD10"].(string)
+					podBuild := &PodBuild{
+						Versione:     restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD06"].(string),
+						Merged:       restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD13"].(string),
+						Tag:          restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD09"].(string),
+						MasterDev:    restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD04"].(string),
+						ReleaseNote:  restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD12"].(string),
+						SprintBranch: restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD10"].(string),
+					}
+					// var podBuild PodBuild
+					// podBuild.Versione = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD06"].(string)
+					// podBuild.Merged = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD13"].(string)
+					// podBuild.Tag = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD09"].(string)
+					// podBuild.MasterDev = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD04"].(string)
+					// podBuild.ReleaseNote = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD12"].(string)
+					// podBuild.SprintBranch = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD10"].(string)
 
 					pod.PodBuild = podBuild
 					pod.Branch = branchs
