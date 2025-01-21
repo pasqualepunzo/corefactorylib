@@ -382,9 +382,9 @@ type MergeToMaster struct {
 	Istanza string    `json:"istanza"`
 	User    string    `json:"user"`
 	Tenant  string    `json:"tenant"`
-	Tags    []mtmTags `json:"tags"`
+	Tags    []MtmTags `json:"tags"`
 }
-type mtmTags struct {
+type MtmTags struct {
 	Docker       string `json:"docker"`
 	Tag          string `json:"tag"`
 	Versione     string `json:"versione"`
