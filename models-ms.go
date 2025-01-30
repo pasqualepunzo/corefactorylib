@@ -101,28 +101,28 @@ type Probes struct {
 	FailureThreshold    int    `json:"failureThreshold,omitempty"`
 }
 type Endpoint struct {
-	MicroserviceSrc string `json:"microserviceSrc,omitempty"`
-	DockerSrc       string `json:"dockerSrc,omitempty"`
-	TypeSrvSrc      string `json:"typeSrvSrc,omitempty"`
-	RouteSrc        string `json:"routeSrc,omitempty"`
-	RewriteSrc      string `json:"rewriteSrc,omitempty"`
-	NamespaceSrc    string `json:"namespaceSrc,omitempty"`
-	VersionSrc      string `json:"versionSrc,omitempty"`
-	MicroserviceDst string `json:"microserviceDst,omitempty"`
-	DockerDst       string `json:"dockerDst,omitempty"`
-	TypeSrvDst      string `json:"typeSrvDst,omitempty"`
-	RouteDst        string `json:"routeDst,omitempty"`
-	RewriteDst      string `json:"rewriteDst,omitempty"`
-	NamespaceDst    string `json:"namespaceDst,omitempty"`
-	VersionDst      string `json:"versionDst,omitempty"`
-	Domain          string `json:"domain,omitempty"`
-	Market          string `json:"market,omitempty"`
-	Partner         string `json:"partner,omitempty"`
-	Customer        string `json:"customer,omitempty"`
-	ClusterDomain   string `json:"clusterDomain,omitempty"`
-	Priority        string `json:"priority,omitempty"`
-	AllowedMethod   string `json:"allowedMethod,omitempty"`
-	AllowHeaders    string `json:"allowHeaders,omitempty"`
+	MicroserviceSrc string   `json:"microserviceSrc,omitempty"`
+	DockerSrc       string   `json:"dockerSrc,omitempty"`
+	TypeSrvSrc      string   `json:"typeSrvSrc,omitempty"`
+	RouteSrc        string   `json:"routeSrc,omitempty"`
+	RewriteSrc      string   `json:"rewriteSrc,omitempty"`
+	NamespaceSrc    string   `json:"namespaceSrc,omitempty"`
+	VersionSrc      string   `json:"versionSrc,omitempty"`
+	MicroserviceDst string   `json:"microserviceDst,omitempty"`
+	DockerDst       string   `json:"dockerDst,omitempty"`
+	TypeSrvDst      string   `json:"typeSrvDst,omitempty"`
+	RouteDst        string   `json:"routeDst,omitempty"`
+	RewriteDst      string   `json:"rewriteDst,omitempty"`
+	NamespaceDst    string   `json:"namespaceDst,omitempty"`
+	VersionDst      string   `json:"versionDst,omitempty"`
+	Domain          string   `json:"domain,omitempty"`
+	Market          string   `json:"market,omitempty"`
+	Partner         string   `json:"partner,omitempty"`
+	Customer        string   `json:"customer,omitempty"`
+	ClusterDomain   string   `json:"clusterDomain,omitempty"`
+	Priority        string   `json:"priority,omitempty"`
+	AllowedMethod   string   `json:"allowedMethod,omitempty"`
+	AllowHeaders    []string `json:"allowHeaders,omitempty"`
 }
 type RouteMs struct {
 	Microservice string         `json:"microservice,omitempty"`
