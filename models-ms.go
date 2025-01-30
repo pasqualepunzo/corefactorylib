@@ -122,6 +122,7 @@ type Endpoint struct {
 	ClusterDomain   string `json:"clusterDomain,omitempty"`
 	Priority        string `json:"priority,omitempty"`
 	AllowedMethod   string `json:"allowedMethod,omitempty"`
+	AllowHeaders    string `json:"allowHeaders,omitempty"`
 }
 type RouteMs struct {
 	Microservice string         `json:"microservice,omitempty"`
