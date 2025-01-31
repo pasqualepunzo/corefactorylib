@@ -103,6 +103,7 @@ type TenantEnv struct {
 	UserGit               string `json:"userGit"`
 	TokenGit              string `json:"tokenGit"`
 	ProjectGit            string `json:"projectGit"`
+	WorkspaceGit          string `json:"workspaceGit"`
 	TypeGit               string `json:"typeGit"`
 	WorkspaceKey          string `json:"workspaceKey"`
 	WorkspaceSecret       string `json:"workspaceSecret"`
