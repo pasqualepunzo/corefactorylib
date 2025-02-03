@@ -1032,14 +1032,9 @@ func CreateTag(ctx context.Context, buildArgs BuildArgs, tag, repo string) error
 	Logga(ctx, os.Getenv("JsonLog"), "Create tag: "+tag)
 	Logga(ctx, os.Getenv("JsonLog"), "git repo: "+repo)
 
-	debool, errBool := strconv.ParseBool(os.Getenv("RestyDebug"))
-	if errBool != nil {
-		return errBool
-	}
-
 	// OTTENGO L' HASH del branch vivo
 	clientBranch := resty.New()
-	clientBranch.Debug = debool
+	clientBranch.Debug = os.Getenv("RestyDebug") == "true"
 	var respBranch, restyResponse *resty.Response
 	var errBranch, errTag error
 	switch buildArgs.TypeGit {
@@ -1073,7 +1068,7 @@ func CreateTag(ctx context.Context, buildArgs BuildArgs, tag, repo string) error
 			// STACCO IL TAG
 			body = `{"name": "` + tag + `","target": {  "hash": "` + branchRes.Target.Hash + `"}}`
 			client := resty.New()
-			client.Debug = debool
+			client.Debug = os.Getenv("RestyDebug") == "true"
 			restyResponse, errTag = client.R().
 				SetHeader("Content-Type", "application/json").
 				SetBasicAuth(buildArgs.UserGit, buildArgs.TokenGit).
@@ -1091,7 +1086,7 @@ func CreateTag(ctx context.Context, buildArgs BuildArgs, tag, repo string) error
 			body = `{"tag":"` + tag + `","message":"","object":"` + branchRes.Object.Sha + `","type":"commit"}`
 
 			client := resty.New()
-			client.Debug = debool
+			client.Debug = os.Getenv("RestyDebug") == "true"
 			restyResponse, errTag = client.R().
 				SetHeader("Content-Type", "application/json").
 				SetHeader("Accept", "application/vnd.github+json").

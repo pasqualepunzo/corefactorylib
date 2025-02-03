@@ -480,6 +480,7 @@ type BuildArgs struct {
 	UrlGit          string `json:"urlGit"`
 	UserGit         string `json:"userGit"`
 	TokenGit        string `json:"tokenGit"`
+	WorkspaceGit    string `json:"workspaceGit"`
 	ProjectGit      string `json:"projectGit"`
 	TypeGit         string `json:"typeGit"`
 	CoreGkeProject  string `json:"coreGkeProject"`
