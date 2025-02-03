@@ -1042,7 +1042,7 @@ func CreateTag(ctx context.Context, buildArgs BuildArgs, tag, repo string) error
 		respBranch, errBranch = clientBranch.R().
 			EnableTrace().
 			SetBasicAuth(buildArgs.UserGit, buildArgs.TokenGit).
-			Get(buildArgs.ApiHostGit + "/repositories/" + buildArgs.ProjectGit + "/" + repo + "/refs/branches/" + buildArgs.SprintBranch)
+			Get(buildArgs.ApiHostGit + "/repositories/" + buildArgs.WorkspaceGit + "/" + repo + "/refs/branches/" + buildArgs.SprintBranch)
 	case "gitub":
 		respBranch, errBranch = clientBranch.R().
 			EnableTrace().
