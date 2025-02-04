@@ -370,13 +370,14 @@ type CallPUTRes struct {
 	ModifiedID interface{} `json:"modifiedId"`
 }
 type MergeToMaster struct {
-	TelegramKey string `json:"telegramKey"`
-	TelegramID  string `json:"TelegramID"`
-	ApiHostGit  string `json:"apiHostGit"`
-	UrlGit      string `json:"urlGit"`
-	UserGit     string `json:"userGit"`
-	TokenGit    string `json:"tokenGit"`
-	ProjectGit  string `json:"projectGit"`
+	TelegramKey  string `json:"telegramKey"`
+	TelegramID   string `json:"TelegramID"`
+	ApiHostGit   string `json:"apiHostGit"`
+	UrlGit       string `json:"urlGit"`
+	UserGit      string `json:"userGit"`
+	TokenGit     string `json:"tokenGit"`
+	ProjectGit   string `json:"projectGit"`
+	WorkspaceGit string `json:"workspaceGit"`
 
 	Team    string    `json:"team"`
 	Istanza string    `json:"istanza"`
@@ -502,6 +503,7 @@ type DockerStruct struct {
 	TokenGit      string `json:"tokenGit"`
 	UrlGit        string `json:"urlGit"`
 	ProjectGit    string `json:"projectGit"`
+	WorkspaceGit  string `json:"workspaceGit"`
 }
 type RouteJson struct {
 	Microservice string `json:"microservice"`

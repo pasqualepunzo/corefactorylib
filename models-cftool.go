@@ -78,6 +78,7 @@ type LoginRes struct {
 	TokenGit                string       `json:"tokenGit"`
 	WorkspaceGit            string       `json:"workspaceGit"`
 	ProjectGit              string       `json:"projectGit"`
+	WorkspaceKey            string       `json:"workspaceKey"`
 	TypeGit                 string       `json:"typeGit"`
 	CoreGkeProject          string       `json:"coreGkeProject"`
 	CoreGkeUrl              string       `json:"coreGkeUrl"`

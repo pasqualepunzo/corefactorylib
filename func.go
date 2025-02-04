@@ -1073,7 +1073,7 @@ func CreateTag(ctx context.Context, buildArgs BuildArgs, tag, repo string) error
 				SetHeader("Content-Type", "application/json").
 				SetBasicAuth(buildArgs.UserGit, buildArgs.TokenGit).
 				SetBody(body).
-				Post(buildArgs.ApiHostGit + "/repositories/" + buildArgs.ProjectGit + "/" + repo + "/refs/tags")
+				Post(buildArgs.ApiHostGit + "/repositories/" + buildArgs.WorkspaceGit + "/" + repo + "/refs/tags")
 		case "github":
 			type ResFrom struct {
 				Object struct {

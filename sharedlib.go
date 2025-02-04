@@ -1606,7 +1606,7 @@ func GitMergeApi(ctx context.Context, src, dst, repo, tipo string, bitbucketEnv 
 		restyTagResponseDel, errDel := clientTagDel.R().
 			SetHeader("Content-Type", "application/json").
 			SetBasicAuth(bitbucketEnv.UserGit, bitbucketEnv.TokenGit).
-			Delete(bitbucketEnv.ApiHostGit + "/repositories/" + bitbucketEnv.ProjectGit + "/" + repo + "/refs/branches/" + tmpBranch)
+			Delete(bitbucketEnv.ApiHostGit + "/repositories/" + bitbucketEnv.WorkspaceGit + "/" + repo + "/refs/branches/" + tmpBranch)
 
 		if errDel != nil {
 			fmt.Println("_##START##_   !!! Cannot delete previous temporary branch " + tmpBranch + " ERROR " + errDel.Error() + "_##STOP##_")
@@ -1627,7 +1627,7 @@ func GitMergeApi(ctx context.Context, src, dst, repo, tipo string, bitbucketEnv 
 			SetHeader("Content-Type", "application/json").
 			SetBasicAuth(bitbucketEnv.UserGit, bitbucketEnv.TokenGit).
 			SetBody(body).
-			Post(bitbucketEnv.ApiHostGit + "/repositories/" + bitbucketEnv.ProjectGit + "/" + repo + "/refs/branches")
+			Post(bitbucketEnv.ApiHostGit + "/repositories/" + bitbucketEnv.WorkspaceGit + "/" + repo + "/refs/branches")
 
 		if err != nil {
 			fmt.Println("_##START##_   !ERROR! New branch on " + repo + " ERROR " + err.Error() + "_##STOP##_")
@@ -1672,7 +1672,7 @@ func GitMergeApi(ctx context.Context, src, dst, repo, tipo string, bitbucketEnv 
 		SetHeader("Content-Type", "application/json").
 		SetBasicAuth(bitbucketEnv.UserGit, bitbucketEnv.TokenGit).
 		SetBody(body).
-		Post(bitbucketEnv.ApiHostGit + "/repositories/" + bitbucketEnv.ProjectGit + "/" + repo + "/pullrequests")
+		Post(bitbucketEnv.ApiHostGit + "/repositories/" + bitbucketEnv.WorkspaceGit + "/" + repo + "/pullrequests")
 
 	if err != nil {
 		fmt.Println("_##START##_   !!! Merge di " + src + " su " + dst + " ERROR " + err.Error() + "_##STOP##_")
@@ -1713,7 +1713,7 @@ func GitMergeApi(ctx context.Context, src, dst, repo, tipo string, bitbucketEnv 
 			clientMerge.Debug = false
 			respMerge, errMerge := clientMerge.R().
 				SetBasicAuth(bitbucketEnv.UserGit, bitbucketEnv.TokenGit).
-				Post(bitbucketEnv.ApiHostGit + "/repositories/" + bitbucketEnv.ProjectGit + "/" + repo + "/pullrequests/" + strconv.Itoa(restyRes.ID) + "/merge")
+				Post(bitbucketEnv.ApiHostGit + "/repositories/" + bitbucketEnv.WorkspaceGit + "/" + repo + "/pullrequests/" + strconv.Itoa(restyRes.ID) + "/merge")
 			// fmt.Println(string(respMerge.Body()), errMerge)
 
 			if errMerge != nil {
@@ -1780,13 +1780,13 @@ func CreaDirAndCloneDocker(ctx context.Context, dkr DockerStruct, dirToCreate, b
 	// REPO TEMPLATE DOCKER
 	// faccio override se il TMPL non e presente sul DB del tenant
 	repoDocker := ""
-	if dkr.ProjectGit != "" {
-		repoDocker = "https://" + dkr.UserGit + ":" + dkr.TokenGit + "@" + dkr.UrlGit + "/" + dkr.ProjectGit + "/docker-tmpl.git"
+	if dkr.WorkspaceGit != "" {
+		repoDocker = "https://" + dkr.UserGit + ":" + dkr.TokenGit + "@" + dkr.UrlGit + "/" + dkr.WorkspaceGit + "/docker-tmpl.git"
 	} else {
-		repoDocker = "https://" + buildArgs.UserGit + ":" + buildArgs.TokenGit + "@" + buildArgs.UrlGit + "/" + buildArgs.ProjectGit + "/docker-tmpl.git"
+		repoDocker = "https://" + buildArgs.UserGit + ":" + buildArgs.TokenGit + "@" + buildArgs.UrlGit + "/" + buildArgs.WorkspaceGit + "/docker-tmpl.git"
 	}
 	// REPO TU BUILD
-	repoproject := "https://" + buildArgs.UserGit + ":" + buildArgs.TokenGit + "@" + buildArgs.UrlGit + "/" + buildArgs.ProjectGit + "/" + dkr.GitRepo + ".git"
+	repoproject := "https://" + buildArgs.UserGit + ":" + buildArgs.TokenGit + "@" + buildArgs.UrlGit + "/" + buildArgs.WorkspaceGit + "/" + dkr.GitRepo + ".git"
 
 	dirTmpl := dirToCreate + "/" + dkr.Docker
 	dirSrc := dirTmpl + "/src"
