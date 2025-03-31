@@ -37,6 +37,9 @@ type TagCreateResStruct struct {
 type ProfileInfo struct {
 	Code    int `json:"code"`
 	Session struct {
+		Vsession struct {
+			KUBEMICROSERV string `json:"KUBEMICROSERV"`
+		} `json:"vsession"`
 		GrantSession struct {
 			Gruppo      string `json:"gruppo"`
 			NomeCognome string `json:"nome_cognome"`

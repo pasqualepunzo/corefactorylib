@@ -937,21 +937,26 @@ func GetProfileInfo(ctx context.Context, token, dominio, coreApiVersion string) 
 	if len(infoRes.BodyJson) > 0 {
 		restyProfileInfoResponse := ProfileInfo{}
 
-		b, _ := json.Marshal(infoRes.BodyJson)
+		b, err := json.Marshal(infoRes.BodyJson)
+		if err != nil {
+			Logga(ctx, os.Getenv("JsonLog"), err.Error())
+			return info, err
+		}
 		json.Unmarshal(b, &restyProfileInfoResponse)
 
 		info["market"] = restyProfileInfoResponse.Session.Market.Decval
 		info["gruppo"] = restyProfileInfoResponse.Session.GrantSession.Gruppo
 		info["nome"] = restyProfileInfoResponse.Session.GrantSession.NomeCognome
 		info["email"] = restyProfileInfoResponse.Session.GrantSession.Email
+		info["vsessionMicroservice"] = restyProfileInfoResponse.Session.Vsession.KUBEMICROSERV
 
 		Logga(ctx, os.Getenv("JsonLog"), "GetProfileInfo OK")
+		return info, nil
 	} else {
 		erro = errors.New("GetProfileInfo MISSING")
 		Logga(ctx, os.Getenv("JsonLog"), "GetProfileInfo MISSING")
+		return info, erro
 	}
-
-	return info, erro
 }
 func GetBuildLastTag(ctx context.Context, team, docker, tipo, tenant, accessToken, loginApiDomain, coreApiVersion, devopsToken string) (string, error) {
 
