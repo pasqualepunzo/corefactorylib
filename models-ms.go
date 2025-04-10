@@ -74,6 +74,7 @@ type ConfigMap struct {
 	Name       string `json:"name,omitempty"`
 	Content    string `json:"content,omitempty"`
 	Env        string `json:"env,omitempty"`
+	Cluster    string `json:"cluster,omitempty"`
 }
 type Service struct {
 	Tipo       string     `json:"tipo,omitempty"`
