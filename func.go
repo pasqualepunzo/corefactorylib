@@ -348,555 +348,555 @@ func Times(str string, n int) string {
 	return strings.Repeat(str, n)
 }
 
-func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVersion, devopsToken, autopilot, enviro, dominio, coreApiVersion string) (Microservice, error) {
-
-	Logga(ctx, os.Getenv("JsonLog"), "")
-	Logga(ctx, os.Getenv("JsonLog"), " + + + + + + + + + + + + + + + + + + + + ")
-	Logga(ctx, os.Getenv("JsonLog"), "TEAM "+team)
-	Logga(ctx, os.Getenv("JsonLog"), "IMS "+ims)
-	Logga(ctx, os.Getenv("JsonLog"), "ENVIRO "+enviro)
-	Logga(ctx, os.Getenv("JsonLog"), "gitDevMaster "+gitDevMaster)
-	Logga(ctx, os.Getenv("JsonLog"), "BUILDVERSION "+buildVersion)
-	Logga(ctx, os.Getenv("JsonLog"), "getMicroserviceDetail begin")
-
-	var erro error
-
-	devops := "devops"
-	if strings.Contains(ims, "p2rpowerna-monolith") {
-		devops = "devopsmono"
-	}
-
-	versioneArr := strings.Split(buildVersion, ".")
-	versione := ""
-
-	if len(versioneArr) > 1 {
-		versione = versioneArr[0] + Times("0", 2-len(versioneArr[1])) + versioneArr[1] + Times("0", 2-len(versioneArr[2])) + versioneArr[2] + Times("0", 2-len(versioneArr[3])) + versioneArr[3]
-	} else {
-		versione = buildVersion
-	}
-
-	var microservices Microservice
-
-	/* ************************************************************************************************ */
-	// KUBEIMICROSERV
-	Logga(ctx, os.Getenv("JsonLog"), "Getting KUBEIMICROSERV")
-	argsImicro := make(map[string]string)
-	argsImicro["source"] = "devops-8"
-	argsImicro["$select"] = "XKUBEIMICROSERV04,XKUBEIMICROSERV05,XKUBEIMICROSERV07"
-	argsImicro["center_dett"] = "dettaglio"
-	argsImicro["$filter"] = "equals(XKUBEIMICROSERV03,'" + ims + "') "
-
-	restyKubeImicroservRes, errKubeImicroservRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsImicro, "ms"+devops, "/api/"+os.Getenv("coreApiVersion")+"/"+devops+"/KUBEIMICROSERV", devopsToken, dominio, coreApiVersion)
-	if errKubeImicroservRes != nil {
-		Logga(ctx, os.Getenv("JsonLog"), errKubeImicroservRes.Error())
-		return microservices, errKubeImicroservRes
-	}
-
-	microservice := ""
-	cluster := ""
-	if len(restyKubeImicroservRes.BodyJson) > 0 {
-
-		microservice = restyKubeImicroservRes.BodyJson["XKUBEIMICROSERV04_COD"].(string)
-		microservices.BuildVersione = restyKubeImicroservRes.BodyJson["XKUBEIMICROSERV07"].(string)
-
-		cluster = restyKubeImicroservRes.BodyJson["XKUBEIMICROSERV05"].(string)
-		Logga(ctx, os.Getenv("JsonLog"), "KUBEIMICROSERV OK")
-	} else {
-		Logga(ctx, os.Getenv("JsonLog"), "   !!!   KUBEIMICROSERV MISSING")
-		erro := errors.New("KUBEIMICROSERV MISSING")
-		return microservices, erro
-	}
-	Logga(ctx, os.Getenv("JsonLog"), "")
-
-	/* ************************************************************************************************ */
-	// KUBEMICROSERV
-	Logga(ctx, os.Getenv("JsonLog"), "Getting KUBEMICROSERV")
-
-	argsMS := make(map[string]string)
-	argsMS["source"] = "devops-8"
-	argsMS["$select"] = "XKUBEMICROSERV03,XKUBEMICROSERV04,XKUBEMICROSERV05,XKUBEMICROSERV08,XKUBEMICROSERV15,XKUBEMICROSERV16,XKUBEMICROSERV17,XKUBEMICROSERV18"
-	argsMS["center_dett"] = "dettaglio"
-	argsMS["$filter"] = "equals(XKUBEMICROSERV05,'" + microservice + "') "
-	restyKubeMSRes, errKubeMSRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsMS, "ms"+devops, "/api/"+os.Getenv("coreApiVersion")+"/"+devops+"/KUBEMICROSERV", devopsToken, dominio, coreApiVersion)
-	if errKubeMSRes != nil {
-		Logga(ctx, os.Getenv("JsonLog"), errKubeMSRes.Error())
-		return microservices, errKubeMSRes
-	}
-
-	hpaTmpl := ""
-	if len(restyKubeMSRes.BodyJson) > 0 {
-		microservices.Nome = restyKubeMSRes.BodyJson["XKUBEMICROSERV05"].(string)
-		microservices.Descrizione = restyKubeMSRes.BodyJson["XKUBEMICROSERV03"].(string)
-		microservices.Public = int(restyKubeMSRes.BodyJson["XKUBEMICROSERV18"].(float64))
-		//microservices.Namespace = restyKubeMSRes.BodyJson["XKUBEMICROSERV04_COD"].(string)
-		microservices.Virtualservice = strconv.FormatFloat(restyKubeMSRes.BodyJson["XKUBEMICROSERV08"].(float64), 'f', 0, 64)
-
-		microservices.DatabasebEnable = strconv.FormatFloat(restyKubeMSRes.BodyJson["XKUBEMICROSERV15"].(float64), 'f', 0, 64)
-
-		hpaTmpl = restyKubeMSRes.BodyJson["XKUBEMICROSERV16_COD"].(string)
-		Logga(ctx, os.Getenv("JsonLog"), "KUBEMICROSERV OK")
-	} else {
-		Logga(ctx, os.Getenv("JsonLog"), "   !!!   KUBEMICROSERV MISSING")
-		erro := errors.New("KUBEIMICROSERV MISSING")
-		return microservices, erro
-	}
-	Logga(ctx, os.Getenv("JsonLog"), "")
-
-	if autopilot != "1" {
-		/* ************************************************************************************************ */
-		// KUBEMICROSERVHPA
-		Logga(ctx, os.Getenv("JsonLog"), "Getting KUBEMICROSERVHPA")
-		argsHpa := make(map[string]string)
-		argsHpa["source"] = "devops-8"
-		argsHpa["$select"] = "XKUBEMICROSERVHPA04,XKUBEMICROSERVHPA05,XKUBEMICROSERVHPA06,XKUBEMICROSERVHPA07,XKUBEMICROSERVHPA08,XKUBEMICROSERVHPA09,XKUBEMICROSERVHPA10"
-		argsHpa["center_dett"] = "dettaglio"
-		argsHpa["$filter"] = "equals(XKUBEMICROSERVHPA03,'" + hpaTmpl + "') "
-
-		restyKubeHpaRes, errKubeHpaRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsHpa, "ms"+devops, "/api/"+os.Getenv("coreApiVersion")+"/"+devops+"/KUBEMICROSERVHPA", devopsToken, dominio, coreApiVersion)
-		if errKubeHpaRes != nil {
-			Logga(ctx, os.Getenv("JsonLog"), errKubeHpaRes.Error())
-			return microservices, errKubeHpaRes
-		}
-
-		if len(restyKubeHpaRes.BodyJson) > 0 {
-
-			// In XKUBEMICROSERVHPA10 salviamo la mappa per personalizzare l'HPA in ogni environment
-			hpaString, _ := restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA10"].(string)
-
-			checkHpaEnviro := false
-			var hpaEnviro Hpa
-			if hpaString != "" {
-
-				var hpaMap map[string]Hpa
-				json.Unmarshal([]byte(hpaString), &hpaMap)
-
-				hpaEnviro, checkHpaEnviro = hpaMap[enviro]
-			}
-
-			// Se esiste la personalizzazione per environment, prendo quella, altrimenti il default delle altri colonne
-			if checkHpaEnviro {
-				microservices.Hpa = hpaEnviro
-			} else {
-				var hpa Hpa
-				hpa.MinReplicas = strconv.FormatFloat(restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA04"].(float64), 'f', 0, 64)
-				hpa.MaxReplicas = strconv.FormatFloat(restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA05"].(float64), 'f', 0, 64)
-				hpa.CpuTipoTarget = restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA06"].(string)
-				hpa.CpuTarget = restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA07"].(string)
-				hpa.MemTipoTarget = restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA08"].(string)
-				hpa.MemTarget = restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA09"].(string)
-				microservices.Hpa = hpa
-			}
-			Logga(ctx, os.Getenv("JsonLog"), "KUBEMICROSERVHPA OK")
-		} else {
-			Logga(ctx, os.Getenv("JsonLog"), "   !!!   KUBEMICROSERVHPA MISSING")
-			erro := errors.New("KUBEMICROSERVHPA MISSING")
-			return microservices, erro
-		}
-		Logga(ctx, os.Getenv("JsonLog"), "")
-
-		/* ************************************************************************************************ */
-	}
-
-	/* ************************************************************************************************ */
-	// SELKUBEDKRLIST
-	Logga(ctx, os.Getenv("JsonLog"), "Getting SELKUBEDKRLIST")
-	argsDkr := make(map[string]string)
-	argsDkr["center_dett"] = "visualizza"
-	argsDkr["$filter"] = "equals(XSELKUBEDKRLIST10,'" + microservices.Nome + "') "
-
-	restyDkrLstRes, errDkrLstRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsDkr, "ms"+devops, "/api/"+os.Getenv("coreApiVersion")+"/devops/custom/SELKUBEDKRLIST/values", devopsToken, dominio, coreApiVersion)
-	if errDkrLstRes != nil {
-		Logga(ctx, os.Getenv("JsonLog"), errDkrLstRes.Error())
-		return microservices, errDkrLstRes
-	}
-
-	if len(restyDkrLstRes.BodyArray) > 0 {
-		var pods []Pod
-		for _, x := range restyDkrLstRes.BodyArray {
-
-			/* ************************************************************************************************ */
-
-			var pod Pod
-
-			pod.Docker = x["XSELKUBEDKRLIST03"].(string)
-			docker := pod.Docker
-			pod.GitRepo = x["XSELKUBEDKRLIST04"].(string)
-			resourceTmpl := x["XSELKUBEDKRLIST05"].(string)
-			pod.Descr = x["XSELKUBEDKRLIST06"].(string)
-			pod.Dockerfile = x["XSELKUBEDKRLIST07"].(string)
-			pod.Tipo = x["XSELKUBEDKRLIST08"].(string)
-			pod.Vpn = int(x["XSELKUBEDKRLIST09"].(float64))
-			pod.Workdir = x["XSELKUBEDKRLIST11"].(string)
-
-			// --------------------------------
-			// CERCHIAMO LE VERSIONI E GLI SHA
-			//
-			// in caso di promote leggo da deploylog
-			// in caso di build leggo da KUBEDKRBUILD
-			/* ************************************************************************************************ */
-
-			Logga(ctx, os.Getenv("JsonLog"), " *** SCEGLIAMO SE PRENDERE I DETTAGLI DA DEPLOYLOG08 o KUBEDKRBUILD")
-			Logga(ctx, os.Getenv("JsonLog"), "versione: "+versione)
-			Logga(ctx, os.Getenv("JsonLog"), "enviro: "+enviro)
-			Logga(ctx, os.Getenv("JsonLog"), "se enviro == int e versione == \"\" siamo in BUILD, DELPOYLOG NON ESISTE E QUINDI VAI DI KUBEDKRBUILD")
-
-			if versione != "" && enviro == "int" {
-				argsDeploy := make(map[string]string)
-				argsDeploy["$fullquery"] = " select XDEPLOYLOG08 "
-				argsDeploy["$fullquery"] += " from TB_ANAG_KUBEIMICROSERV00 "
-				argsDeploy["$fullquery"] += " join TB_ANAG_DEPLOYLOG00 tad ON (XKUBEIMICROSERV03 = XDEPLOYLOG04) "
-				argsDeploy["$fullquery"] += " where XKUBEIMICROSERV04 = '" + microservices.Nome + "' "
-				argsDeploy["$fullquery"] += " and XDEPLOYLOG05 = '" + versione + "' "
-				argsDeploy["$fullquery"] += " AND XDEPLOYLOG06 = '1' "
-
-				restyDeployRes, err := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsDeploy, "msdevops", "/api/"+os.Getenv("coreApiVersion")+"/devops/custom/KUBEIMICROSERV/values", devopsToken, os.Getenv("apiDomain"), os.Getenv("coreApiVersion"))
-				if err != nil {
-					Logga(ctx, os.Getenv("JsonLog"), err.Error())
-				}
-				if restyDeployRes.Errore < 0 {
-					Logga(ctx, os.Getenv("JsonLog"), restyDeployRes.Log)
-				}
-
-				type DockerShaVersion struct {
-					Docker       string `json:"docker"`
-					Versione     string `json:"versione"`
-					Merged       string `json:"merged"`
-					Tag          string `json:"tag"`
-					MasterDev    string `json:"masterDev"`
-					ReleaseNote  string `json:"releaseNote"`
-					SprintBranch string `json:"sprintBranch"`
-					Sha          string `json:"sha"`
-				}
-
-				if len(restyDeployRes.BodyArray) > 0 {
-					for _, x := range restyDeployRes.BodyArray {
-						var dsvs []DockerShaVersion
-
-						tipoDeploy := x["XDEPLOYLOG08"].(string)
-						_ = json.Unmarshal([]byte(tipoDeploy), &dsvs)
-
-						for _, dsv := range dsvs {
-							if dsv.Docker == docker {
-								var branchs Branch
-								branchs.Branch = dsv.SprintBranch
-								branchs.Version = dsv.Versione
-								branchs.Sha = dsv.Sha
-
-								podBuild := &PodBuild{
-									Versione:     dsv.Versione,
-									Merged:       dsv.Merged,
-									Tag:          dsv.Tag,
-									MasterDev:    dsv.MasterDev,
-									ReleaseNote:  dsv.ReleaseNote,
-									SprintBranch: dsv.SprintBranch,
-								}
-								pod.PodBuild = podBuild
-								// var podBuild PodBuild
-								// podBuild.Versione = dsv.Versione
-								// podBuild.Merged = dsv.Merged
-								// podBuild.Tag = dsv.Tag
-								// podBuild.MasterDev = dsv.MasterDev
-								// podBuild.ReleaseNote = dsv.ReleaseNote
-								// podBuild.SprintBranch = dsv.SprintBranch
-
-								pod.PodBuild = podBuild
-								pod.Branch = branchs
-
-							}
-						}
-					}
-				}
-
-			} else { // MANCA LA VERSIONE ERGO SIAMO IN POST BUILD E LA CERCHIAMO DA KUBEDKRBUILD
-
-				/* ************************************************************************************************ */
-				// KUBEDKRBUILD
-				Logga(ctx, os.Getenv("JsonLog"), "Getting KUBEDKRBUILD func.go 2")
-				argsBld := make(map[string]string)
-				argsBld["$fullquery"] = "select XKUBEDKRBUILD06,XKUBEDKRBUILD04,XKUBEDKRBUILD07,XKUBEDKRBUILD09,XKUBEDKRBUILD10,XKUBEDKRBUILD12,XKUBEDKRBUILD13 "
-				argsBld["$fullquery"] += "from TB_ANAG_KUBEDKRBUILD00 "
-				argsBld["$fullquery"] += "where 1>0 "
-				argsBld["$fullquery"] += "AND XKUBEDKRBUILD03 = '" + docker + "' "
-				argsBld["$fullquery"] += "AND XKUBEDKRBUILD08 = '" + team + "' "
-				argsBld["$fullquery"] += " order by cast(XKUBEDKRBUILD06 as unsigned) DESC "
-				argsBld["$fullquery"] += " limit 1 "
-				fmt.Println(argsBld["$fullquery"])
-
-				restyKubeBldRes, errKubeBldRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsBld, "ms"+devops, "/api/"+os.Getenv("coreApiVersion")+"/"+devops+"/custom/KUBEDKRBUILD/values", devopsToken, dominio, coreApiVersion)
-
-				if errKubeBldRes != nil {
-					//fmt.Println("A")
-					Logga(ctx, os.Getenv("JsonLog"), errKubeBldRes.Error())
-					return microservices, errKubeBldRes
-				}
-				if len(restyKubeBldRes.BodyArray) > 0 {
-
-					// fmt.Println("B")
-					var branchs Branch
-					branchs.Branch = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD04"].(string)
-					branchs.Version = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD06"].(string)
-					branchs.Sha = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD07"].(string)
-
-					podBuild := &PodBuild{
-						Versione:     restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD06"].(string),
-						Merged:       restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD13"].(string),
-						Tag:          restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD09"].(string),
-						MasterDev:    restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD04"].(string),
-						ReleaseNote:  restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD12"].(string),
-						SprintBranch: restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD10"].(string),
-					}
-					// var podBuild PodBuild
-					// podBuild.Versione = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD06"].(string)
-					// podBuild.Merged = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD13"].(string)
-					// podBuild.Tag = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD09"].(string)
-					// podBuild.MasterDev = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD04"].(string)
-					// podBuild.ReleaseNote = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD12"].(string)
-					// podBuild.SprintBranch = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD10"].(string)
-
-					pod.PodBuild = podBuild
-					pod.Branch = branchs
-					Logga(ctx, os.Getenv("JsonLog"), "KUBEDKRBUILD OK")
-				}
-			}
-
-			/* ************************************************************************************************ */
-
-			/* ************************************************************************************************ */
-			// KUBEDKRMOUNT
-			Logga(ctx, os.Getenv("JsonLog"), "Getting KUBEDKRMOUNT")
-			argsMnt := make(map[string]string)
-			argsMnt["source"] = "devops-8"
-			argsMnt["$select"] = "XKUBEDKRMOUNT04,XKUBEDKRMOUNT05,XKUBEDKRMOUNT06,XKUBEDKRMOUNT07,XKUBEDKRMOUNT08"
-			argsMnt["center_dett"] = "visualizza"
-			argsMnt["$filter"] = "equals(XKUBEDKRMOUNT03,'" + docker + "') "
-
-			restyKubeMntRes, errKubeMntRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsMnt, "ms"+devops, "/api/"+os.Getenv("coreApiVersion")+"/"+devops+"/KUBEDKRMOUNT", devopsToken, dominio, coreApiVersion)
-			if errKubeMntRes != nil {
-				Logga(ctx, os.Getenv("JsonLog"), errKubeMntRes.Error())
-				return microservices, errKubeMntRes
-			}
-
-			if len(restyKubeMntRes.BodyArray) > 0 {
-				var mounts []Mount
-				for _, xMnt := range restyKubeMntRes.BodyArray {
-
-					var mount Mount
-					mount.Nome = xMnt["XKUBEDKRMOUNT04"].(string)
-					mount.Mount = xMnt["XKUBEDKRMOUNT05"].(string)
-					mount.Subpath = xMnt["XKUBEDKRMOUNT06"].(string)
-					mount.ClaimName = xMnt["XKUBEDKRMOUNT07"].(string)
-
-					if xMnt["XKUBEDKRMOUNT08"] != nil {
-						fromSecretFloat := xMnt["XKUBEDKRMOUNT08"].(float64)
-						mount.FromSecret = fromSecretFloat == 1
-					}
-
-					mounts = append(mounts, mount)
-				}
-				pod.Mount = mounts
-				Logga(ctx, os.Getenv("JsonLog"), "KUBEDKRMOUNT OK")
-			} else {
-				Logga(ctx, os.Getenv("JsonLog"), "KUBEDKRMOUNT MISSING")
-			}
-			Logga(ctx, os.Getenv("JsonLog"), "")
-
-			/* ************************************************************************************************ */
-			// GET FUTURE TOGGLE
-
-			var cfgMaps []ConfigMap
-			argsCfgMap := make(map[string]string)
-			argsCfgMap["source"] = "devops-9"
-			argsCfgMap["center_dett"] = "allviews"
-			argsCfgMap["$select"] = "XKUBEDKRCONFIGMAP06,XKUBEDKRCONFIGMAP07,XKUBEDKRCONFIGMAP08,XKUBEDKRCONFIGMAP09,XKUBEDKRCONFIGMAP10"
-			argsCfgMap["$filter"] = "equals(XKUBEDKRCONFIGMAP03,'" + cluster + "')"
-			argsCfgMap["$filter"] += " AND equals(XKUBEDKRCONFIGMAP04,'" + enviro + "')"
-			argsCfgMap["$filter"] += " AND equals(XKUBEDKRCONFIGMAP05,'" + docker + "')"
-
-			restyKUBEDKRCONFIGMAPRes, errCfgMap := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsCfgMap, "msdevops", "/api/"+os.Getenv("coreApiVersion")+"/devops/KUBEDKRCONFIGMAP", devopsToken, dominio, coreApiVersion)
-			if errCfgMap != nil {
-				Logga(ctx, os.Getenv("JsonLog"), errCfgMap.Error())
-				return microservices, errCfgMap
-			}
-			if restyKUBEDKRCONFIGMAPRes.Errore < 0 {
-				erro := errors.New(restyKUBEDKRCONFIGMAPRes.Log)
-				Logga(ctx, os.Getenv("JsonLog"), erro.Error())
-				return microservices, erro
-			}
-
-			if len(restyKUBEDKRCONFIGMAPRes.BodyArray) > 0 {
-				for _, xCfg := range restyKUBEDKRCONFIGMAPRes.BodyArray {
-					var cfgMap ConfigMap
-					cfgMap.Name = xCfg["XKUBEDKRCONFIGMAP06"].(string)
-					cfgMap.ConfigType = xCfg["XKUBEDKRCONFIGMAP07"].(string)
-					cfgMap.MountType = xCfg["XKUBEDKRCONFIGMAP08"].(string)
-					cfgMap.MountPath = xCfg["XKUBEDKRCONFIGMAP09"].(string)
-					cfgMap.Content = xCfg["XKUBEDKRCONFIGMAP10"].(string)
-					cfgMaps = append(cfgMaps, cfgMap)
-				}
-				pod.ConfigMap = cfgMaps
-				Logga(ctx, os.Getenv("JsonLog"), "KUBEDKRCONFIGMAP OK")
-			} else {
-				Logga(ctx, os.Getenv("JsonLog"), "KUBEDKRCONFIGMAP MISSING")
-			}
-
-			/* ************************************************************************************************ */
-			// KUBEDKRRESOURCE
-			Logga(ctx, os.Getenv("JsonLog"), "Getting KUBEDKRRESOURCE")
-			argsSrc := make(map[string]string)
-			argsSrc["source"] = "devops-8"
-			argsSrc["$select"] = "XKUBEDKRRESOURCE04,XKUBEDKRRESOURCE05,XKUBEDKRRESOURCE06,XKUBEDKRRESOURCE07"
-			argsSrc["center_dett"] = "dettaglio"
-			argsSrc["$filter"] = "equals(XKUBEDKRRESOURCE03,'" + resourceTmpl + "') "
-
-			restyKubeSrcRes, errKubeSrcRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsSrc, "ms"+devops, "/api/"+os.Getenv("coreApiVersion")+"/"+devops+"/KUBEDKRRESOURCE", devopsToken, dominio, coreApiVersion)
-			if errKubeSrcRes != nil {
-				Logga(ctx, os.Getenv("JsonLog"), errKubeSrcRes.Error())
-				return microservices, errKubeSrcRes
-			}
-
-			if len(restyKubeSrcRes.BodyJson) > 0 {
-				var resource Resource
-
-				resource.CpuReq = restyKubeSrcRes.BodyJson["XKUBEDKRRESOURCE04"].(string) //   -- cpu res
-				resource.MemReq = restyKubeSrcRes.BodyJson["XKUBEDKRRESOURCE05"].(string) //   -- mem res
-				resource.CpuLim = restyKubeSrcRes.BodyJson["XKUBEDKRRESOURCE06"].(string) //   -- cpu limit
-				resource.MemLim = restyKubeSrcRes.BodyJson["XKUBEDKRRESOURCE07"].(string) //   -- mem limit
-
-				pod.Resource = resource
-				Logga(ctx, os.Getenv("JsonLog"), "KUBEDKRRESOURCE OK")
-			} else {
-				erro := errors.New("KUBEDKRRESOURCE MISSING")
-				return microservices, erro
-			}
-			Logga(ctx, os.Getenv("JsonLog"), "")
-
-			/* ************************************************************************************************ */
-
-			/* ************************************************************************************************ */
-
-			// KUBEDKRPROBE
-			Logga(ctx, os.Getenv("JsonLog"), "Getting KUBEDKRPROBE")
-			argsProbes := make(map[string]string)
-			argsProbes["source"] = "devops-8"
-			//argsProbes["$select"] = "XKUBEDKRPROBE04,XKUBEDKRPROBE05,XKUBEDKRPROBE06,XKUBEDKRPROBE07,XKUBEDKRPROBE08,XKUBEDKRPROBE09,XKUBEDKRPROBE10"
-			//argsProbes["$select"] += "XKUBEDKRPROBE11,XKUBEDKRPROBE12,XKUBEDKRPROBE13,XKUBEDKRPROBE14,XKUBEDKRPROBE15,XKUBEDKRPROBE16,XKUBEDKRPROBE17,XKUBEDKRPROBE18,XKUBEDKRPROBE19"
-			argsProbes["center_dett"] = "allviews"
-			argsProbes["$filter"] = "equals(XKUBEDKRPROBE03,'" + docker + "') "
-
-			restyKubePrbRes, errKubePrbRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsProbes, "ms"+devops, "/api/"+os.Getenv("coreApiVersion")+"/"+devops+"/KUBEDKRPROBE", devopsToken, dominio, coreApiVersion)
-			if errKubePrbRes != nil {
-				Logga(ctx, os.Getenv("JsonLog"), errKubePrbRes.Error())
-				return microservices, errKubePrbRes
-			}
-
-			if len(restyKubePrbRes.BodyArray) > 0 {
-
-				var probes []Probes
-				for _, xPrb := range restyKubePrbRes.BodyArray {
-
-					var elem Probes
-
-					elem.Category = xPrb["XKUBEDKRPROBE04"].(string)
-					elem.Type = xPrb["XKUBEDKRPROBE05"].(string)
-					if xPrb["XKUBEDKRPROBE06"] == nil {
-						elem.Command = ""
-					} else {
-						elem.Command = xPrb["XKUBEDKRPROBE06"].(string)
-					}
-					elem.HttpHost = xPrb["XKUBEDKRPROBE07"].(string)
-					elem.HttpPort = int(xPrb["XKUBEDKRPROBE08"].(float64))
-					elem.HttpPath = xPrb["XKUBEDKRPROBE09"].(string)
-					if xPrb["XKUBEDKRPROBE10"] == nil {
-						elem.HttpHeaders = ""
-					} else {
-						elem.HttpHeaders = xPrb["XKUBEDKRPROBE10"].(string)
-					}
-					elem.HttpScheme = xPrb["XKUBEDKRPROBE11"].(string)
-					elem.TcpHost = xPrb["XKUBEDKRPROBE12"].(string)
-					elem.TcpPort = int(xPrb["XKUBEDKRPROBE13"].(float64))
-					elem.GrpcPort = int(xPrb["XKUBEDKRPROBE14"].(float64))
-					elem.InitialDelaySeconds = int(xPrb["XKUBEDKRPROBE15"].(float64))
-					elem.PeriodSeconds = int(xPrb["XKUBEDKRPROBE16"].(float64))
-					elem.TimeoutSeconds = int(xPrb["XKUBEDKRPROBE17"].(float64))
-					elem.SuccessThreshold = int(xPrb["XKUBEDKRPROBE18"].(float64))
-					elem.FailureThreshold = int(xPrb["XKUBEDKRPROBE19"].(float64))
-					probes = append(probes, elem)
-
-				}
-				pod.Probes = probes
-
-				//Logga(ctx, os.Getenv("JsonLog"), probes)
-				Logga(ctx, os.Getenv("JsonLog"), "KUBEDKRPROBE OK")
-			} else {
-				Logga(ctx, os.Getenv("JsonLog"), "KUBEDKRPROBE MISSING")
-			}
-
-			Logga(ctx, os.Getenv("JsonLog"), "")
-
-			/* ************************************************************************************************ */
-
-			/* ************************************************************************************************ */
-			// KUBESERVICEDKR
-			Logga(ctx, os.Getenv("JsonLog"), "Getting KUBESERVICEDKR")
-			argsSrvDkr := make(map[string]string)
-			argsSrvDkr["source"] = "devops-8"
-			argsSrvDkr["$select"] = "XKUBESERVICEDKR06,XKUBESERVICEDKR05"
-			argsSrvDkr["center_dett"] = "visualizza"
-			argsSrvDkr["$filter"] = "equals(XKUBESERVICEDKR04,'" + docker + "') "
-
-			restyKubeSrvDkrRes, errKubeSrvDkrRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsSrvDkr, "ms"+devops, "/api/"+os.Getenv("coreApiVersion")+"/"+devops+"/KUBESERVICEDKR", devopsToken, dominio, coreApiVersion)
-			if errKubeSrvDkrRes != nil {
-				Logga(ctx, os.Getenv("JsonLog"), errKubeSrvDkrRes.Error())
-				return microservices, errKubeSrvDkrRes
-			}
-
-			if len(restyKubeSrvDkrRes.BodyArray) > 0 {
-				var port, tipo string
-				var services []Service
-				for _, xSrv := range restyKubeSrvDkrRes.BodyArray {
-
-					port = strconv.FormatFloat(xSrv["XKUBESERVICEDKR06"].(float64), 'f', 0, 64)
-					tipo = xSrv["XKUBESERVICEDKR05"].(string)
-
-					var service Service
-					service.Port = port
-					service.Tipo = tipo
-					// service.Endpoint = endpoints
-
-					services = append(services, service)
-
-				}
-
-				pod.Service = services
-
-				Logga(ctx, os.Getenv("JsonLog"), "KUBESERVICEDKR OK")
-			} else {
-				erro := errors.New("KUBESERVICEDKR MISSING")
-				return microservices, erro
-			}
-			// aggiungo pod corrente a pods
-			pods = append(pods, pod)
-
-			microservices.Pod = pods
-
-		}
-
-		Logga(ctx, os.Getenv("JsonLog"), "SELKUBEDKRLIST OK")
-	} else {
-		erro := errors.New("SELKUBEDKRLIST MISSING")
-		return microservices, erro
-	}
-	Logga(ctx, os.Getenv("JsonLog"), "")
-
-	//LogJson(microservices)
-	Logga(ctx, os.Getenv("JsonLog"), "Seek Microservice details ok")
-	Logga(ctx, os.Getenv("JsonLog"), " - - - - - - - - - - - - - - -  ")
-	Logga(ctx, os.Getenv("JsonLog"), "")
-	// fmt.Println(microservices)
-	// LogJson(microservices)
-	// os.Exit(0)
-	return microservices, erro
-}
+// func GetMicroserviceDetail(ctx context.Context, team, ims, gitDevMaster, buildVersion, devopsToken, autopilot, enviro, dominio, coreApiVersion string) (Microservice, error) {
+
+// 	Logga(ctx, os.Getenv("JsonLog"), "")
+// 	Logga(ctx, os.Getenv("JsonLog"), " + + + + + + + + + + + + + + + + + + + + ")
+// 	Logga(ctx, os.Getenv("JsonLog"), "TEAM "+team)
+// 	Logga(ctx, os.Getenv("JsonLog"), "IMS "+ims)
+// 	Logga(ctx, os.Getenv("JsonLog"), "ENVIRO "+enviro)
+// 	Logga(ctx, os.Getenv("JsonLog"), "gitDevMaster "+gitDevMaster)
+// 	Logga(ctx, os.Getenv("JsonLog"), "BUILDVERSION "+buildVersion)
+// 	Logga(ctx, os.Getenv("JsonLog"), "getMicroserviceDetail begin")
+
+// 	var erro error
+
+// 	devops := "devops"
+// 	if strings.Contains(ims, "p2rpowerna-monolith") {
+// 		devops = "devopsmono"
+// 	}
+
+// 	versioneArr := strings.Split(buildVersion, ".")
+// 	versione := ""
+
+// 	if len(versioneArr) > 1 {
+// 		versione = versioneArr[0] + Times("0", 2-len(versioneArr[1])) + versioneArr[1] + Times("0", 2-len(versioneArr[2])) + versioneArr[2] + Times("0", 2-len(versioneArr[3])) + versioneArr[3]
+// 	} else {
+// 		versione = buildVersion
+// 	}
+
+// 	var microservices Microservice
+
+// 	/* ************************************************************************************************ */
+// 	// KUBEIMICROSERV
+// 	Logga(ctx, os.Getenv("JsonLog"), "Getting KUBEIMICROSERV")
+// 	argsImicro := make(map[string]string)
+// 	argsImicro["source"] = "devops-8"
+// 	argsImicro["$select"] = "XKUBEIMICROSERV04,XKUBEIMICROSERV05,XKUBEIMICROSERV07"
+// 	argsImicro["center_dett"] = "dettaglio"
+// 	argsImicro["$filter"] = "equals(XKUBEIMICROSERV03,'" + ims + "') "
+
+// 	restyKubeImicroservRes, errKubeImicroservRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsImicro, "ms"+devops, "/api/"+os.Getenv("coreApiVersion")+"/"+devops+"/KUBEIMICROSERV", devopsToken, dominio, coreApiVersion)
+// 	if errKubeImicroservRes != nil {
+// 		Logga(ctx, os.Getenv("JsonLog"), errKubeImicroservRes.Error())
+// 		return microservices, errKubeImicroservRes
+// 	}
+
+// 	microservice := ""
+// 	cluster := ""
+// 	if len(restyKubeImicroservRes.BodyJson) > 0 {
+
+// 		microservice = restyKubeImicroservRes.BodyJson["XKUBEIMICROSERV04_COD"].(string)
+// 		microservices.BuildVersione = restyKubeImicroservRes.BodyJson["XKUBEIMICROSERV07"].(string)
+
+// 		cluster = restyKubeImicroservRes.BodyJson["XKUBEIMICROSERV05"].(string)
+// 		Logga(ctx, os.Getenv("JsonLog"), "KUBEIMICROSERV OK")
+// 	} else {
+// 		Logga(ctx, os.Getenv("JsonLog"), "   !!!   KUBEIMICROSERV MISSING")
+// 		erro := errors.New("KUBEIMICROSERV MISSING")
+// 		return microservices, erro
+// 	}
+// 	Logga(ctx, os.Getenv("JsonLog"), "")
+
+// 	/* ************************************************************************************************ */
+// 	// KUBEMICROSERV
+// 	Logga(ctx, os.Getenv("JsonLog"), "Getting KUBEMICROSERV")
+
+// 	argsMS := make(map[string]string)
+// 	argsMS["source"] = "devops-8"
+// 	argsMS["$select"] = "XKUBEMICROSERV03,XKUBEMICROSERV04,XKUBEMICROSERV05,XKUBEMICROSERV08,XKUBEMICROSERV15,XKUBEMICROSERV16,XKUBEMICROSERV17,XKUBEMICROSERV18"
+// 	argsMS["center_dett"] = "dettaglio"
+// 	argsMS["$filter"] = "equals(XKUBEMICROSERV05,'" + microservice + "') "
+// 	restyKubeMSRes, errKubeMSRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsMS, "ms"+devops, "/api/"+os.Getenv("coreApiVersion")+"/"+devops+"/KUBEMICROSERV", devopsToken, dominio, coreApiVersion)
+// 	if errKubeMSRes != nil {
+// 		Logga(ctx, os.Getenv("JsonLog"), errKubeMSRes.Error())
+// 		return microservices, errKubeMSRes
+// 	}
+
+// 	hpaTmpl := ""
+// 	if len(restyKubeMSRes.BodyJson) > 0 {
+// 		microservices.Nome = restyKubeMSRes.BodyJson["XKUBEMICROSERV05"].(string)
+// 		microservices.Descrizione = restyKubeMSRes.BodyJson["XKUBEMICROSERV03"].(string)
+// 		microservices.Public = int(restyKubeMSRes.BodyJson["XKUBEMICROSERV18"].(float64))
+// 		//microservices.Namespace = restyKubeMSRes.BodyJson["XKUBEMICROSERV04_COD"].(string)
+// 		microservices.Virtualservice = strconv.FormatFloat(restyKubeMSRes.BodyJson["XKUBEMICROSERV08"].(float64), 'f', 0, 64)
+
+// 		microservices.DatabasebEnable = strconv.FormatFloat(restyKubeMSRes.BodyJson["XKUBEMICROSERV15"].(float64), 'f', 0, 64)
+
+// 		hpaTmpl = restyKubeMSRes.BodyJson["XKUBEMICROSERV16_COD"].(string)
+// 		Logga(ctx, os.Getenv("JsonLog"), "KUBEMICROSERV OK")
+// 	} else {
+// 		Logga(ctx, os.Getenv("JsonLog"), "   !!!   KUBEMICROSERV MISSING")
+// 		erro := errors.New("KUBEIMICROSERV MISSING")
+// 		return microservices, erro
+// 	}
+// 	Logga(ctx, os.Getenv("JsonLog"), "")
+
+// 	if autopilot != "1" {
+// 		/* ************************************************************************************************ */
+// 		// KUBEMICROSERVHPA
+// 		Logga(ctx, os.Getenv("JsonLog"), "Getting KUBEMICROSERVHPA")
+// 		argsHpa := make(map[string]string)
+// 		argsHpa["source"] = "devops-8"
+// 		argsHpa["$select"] = "XKUBEMICROSERVHPA04,XKUBEMICROSERVHPA05,XKUBEMICROSERVHPA06,XKUBEMICROSERVHPA07,XKUBEMICROSERVHPA08,XKUBEMICROSERVHPA09,XKUBEMICROSERVHPA10"
+// 		argsHpa["center_dett"] = "dettaglio"
+// 		argsHpa["$filter"] = "equals(XKUBEMICROSERVHPA03,'" + hpaTmpl + "') "
+
+// 		restyKubeHpaRes, errKubeHpaRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsHpa, "ms"+devops, "/api/"+os.Getenv("coreApiVersion")+"/"+devops+"/KUBEMICROSERVHPA", devopsToken, dominio, coreApiVersion)
+// 		if errKubeHpaRes != nil {
+// 			Logga(ctx, os.Getenv("JsonLog"), errKubeHpaRes.Error())
+// 			return microservices, errKubeHpaRes
+// 		}
+
+// 		if len(restyKubeHpaRes.BodyJson) > 0 {
+
+// 			// In XKUBEMICROSERVHPA10 salviamo la mappa per personalizzare l'HPA in ogni environment
+// 			hpaString, _ := restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA10"].(string)
+
+// 			checkHpaEnviro := false
+// 			var hpaEnviro Hpa
+// 			if hpaString != "" {
+
+// 				var hpaMap map[string]Hpa
+// 				json.Unmarshal([]byte(hpaString), &hpaMap)
+
+// 				hpaEnviro, checkHpaEnviro = hpaMap[enviro]
+// 			}
+
+// 			// Se esiste la personalizzazione per environment, prendo quella, altrimenti il default delle altri colonne
+// 			if checkHpaEnviro {
+// 				microservices.Hpa = hpaEnviro
+// 			} else {
+// 				var hpa Hpa
+// 				hpa.MinReplicas = strconv.FormatFloat(restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA04"].(float64), 'f', 0, 64)
+// 				hpa.MaxReplicas = strconv.FormatFloat(restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA05"].(float64), 'f', 0, 64)
+// 				hpa.CpuTipoTarget = restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA06"].(string)
+// 				hpa.CpuTarget = restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA07"].(string)
+// 				hpa.MemTipoTarget = restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA08"].(string)
+// 				hpa.MemTarget = restyKubeHpaRes.BodyJson["XKUBEMICROSERVHPA09"].(string)
+// 				microservices.Hpa = hpa
+// 			}
+// 			Logga(ctx, os.Getenv("JsonLog"), "KUBEMICROSERVHPA OK")
+// 		} else {
+// 			Logga(ctx, os.Getenv("JsonLog"), "   !!!   KUBEMICROSERVHPA MISSING")
+// 			erro := errors.New("KUBEMICROSERVHPA MISSING")
+// 			return microservices, erro
+// 		}
+// 		Logga(ctx, os.Getenv("JsonLog"), "")
+
+// 		/* ************************************************************************************************ */
+// 	}
+
+// 	/* ************************************************************************************************ */
+// 	// SELKUBEDKRLIST
+// 	Logga(ctx, os.Getenv("JsonLog"), "Getting SELKUBEDKRLIST")
+// 	argsDkr := make(map[string]string)
+// 	argsDkr["center_dett"] = "visualizza"
+// 	argsDkr["$filter"] = "equals(XSELKUBEDKRLIST10,'" + microservices.Nome + "') "
+
+// 	restyDkrLstRes, errDkrLstRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsDkr, "ms"+devops, "/api/"+os.Getenv("coreApiVersion")+"/devops/custom/SELKUBEDKRLIST/values", devopsToken, dominio, coreApiVersion)
+// 	if errDkrLstRes != nil {
+// 		Logga(ctx, os.Getenv("JsonLog"), errDkrLstRes.Error())
+// 		return microservices, errDkrLstRes
+// 	}
+
+// 	if len(restyDkrLstRes.BodyArray) > 0 {
+// 		var pods []Pod
+// 		for _, x := range restyDkrLstRes.BodyArray {
+
+// 			/* ************************************************************************************************ */
+
+// 			var pod Pod
+
+// 			pod.Docker = x["XSELKUBEDKRLIST03"].(string)
+// 			docker := pod.Docker
+// 			pod.GitRepo = x["XSELKUBEDKRLIST04"].(string)
+// 			resourceTmpl := x["XSELKUBEDKRLIST05"].(string)
+// 			pod.Descr = x["XSELKUBEDKRLIST06"].(string)
+// 			pod.Dockerfile = x["XSELKUBEDKRLIST07"].(string)
+// 			pod.Tipo = x["XSELKUBEDKRLIST08"].(string)
+// 			pod.Vpn = int(x["XSELKUBEDKRLIST09"].(float64))
+// 			pod.Workdir = x["XSELKUBEDKRLIST11"].(string)
+
+// 			// --------------------------------
+// 			// CERCHIAMO LE VERSIONI E GLI SHA
+// 			//
+// 			// in caso di promote leggo da deploylog
+// 			// in caso di build leggo da KUBEDKRBUILD
+// 			/* ************************************************************************************************ */
+
+// 			Logga(ctx, os.Getenv("JsonLog"), " *** SCEGLIAMO SE PRENDERE I DETTAGLI DA DEPLOYLOG08 o KUBEDKRBUILD")
+// 			Logga(ctx, os.Getenv("JsonLog"), "versione: "+versione)
+// 			Logga(ctx, os.Getenv("JsonLog"), "enviro: "+enviro)
+// 			Logga(ctx, os.Getenv("JsonLog"), "se enviro == int e versione == \"\" siamo in BUILD, DELPOYLOG NON ESISTE E QUINDI VAI DI KUBEDKRBUILD")
+
+// 			if versione != "" && enviro == "int" {
+// 				argsDeploy := make(map[string]string)
+// 				argsDeploy["$fullquery"] = " select XDEPLOYLOG08 "
+// 				argsDeploy["$fullquery"] += " from TB_ANAG_KUBEIMICROSERV00 "
+// 				argsDeploy["$fullquery"] += " join TB_ANAG_DEPLOYLOG00 tad ON (XKUBEIMICROSERV03 = XDEPLOYLOG04) "
+// 				argsDeploy["$fullquery"] += " where XKUBEIMICROSERV04 = '" + microservices.Nome + "' "
+// 				argsDeploy["$fullquery"] += " and XDEPLOYLOG05 = '" + versione + "' "
+// 				argsDeploy["$fullquery"] += " AND XDEPLOYLOG06 = '1' "
+
+// 				restyDeployRes, err := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsDeploy, "msdevops", "/api/"+os.Getenv("coreApiVersion")+"/devops/custom/KUBEIMICROSERV/values", devopsToken, os.Getenv("apiDomain"), os.Getenv("coreApiVersion"))
+// 				if err != nil {
+// 					Logga(ctx, os.Getenv("JsonLog"), err.Error())
+// 				}
+// 				if restyDeployRes.Errore < 0 {
+// 					Logga(ctx, os.Getenv("JsonLog"), restyDeployRes.Log)
+// 				}
+
+// 				type DockerShaVersion struct {
+// 					Docker       string `json:"docker"`
+// 					Versione     string `json:"versione"`
+// 					Merged       string `json:"merged"`
+// 					Tag          string `json:"tag"`
+// 					MasterDev    string `json:"masterDev"`
+// 					ReleaseNote  string `json:"releaseNote"`
+// 					SprintBranch string `json:"sprintBranch"`
+// 					Sha          string `json:"sha"`
+// 				}
+
+// 				if len(restyDeployRes.BodyArray) > 0 {
+// 					for _, x := range restyDeployRes.BodyArray {
+// 						var dsvs []DockerShaVersion
+
+// 						tipoDeploy := x["XDEPLOYLOG08"].(string)
+// 						_ = json.Unmarshal([]byte(tipoDeploy), &dsvs)
+
+// 						for _, dsv := range dsvs {
+// 							if dsv.Docker == docker {
+// 								var branchs Branch
+// 								branchs.Branch = dsv.SprintBranch
+// 								branchs.Version = dsv.Versione
+// 								branchs.Sha = dsv.Sha
+
+// 								podBuild := &PodBuild{
+// 									Versione:     dsv.Versione,
+// 									Merged:       dsv.Merged,
+// 									Tag:          dsv.Tag,
+// 									MasterDev:    dsv.MasterDev,
+// 									ReleaseNote:  dsv.ReleaseNote,
+// 									SprintBranch: dsv.SprintBranch,
+// 								}
+// 								pod.PodBuild = podBuild
+// 								// var podBuild PodBuild
+// 								// podBuild.Versione = dsv.Versione
+// 								// podBuild.Merged = dsv.Merged
+// 								// podBuild.Tag = dsv.Tag
+// 								// podBuild.MasterDev = dsv.MasterDev
+// 								// podBuild.ReleaseNote = dsv.ReleaseNote
+// 								// podBuild.SprintBranch = dsv.SprintBranch
+
+// 								pod.PodBuild = podBuild
+// 								pod.Branch = branchs
+
+// 							}
+// 						}
+// 					}
+// 				}
+
+// 			} else { // MANCA LA VERSIONE ERGO SIAMO IN POST BUILD E LA CERCHIAMO DA KUBEDKRBUILD
+
+// 				/* ************************************************************************************************ */
+// 				// KUBEDKRBUILD
+// 				Logga(ctx, os.Getenv("JsonLog"), "Getting KUBEDKRBUILD func.go 2")
+// 				argsBld := make(map[string]string)
+// 				argsBld["$fullquery"] = "select XKUBEDKRBUILD06,XKUBEDKRBUILD04,XKUBEDKRBUILD07,XKUBEDKRBUILD09,XKUBEDKRBUILD10,XKUBEDKRBUILD12,XKUBEDKRBUILD13 "
+// 				argsBld["$fullquery"] += "from TB_ANAG_KUBEDKRBUILD00 "
+// 				argsBld["$fullquery"] += "where 1>0 "
+// 				argsBld["$fullquery"] += "AND XKUBEDKRBUILD03 = '" + docker + "' "
+// 				argsBld["$fullquery"] += "AND XKUBEDKRBUILD08 = '" + team + "' "
+// 				argsBld["$fullquery"] += " order by cast(XKUBEDKRBUILD06 as unsigned) DESC "
+// 				argsBld["$fullquery"] += " limit 1 "
+// 				fmt.Println(argsBld["$fullquery"])
+
+// 				restyKubeBldRes, errKubeBldRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsBld, "ms"+devops, "/api/"+os.Getenv("coreApiVersion")+"/"+devops+"/custom/KUBEDKRBUILD/values", devopsToken, dominio, coreApiVersion)
+
+// 				if errKubeBldRes != nil {
+// 					//fmt.Println("A")
+// 					Logga(ctx, os.Getenv("JsonLog"), errKubeBldRes.Error())
+// 					return microservices, errKubeBldRes
+// 				}
+// 				if len(restyKubeBldRes.BodyArray) > 0 {
+
+// 					// fmt.Println("B")
+// 					var branchs Branch
+// 					branchs.Branch = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD04"].(string)
+// 					branchs.Version = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD06"].(string)
+// 					branchs.Sha = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD07"].(string)
+
+// 					podBuild := &PodBuild{
+// 						Versione:     restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD06"].(string),
+// 						Merged:       restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD13"].(string),
+// 						Tag:          restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD09"].(string),
+// 						MasterDev:    restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD04"].(string),
+// 						ReleaseNote:  restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD12"].(string),
+// 						SprintBranch: restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD10"].(string),
+// 					}
+// 					// var podBuild PodBuild
+// 					// podBuild.Versione = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD06"].(string)
+// 					// podBuild.Merged = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD13"].(string)
+// 					// podBuild.Tag = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD09"].(string)
+// 					// podBuild.MasterDev = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD04"].(string)
+// 					// podBuild.ReleaseNote = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD12"].(string)
+// 					// podBuild.SprintBranch = restyKubeBldRes.BodyArray[0]["XKUBEDKRBUILD10"].(string)
+
+// 					pod.PodBuild = podBuild
+// 					pod.Branch = branchs
+// 					Logga(ctx, os.Getenv("JsonLog"), "KUBEDKRBUILD OK")
+// 				}
+// 			}
+
+// 			/* ************************************************************************************************ */
+
+// 			/* ************************************************************************************************ */
+// 			// KUBEDKRMOUNT
+// 			Logga(ctx, os.Getenv("JsonLog"), "Getting KUBEDKRMOUNT")
+// 			argsMnt := make(map[string]string)
+// 			argsMnt["source"] = "devops-8"
+// 			argsMnt["$select"] = "XKUBEDKRMOUNT04,XKUBEDKRMOUNT05,XKUBEDKRMOUNT06,XKUBEDKRMOUNT07,XKUBEDKRMOUNT08"
+// 			argsMnt["center_dett"] = "visualizza"
+// 			argsMnt["$filter"] = "equals(XKUBEDKRMOUNT03,'" + docker + "') "
+
+// 			restyKubeMntRes, errKubeMntRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsMnt, "ms"+devops, "/api/"+os.Getenv("coreApiVersion")+"/"+devops+"/KUBEDKRMOUNT", devopsToken, dominio, coreApiVersion)
+// 			if errKubeMntRes != nil {
+// 				Logga(ctx, os.Getenv("JsonLog"), errKubeMntRes.Error())
+// 				return microservices, errKubeMntRes
+// 			}
+
+// 			if len(restyKubeMntRes.BodyArray) > 0 {
+// 				var mounts []Mount
+// 				for _, xMnt := range restyKubeMntRes.BodyArray {
+
+// 					var mount Mount
+// 					mount.Nome = xMnt["XKUBEDKRMOUNT04"].(string)
+// 					mount.Mount = xMnt["XKUBEDKRMOUNT05"].(string)
+// 					mount.Subpath = xMnt["XKUBEDKRMOUNT06"].(string)
+// 					mount.ClaimName = xMnt["XKUBEDKRMOUNT07"].(string)
+
+// 					if xMnt["XKUBEDKRMOUNT08"] != nil {
+// 						fromSecretFloat := xMnt["XKUBEDKRMOUNT08"].(float64)
+// 						mount.FromSecret = fromSecretFloat == 1
+// 					}
+
+// 					mounts = append(mounts, mount)
+// 				}
+// 				pod.Mount = mounts
+// 				Logga(ctx, os.Getenv("JsonLog"), "KUBEDKRMOUNT OK")
+// 			} else {
+// 				Logga(ctx, os.Getenv("JsonLog"), "KUBEDKRMOUNT MISSING")
+// 			}
+// 			Logga(ctx, os.Getenv("JsonLog"), "")
+
+// 			/* ************************************************************************************************ */
+// 			// GET FUTURE TOGGLE
+
+// 			var cfgMaps []ConfigMap
+// 			argsCfgMap := make(map[string]string)
+// 			argsCfgMap["source"] = "devops-9"
+// 			argsCfgMap["center_dett"] = "allviews"
+// 			argsCfgMap["$select"] = "XKUBEDKRCONFIGMAP06,XKUBEDKRCONFIGMAP07,XKUBEDKRCONFIGMAP08,XKUBEDKRCONFIGMAP09,XKUBEDKRCONFIGMAP10"
+// 			argsCfgMap["$filter"] = "equals(XKUBEDKRCONFIGMAP03,'" + cluster + "')"
+// 			argsCfgMap["$filter"] += " AND equals(XKUBEDKRCONFIGMAP04,'" + enviro + "')"
+// 			argsCfgMap["$filter"] += " AND equals(XKUBEDKRCONFIGMAP05,'" + docker + "')"
+
+// 			restyKUBEDKRCONFIGMAPRes, errCfgMap := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsCfgMap, "msdevops", "/api/"+os.Getenv("coreApiVersion")+"/devops/KUBEDKRCONFIGMAP", devopsToken, dominio, coreApiVersion)
+// 			if errCfgMap != nil {
+// 				Logga(ctx, os.Getenv("JsonLog"), errCfgMap.Error())
+// 				return microservices, errCfgMap
+// 			}
+// 			if restyKUBEDKRCONFIGMAPRes.Errore < 0 {
+// 				erro := errors.New(restyKUBEDKRCONFIGMAPRes.Log)
+// 				Logga(ctx, os.Getenv("JsonLog"), erro.Error())
+// 				return microservices, erro
+// 			}
+
+// 			if len(restyKUBEDKRCONFIGMAPRes.BodyArray) > 0 {
+// 				for _, xCfg := range restyKUBEDKRCONFIGMAPRes.BodyArray {
+// 					var cfgMap ConfigMap
+// 					cfgMap.Name = xCfg["XKUBEDKRCONFIGMAP06"].(string)
+// 					cfgMap.ConfigType = xCfg["XKUBEDKRCONFIGMAP07"].(string)
+// 					cfgMap.MountType = xCfg["XKUBEDKRCONFIGMAP08"].(string)
+// 					cfgMap.MountPath = xCfg["XKUBEDKRCONFIGMAP09"].(string)
+// 					cfgMap.Content = xCfg["XKUBEDKRCONFIGMAP10"].(string)
+// 					cfgMaps = append(cfgMaps, cfgMap)
+// 				}
+// 				pod.ConfigMap = cfgMaps
+// 				Logga(ctx, os.Getenv("JsonLog"), "KUBEDKRCONFIGMAP OK")
+// 			} else {
+// 				Logga(ctx, os.Getenv("JsonLog"), "KUBEDKRCONFIGMAP MISSING")
+// 			}
+
+// 			/* ************************************************************************************************ */
+// 			// KUBEDKRRESOURCE
+// 			Logga(ctx, os.Getenv("JsonLog"), "Getting KUBEDKRRESOURCE")
+// 			argsSrc := make(map[string]string)
+// 			argsSrc["source"] = "devops-8"
+// 			argsSrc["$select"] = "XKUBEDKRRESOURCE04,XKUBEDKRRESOURCE05,XKUBEDKRRESOURCE06,XKUBEDKRRESOURCE07"
+// 			argsSrc["center_dett"] = "dettaglio"
+// 			argsSrc["$filter"] = "equals(XKUBEDKRRESOURCE03,'" + resourceTmpl + "') "
+
+// 			restyKubeSrcRes, errKubeSrcRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsSrc, "ms"+devops, "/api/"+os.Getenv("coreApiVersion")+"/"+devops+"/KUBEDKRRESOURCE", devopsToken, dominio, coreApiVersion)
+// 			if errKubeSrcRes != nil {
+// 				Logga(ctx, os.Getenv("JsonLog"), errKubeSrcRes.Error())
+// 				return microservices, errKubeSrcRes
+// 			}
+
+// 			if len(restyKubeSrcRes.BodyJson) > 0 {
+// 				var resource Resource
+
+// 				resource.CpuReq = restyKubeSrcRes.BodyJson["XKUBEDKRRESOURCE04"].(string) //   -- cpu res
+// 				resource.MemReq = restyKubeSrcRes.BodyJson["XKUBEDKRRESOURCE05"].(string) //   -- mem res
+// 				resource.CpuLim = restyKubeSrcRes.BodyJson["XKUBEDKRRESOURCE06"].(string) //   -- cpu limit
+// 				resource.MemLim = restyKubeSrcRes.BodyJson["XKUBEDKRRESOURCE07"].(string) //   -- mem limit
+
+// 				pod.Resource = resource
+// 				Logga(ctx, os.Getenv("JsonLog"), "KUBEDKRRESOURCE OK")
+// 			} else {
+// 				erro := errors.New("KUBEDKRRESOURCE MISSING")
+// 				return microservices, erro
+// 			}
+// 			Logga(ctx, os.Getenv("JsonLog"), "")
+
+// 			/* ************************************************************************************************ */
+
+// 			/* ************************************************************************************************ */
+
+// 			// KUBEDKRPROBE
+// 			Logga(ctx, os.Getenv("JsonLog"), "Getting KUBEDKRPROBE")
+// 			argsProbes := make(map[string]string)
+// 			argsProbes["source"] = "devops-8"
+// 			//argsProbes["$select"] = "XKUBEDKRPROBE04,XKUBEDKRPROBE05,XKUBEDKRPROBE06,XKUBEDKRPROBE07,XKUBEDKRPROBE08,XKUBEDKRPROBE09,XKUBEDKRPROBE10"
+// 			//argsProbes["$select"] += "XKUBEDKRPROBE11,XKUBEDKRPROBE12,XKUBEDKRPROBE13,XKUBEDKRPROBE14,XKUBEDKRPROBE15,XKUBEDKRPROBE16,XKUBEDKRPROBE17,XKUBEDKRPROBE18,XKUBEDKRPROBE19"
+// 			argsProbes["center_dett"] = "allviews"
+// 			argsProbes["$filter"] = "equals(XKUBEDKRPROBE03,'" + docker + "') "
+
+// 			restyKubePrbRes, errKubePrbRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsProbes, "ms"+devops, "/api/"+os.Getenv("coreApiVersion")+"/"+devops+"/KUBEDKRPROBE", devopsToken, dominio, coreApiVersion)
+// 			if errKubePrbRes != nil {
+// 				Logga(ctx, os.Getenv("JsonLog"), errKubePrbRes.Error())
+// 				return microservices, errKubePrbRes
+// 			}
+
+// 			if len(restyKubePrbRes.BodyArray) > 0 {
+
+// 				var probes []Probes
+// 				for _, xPrb := range restyKubePrbRes.BodyArray {
+
+// 					var elem Probes
+
+// 					elem.Category = xPrb["XKUBEDKRPROBE04"].(string)
+// 					elem.Type = xPrb["XKUBEDKRPROBE05"].(string)
+// 					if xPrb["XKUBEDKRPROBE06"] == nil {
+// 						elem.Command = ""
+// 					} else {
+// 						elem.Command = xPrb["XKUBEDKRPROBE06"].(string)
+// 					}
+// 					elem.HttpHost = xPrb["XKUBEDKRPROBE07"].(string)
+// 					elem.HttpPort = int(xPrb["XKUBEDKRPROBE08"].(float64))
+// 					elem.HttpPath = xPrb["XKUBEDKRPROBE09"].(string)
+// 					if xPrb["XKUBEDKRPROBE10"] == nil {
+// 						elem.HttpHeaders = ""
+// 					} else {
+// 						elem.HttpHeaders = xPrb["XKUBEDKRPROBE10"].(string)
+// 					}
+// 					elem.HttpScheme = xPrb["XKUBEDKRPROBE11"].(string)
+// 					elem.TcpHost = xPrb["XKUBEDKRPROBE12"].(string)
+// 					elem.TcpPort = int(xPrb["XKUBEDKRPROBE13"].(float64))
+// 					elem.GrpcPort = int(xPrb["XKUBEDKRPROBE14"].(float64))
+// 					elem.InitialDelaySeconds = int(xPrb["XKUBEDKRPROBE15"].(float64))
+// 					elem.PeriodSeconds = int(xPrb["XKUBEDKRPROBE16"].(float64))
+// 					elem.TimeoutSeconds = int(xPrb["XKUBEDKRPROBE17"].(float64))
+// 					elem.SuccessThreshold = int(xPrb["XKUBEDKRPROBE18"].(float64))
+// 					elem.FailureThreshold = int(xPrb["XKUBEDKRPROBE19"].(float64))
+// 					probes = append(probes, elem)
+
+// 				}
+// 				pod.Probes = probes
+
+// 				//Logga(ctx, os.Getenv("JsonLog"), probes)
+// 				Logga(ctx, os.Getenv("JsonLog"), "KUBEDKRPROBE OK")
+// 			} else {
+// 				Logga(ctx, os.Getenv("JsonLog"), "KUBEDKRPROBE MISSING")
+// 			}
+
+// 			Logga(ctx, os.Getenv("JsonLog"), "")
+
+// 			/* ************************************************************************************************ */
+
+// 			/* ************************************************************************************************ */
+// 			// KUBESERVICEDKR
+// 			Logga(ctx, os.Getenv("JsonLog"), "Getting KUBESERVICEDKR")
+// 			argsSrvDkr := make(map[string]string)
+// 			argsSrvDkr["source"] = "devops-8"
+// 			argsSrvDkr["$select"] = "XKUBESERVICEDKR06,XKUBESERVICEDKR05"
+// 			argsSrvDkr["center_dett"] = "visualizza"
+// 			argsSrvDkr["$filter"] = "equals(XKUBESERVICEDKR04,'" + docker + "') "
+
+// 			restyKubeSrvDkrRes, errKubeSrvDkrRes := ApiCallGET(ctx, os.Getenv("RestyDebug"), argsSrvDkr, "ms"+devops, "/api/"+os.Getenv("coreApiVersion")+"/"+devops+"/KUBESERVICEDKR", devopsToken, dominio, coreApiVersion)
+// 			if errKubeSrvDkrRes != nil {
+// 				Logga(ctx, os.Getenv("JsonLog"), errKubeSrvDkrRes.Error())
+// 				return microservices, errKubeSrvDkrRes
+// 			}
+
+// 			if len(restyKubeSrvDkrRes.BodyArray) > 0 {
+// 				var port, tipo string
+// 				var services []Service
+// 				for _, xSrv := range restyKubeSrvDkrRes.BodyArray {
+
+// 					port = strconv.FormatFloat(xSrv["XKUBESERVICEDKR06"].(float64), 'f', 0, 64)
+// 					tipo = xSrv["XKUBESERVICEDKR05"].(string)
+
+// 					var service Service
+// 					service.Port = port
+// 					service.Tipo = tipo
+// 					// service.Endpoint = endpoints
+
+// 					services = append(services, service)
+
+// 				}
+
+// 				pod.Service = services
+
+// 				Logga(ctx, os.Getenv("JsonLog"), "KUBESERVICEDKR OK")
+// 			} else {
+// 				erro := errors.New("KUBESERVICEDKR MISSING")
+// 				return microservices, erro
+// 			}
+// 			// aggiungo pod corrente a pods
+// 			pods = append(pods, pod)
+
+// 			microservices.Pod = pods
+
+// 		}
+
+// 		Logga(ctx, os.Getenv("JsonLog"), "SELKUBEDKRLIST OK")
+// 	} else {
+// 		erro := errors.New("SELKUBEDKRLIST MISSING")
+// 		return microservices, erro
+// 	}
+// 	Logga(ctx, os.Getenv("JsonLog"), "")
+
+//		//LogJson(microservices)
+//		Logga(ctx, os.Getenv("JsonLog"), "Seek Microservice details ok")
+//		Logga(ctx, os.Getenv("JsonLog"), " - - - - - - - - - - - - - - -  ")
+//		Logga(ctx, os.Getenv("JsonLog"), "")
+//		// fmt.Println(microservices)
+//		// LogJson(microservices)
+//		// os.Exit(0)
+//		return microservices, erro
+//	}
 func GetTenant(ctx context.Context, token, dominio, coreApiVersion string) ([]Tenant, error) {
 	//Logga(ctx, os.Getenv("JsonLog"), "Get TENANT")
 

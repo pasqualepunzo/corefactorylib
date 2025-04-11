@@ -88,44 +88,45 @@ func GetYamlContainerProbes(prbsarray []Probes) string {
 
 	return yamlProbes
 }
-func GetYamlHpa(ires IstanzaMicro, micros Microservice, versione string) string {
 
-	versioneApp := versione
+// func GetYamlHpa(ires IstanzaMicro, micros Microservice, versione string) string {
 
-	app := ""
-	if ires.Microservice == "msrefappmonolith" {
-		app = ires.PodName + "-v" + versione
-	} else {
-		app = micros.Nome + "-v" + versioneApp
-	}
+// 	versioneApp := versione
 
-	yamlHpa := "apiVersion: autoscaling/v2\n"
-	yamlHpa += "kind: HorizontalPodAutoscaler\n"
-	yamlHpa += "metadata:\n"
-	yamlHpa += "  name: " + app + "\n"
-	yamlHpa += "  namespace: " + micros.Namespace + "\n"
-	yamlHpa += "spec:\n"
-	yamlHpa += "  scaleTargetRef:\n"
-	yamlHpa += "    apiVersion: apps/v1\n"
-	yamlHpa += "    kind: Deployment\n"
-	yamlHpa += "    name: " + app + "\n"
-	yamlHpa += "  minReplicas: " + micros.Hpa.MinReplicas + "\n"
-	yamlHpa += "  maxReplicas: " + micros.Hpa.MaxReplicas + "\n"
+// 	app := ""
+// 	if ires.Microservice == "msrefappmonolith" {
+// 		app = ires.PodName + "-v" + versione
+// 	} else {
+// 		app = micros.Nome + "-v" + versioneApp
+// 	}
 
-	yamlHpa += "  metrics:\n"
-	yamlHpa += "  - type: Resource\n"
-	yamlHpa += "    resource:\n"
-	yamlHpa += "      name: cpu\n"
-	yamlHpa += "      target:\n"
-	yamlHpa += "        type: Utilization\n"
-	yamlHpa += "        averageUtilization: " + micros.Hpa.CpuTarget + "\n"
-	yamlHpa += "  - type: Resource\n"
-	yamlHpa += "    resource:\n"
-	yamlHpa += "      name: memory \n"
-	yamlHpa += "      target:\n"
-	yamlHpa += "        type: Utilization\n"
-	yamlHpa += "        averageUtilization: " + micros.Hpa.MemTarget + "\n"
-	yamlHpa += "\n---\n\n"
+// 	yamlHpa := "apiVersion: autoscaling/v2\n"
+// 	yamlHpa += "kind: HorizontalPodAutoscaler\n"
+// 	yamlHpa += "metadata:\n"
+// 	yamlHpa += "  name: " + app + "\n"
+// 	yamlHpa += "  namespace: " + micros.Namespace + "\n"
+// 	yamlHpa += "spec:\n"
+// 	yamlHpa += "  scaleTargetRef:\n"
+// 	yamlHpa += "    apiVersion: apps/v1\n"
+// 	yamlHpa += "    kind: Deployment\n"
+// 	yamlHpa += "    name: " + app + "\n"
+// 	yamlHpa += "  minReplicas: " + micros.Hpa.MinReplicas + "\n"
+// 	yamlHpa += "  maxReplicas: " + micros.Hpa.MaxReplicas + "\n"
 
-	return yamlHpa
-}
+// 	yamlHpa += "  metrics:\n"
+// 	yamlHpa += "  - type: Resource\n"
+// 	yamlHpa += "    resource:\n"
+// 	yamlHpa += "      name: cpu\n"
+// 	yamlHpa += "      target:\n"
+// 	yamlHpa += "        type: Utilization\n"
+// 	yamlHpa += "        averageUtilization: " + micros.Hpa.CpuTarget + "\n"
+// 	yamlHpa += "  - type: Resource\n"
+// 	yamlHpa += "    resource:\n"
+// 	yamlHpa += "      name: memory \n"
+// 	yamlHpa += "      target:\n"
+// 	yamlHpa += "        type: Utilization\n"
+// 	yamlHpa += "        averageUtilization: " + micros.Hpa.MemTarget + "\n"
+// 	yamlHpa += "\n---\n\n"
+
+// 	return yamlHpa
+// }
