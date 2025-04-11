@@ -8,7 +8,7 @@ type Microservice struct {
 	Virtualservice   string       `json:"virtualService,omitempty"`
 	Public           int          `json:"public,omitempty"`
 	DatabasebEnable  string       `json:"databasebEnable,omitempty"`
-	Hpa              Hpa          `json:"hpa,omitempty"`
+	Hpa              []Hpa        `json:"hpa,omitempty"`
 	Pod              []Pod        `json:"pod,omitempty"`
 	Istanza          IstanzaMicro `json:"istanza,omitempty"`
 	Affinity         []Affinity   `json:"affinity,omitempty"`
@@ -22,6 +22,7 @@ type Microservice struct {
 	RefAppCode       string       `json:"refAppCode,omitempty"`
 }
 type Hpa struct {
+	Env           string `json:"env,omitempty"`
 	MinReplicas   string `json:"min,omitempty"`
 	MaxReplicas   string `json:"max,omitempty"`
 	CpuTipoTarget string `json:"cpuTipoTarget,omitempty"`
