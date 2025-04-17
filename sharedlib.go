@@ -968,6 +968,11 @@ func GetLayerTreDetailsDoc(ctx context.Context, tenant, DominioCluster, microser
 }
 func LayerFt(tnt, enviro string) bool {
 
+	layerFt, err := DoGetRedis("layerFT:" + enviro)
+	if err != nil {
+		return false
+	}
+
 	type FutToggle struct {
 		Int  bool `json:"int"`
 		Qa   bool `json:"qa"`
@@ -978,8 +983,14 @@ func LayerFt(tnt, enviro string) bool {
 	type FutToggles map[string]FutToggle
 	var fToogles FutToggles
 
-	futureToggleFile, _ := os.ReadFile("layerFT.json")
-	_ = json.Unmarshal([]byte(futureToggleFile), &fToogles)
+	_ = json.Unmarshal([]byte(layerFt), &fToogles)
+
+	if env, ok := fToogles[tnt]; ok {
+		fmt.Printf("La chiave '%s' esiste. Valori: %+v\n", tnt, env)
+	} else {
+		fmt.Printf("Tenant %s not found\n", tnt)
+		return false
+	}
 
 	switch enviro {
 	case "int":
@@ -1013,8 +1024,59 @@ func LayerFt(tnt, enviro string) bool {
 			return false
 		}
 	}
+
 	return false
 }
+
+// func LayerFt(tnt, enviro string) bool {
+
+// 	type FutToggle struct {
+// 		Int  bool `json:"int"`
+// 		Qa   bool `json:"qa"`
+// 		Uat  bool `json:"uat"`
+// 		Demo bool `json:"demo"`
+// 		Prod bool `json:"prod"`
+// 	}
+// 	type FutToggles map[string]FutToggle
+// 	var fToogles FutToggles
+
+// 	futureToggleFile, _ := os.ReadFile("layerFT.json")
+// 	_ = json.Unmarshal([]byte(futureToggleFile), &fToogles)
+
+// 	switch enviro {
+// 	case "int":
+// 		if fToogles[tnt].Int {
+// 			return true
+// 		} else {
+// 			return false
+// 		}
+// 	case "qa":
+// 		if fToogles[tnt].Qa {
+// 			return true
+// 		} else {
+// 			return false
+// 		}
+// 	case "uat":
+// 		if fToogles[tnt].Uat {
+// 			return true
+// 		} else {
+// 			return false
+// 		}
+// 	case "demo":
+// 		if fToogles[tnt].Demo {
+// 			return true
+// 		} else {
+// 			return false
+// 		}
+// 	case "prod":
+// 		if fToogles[tnt].Prod {
+// 			return true
+// 		} else {
+// 			return false
+// 		}
+// 	}
+// 	return false
+// }
 
 // questo medoto è un harcoded di un futuro possibile MARKET PLACE
 // le cose sono cambiate e quindo va fatto ex novo ( monodominio a multidominio per env ..... il plasma a terra)
