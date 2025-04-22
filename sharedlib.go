@@ -751,9 +751,9 @@ func GetLayerTreDetailsDoc(ctx context.Context, tenant, DominioCluster, microser
 	// qui cerco il dominio
 	if microservice == "msdevops" {
 		argsApp := make(map[string]string)
-		argsApp["$fullquery"] = "  select XREFAPPCUSTOMER12,XREFAPPNEW04 "
+		argsApp["$fullquery"] = "  select XREFAPPCUSTOMER12,XREFAPP04 "
 		argsApp["$fullquery"] += " from TB_ANAG_REFAPPCUSTOMER00 "
-		argsApp["$fullquery"] += " join TB_ANAG_REFAPPNEW00 on (XREFAPPNEW03 = XREFAPPCUSTOMER04) "
+		argsApp["$fullquery"] += " join TB_ANAG_REFAPP00 on (XREFAPP03 = XREFAPPCUSTOMER04) "
 		argsApp["$fullquery"] += " where 1>0 "
 		argsApp["$fullquery"] += " AND XREFAPPCUSTOMER03  = '" + tenant + "' "
 
@@ -891,7 +891,9 @@ func GetLayerTreDetailsDoc(ctx context.Context, tenant, DominioCluster, microser
 						srvPort = "51051"
 					case "qa":
 						srvPort = "52051"
-					default:
+					case "uat":
+						srvPort = "53051"
+					case "prod":
 						srvPort = "50051"
 					}
 				}
@@ -940,7 +942,7 @@ func GetLayerTreDetailsDoc(ctx context.Context, tenant, DominioCluster, microser
 			if strings.HasPrefix(ClusterDomain, "ms-"+enviro+".") {
 				host = ClusterDomain
 			} else {
-				host = "ms-" + enviro + "." + ClusterDomain
+				host = "app-" + enviro + "." + ClusterDomain
 			}
 		} else {
 			host = ClusterDomain
