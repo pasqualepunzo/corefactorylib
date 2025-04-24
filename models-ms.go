@@ -8,7 +8,7 @@ type Microservice struct {
 	Virtualservice   string       `json:"virtualService,omitempty"`
 	Public           int          `json:"public,omitempty"`
 	DatabasebEnable  string       `json:"databasebEnable,omitempty"`
-	Hpa              []Hpa        `json:"hpa,omitempty"`
+	Hpa              Hpa          `json:"hpa,omitempty"`
 	Pod              []Pod        `json:"pod,omitempty"`
 	Istanza          IstanzaMicro `json:"istanza,omitempty"`
 	Affinity         []Affinity   `json:"affinity,omitempty"`
