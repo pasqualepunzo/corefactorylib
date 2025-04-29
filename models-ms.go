@@ -142,54 +142,55 @@ type RouteVersion struct {
 }
 
 type IstanzaMicro struct {
-	Istanza            string          `json:"istanza,omitempty"`
-	Cluster            string          `json:"cluster,omitempty"`
-	Customer           string          `json:"customer,omitempty"`
-	Microservice       string          `json:"microservice,omitempty"`
-	ProjectID          string          `json:"projectID,omitempty"`
-	Owner              string          `json:"owner,omitempty"`
-	Profile            string          `json:"profile,omitempty"`
-	Enviro             string          `json:"enviro,omitempty"`
-	TipoDeploy         string          `json:"tipoDeploy,omitempty"`
-	Version            []RouteVersion  `json:"version,omitempty"`
-	CustomerSalt       string          `json:"customSalt,omitempty"`
-	PodName            string          `json:"podName,omitempty"`
-	ClusterDomain      string          `json:"clusterDomain,omitempty"`
-	ClusterDomainOvr   bool            `json:"clusterDomainOvr,omitempty"`
-	ClusterDomainEnv   string          `json:"clusterDomainEnv,omitempty"`
-	ClusterDomainProd  string          `json:"clusterDomainProd,omitempty"`
-	ClusterDomainStage string          `json:"clusterDomainStage,omitempty"`
-	Token              string          `json:"token,omitempty"`
-	ClusterRefAppID    string          `json:"clusterRefAppID,omitempty"`
-	ClusterExtIP       string          `json:"clusterExtIP,omitempty"`
-	Ambiente           int32           `json:"ambiente,omitempty"`
-	Tags               []string        `json:"tags,omitempty"`
-	AmbID              int             `json:"ambID,omitempty"`
-	Monolith           int32           `json:"monolith,omitempty"`
-	ProfileDeploy      int32           `json:"profileDeploy,omitempty"`
-	ProfileInt         int32           `json:"profileInt,omitempty"`
-	DbMetaConnMs       []DbMetaConnMs  `json:"dbMetaConnMs,omitempty"`
-	DbDataConnMs       []DbDataConnMs  `json:"dbDataConnMs,omitempty"`
-	MasterHost         string          `json:"masterHost,omitempty"`
-	MasterName         string          `json:"masterName,omitempty"`
-	MasterHostData     string          `json:"masterHostData,omitempty"`
-	MasterHostMeta     string          `json:"masterHostMeta,omitempty"`
-	MasterUser         string          `json:"masterUser,omitempty"`
-	MasterPass         string          `json:"masterPass,omitempty"`
-	SwMultiEnvironment string          `json:"swMultiEnvironment,omitempty"`
-	AttributiMS        []AttributiMS   `json:"attributiMS,omitempty"`
-	ApiHost            string          `json:"apiHost,omitempty"`
-	ApiToken           string          `json:"apiToken,omitempty"`
-	Autopilot          string          `json:"autopilot,omitempty"`
-	CloudNet           string          `json:"cloudNet,omitempty"`
-	DeploymentEnv      []DeploymentEnv `json:"deploymentEnv,omitempty"`
-	LayerDue           *LayerMesh      `json:"layerDue,omitempty"`
-	LayerTre           *LayerMesh      `json:"layerTre,omitempty"`
+	Istanza            string         `json:"istanza,omitempty"`
+	Cluster            string         `json:"cluster,omitempty"`
+	Customer           string         `json:"customer,omitempty"`
+	Microservice       string         `json:"microservice,omitempty"`
+	ProjectID          string         `json:"projectID,omitempty"`
+	Owner              string         `json:"owner,omitempty"`
+	Profile            string         `json:"profile,omitempty"`
+	Enviro             string         `json:"enviro,omitempty"`
+	TipoDeploy         string         `json:"tipoDeploy,omitempty"`
+	Version            []RouteVersion `json:"version,omitempty"`
+	CustomerSalt       string         `json:"customSalt,omitempty"`
+	PodName            string         `json:"podName,omitempty"`
+	ClusterDomain      string         `json:"clusterDomain,omitempty"`
+	ClusterDomainOvr   bool           `json:"clusterDomainOvr,omitempty"`
+	ClusterDomainEnv   string         `json:"clusterDomainEnv,omitempty"`
+	ClusterDomainProd  string         `json:"clusterDomainProd,omitempty"`
+	ClusterDomainStage string         `json:"clusterDomainStage,omitempty"`
+	Token              string         `json:"token,omitempty"`
+	ClusterRefAppID    string         `json:"clusterRefAppID,omitempty"`
+	ClusterExtIP       string         `json:"clusterExtIP,omitempty"`
+	Ambiente           int32          `json:"ambiente,omitempty"`
+	Tags               []string       `json:"tags,omitempty"`
+	AmbID              int            `json:"ambID,omitempty"`
+	Monolith           int32          `json:"monolith,omitempty"`
+	ProfileDeploy      int32          `json:"profileDeploy,omitempty"`
+	ProfileInt         int32          `json:"profileInt,omitempty"`
+	DbMetaConnMs       []DbMetaConnMs `json:"dbMetaConnMs,omitempty"`
+	DbDataConnMs       []DbDataConnMs `json:"dbDataConnMs,omitempty"`
+	MasterHost         string         `json:"masterHost,omitempty"`
+	MasterName         string         `json:"masterName,omitempty"`
+	MasterHostData     string         `json:"masterHostData,omitempty"`
+	MasterHostMeta     string         `json:"masterHostMeta,omitempty"`
+	MasterUser         string         `json:"masterUser,omitempty"`
+	MasterPass         string         `json:"masterPass,omitempty"`
+	SwMultiEnvironment string         `json:"swMultiEnvironment,omitempty"`
+	AttributiMS        []AttributiMS  `json:"attributiMS,omitempty"`
+	ApiHost            string         `json:"apiHost,omitempty"`
+	ApiToken           string         `json:"apiToken,omitempty"`
+	Autopilot          string         `json:"autopilot,omitempty"`
+	CloudNet           string         `json:"cloudNet,omitempty"`
+	DeploymentEnv      string         `json:"deploymentEnv,omitempty"`
+	LayerDue           *LayerMesh     `json:"layerDue,omitempty"`
+	LayerTre           *LayerMesh     `json:"layerTre,omitempty"`
 }
-type DeploymentEnv struct {
-	Env           string `json:"env,omitempty"`
-	DeploymentEnv string `json:"deploymentEnv,omitempty"`
-}
+
+//	type DeploymentEnv struct {
+//		Env           string `json:"env,omitempty"`
+//		DeploymentEnv string `json:"deploymentEnv,omitempty"`
+//	}
 type DbMetaConnMs struct {
 	MetaHost     string `json:"metaHost,omitempty"`
 	MetaName     string `json:"metaName,omitempty"`
