@@ -1419,7 +1419,7 @@ func GetCfToolEnv(ctx context.Context, token, dominio, tenant, coreApiVersion, e
 	return tntEnv, erro
 
 }
-func GetDeploymentApi(namespace, apiHost, apiToken string, scaleToZero, debug bool) (DeploymntStatus, error) {
+func GetDeploymentApi(microservice, namespace, apiHost, apiToken string, scaleToZero, debug bool) (DeploymntStatus, error) {
 
 	var erro error
 
@@ -1429,7 +1429,7 @@ func GetDeploymentApi(namespace, apiHost, apiToken string, scaleToZero, debug bo
 	clientKUBE.Debug = debug
 	clientKUBE.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 
-	endPoint := "https://" + apiHost + "/apis/apps/v1/namespaces/" + namespace + "/deployments"
+	endPoint := "https://" + apiHost + "/apis/apps/v1/namespaces/" + namespace + "/deployments?labelSelector=app=" + microservice
 	if scaleToZero {
 		endPoint = "https://" + apiHost + "/apis/serving.knative.dev/v1/namespaces/" + namespace + "/services"
 	}
@@ -1485,7 +1485,7 @@ func CheckPodHealth(microservice, versione, namespace, apiHost, apiToken string,
 	msMatch := false
 	i := 0
 	for {
-		item, errDpl := GetDeploymentApi(namespace, apiHost, apiToken, scaleToZero, debool)
+		item, errDpl := GetDeploymentApi(microservice, namespace, apiHost, apiToken, scaleToZero, debool)
 		if errDpl != nil {
 			return false, errDpl
 		} else {
