@@ -340,6 +340,10 @@ func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, 
 	var sqlCompare string
 	var columnExists bool
 	columnExists = false
+
+	fmt.Println(" =============================== diffTbls")
+	fmt.Println(diffTbls)
+
 	for _, vv := range diffTbls {
 
 		// poiche la madonna di mysql non contempla add column if not exist sono costretto a tirare le madonne ...
@@ -367,25 +371,23 @@ func Comparedb(ctx context.Context, ires IstanzaMicro, dbDataName DbDataConnMs, 
 		xxx := strings.Split(vv.Columns, ":")
 		if vv.Tipo == "CHANGE" {
 			if columnExists {
-				if xxx[1] != "" {
-					// sqlCompare = "ALTER TABLE " + dbDataName.DataName + "." + vv.Tbl + " CHANGE " + vv.Column_name + " " + vv.Column_name + " " + xxx[0] + " DEFAULT " + xxx[1]
-					sqlCompare = "ALTER TABLE " + vv.Tbl + " CHANGE " + vv.Column_name + " " + vv.Column_name + " " + xxx[0] + " DEFAULT " + xxx[1]
+				if xxx[1] != "" && xxx[1] != "NULL" {
+					// sqlCompare = "ALTER TABLE " + vv.Tbl + " MODIFY " + vv.Column_name + " " + vv.Column_name + " " + xxx[0] + " DEFAULT " + xxx[1]
+					sqlCompare = "ALTER TABLE " + vv.Tbl + " MODIFY " + vv.Column_name + " " + xxx[0] + " DEFAULT " + xxx[1]
 				} else {
-					// sqlCompare = "ALTER TABLE " + dbDataName.DataName + "." + vv.Tbl + " CHANGE " + vv.Column_name + " " + vv.Column_name + " " + xxx[0]
-					sqlCompare = "ALTER TABLE " + vv.Tbl + " CHANGE " + vv.Column_name + " " + vv.Column_name + " " + xxx[0]
+					// sqlCompare = "ALTER TABLE " + vv.Tbl + " MODIFY " + vv.Column_name + " " + vv.Column_name + " " + xxx[0]
+					sqlCompare = "ALTER TABLE " + vv.Tbl + " MODIFY " + vv.Column_name + " " + xxx[0]
 				}
 			} else {
-				allCompareSqlError = append(allCompareSqlError, sqlCompare+" - Cannot change "+vv.Column_name+" column missing")
-				fmt.Println("Cannot change " + vv.Column_name + " column missing")
+				allCompareSqlError = append(allCompareSqlError, sqlCompare+" - Cannot MODIFY "+vv.Column_name+" column missing")
+				fmt.Println("Cannot MODIFY " + vv.Column_name + " column missing")
 			}
 
 		} else {
 			if !columnExists {
 				if xxx[1] != "" {
-					// sqlCompare = "ALTER TABLE " + dbDataName.DataName + "." + vv.Tbl + " ADD " + vv.Column_name + " " + xxx[0] + " DEFAULT " + xxx[1]
 					sqlCompare = "ALTER TABLE " + vv.Tbl + " ADD " + vv.Column_name + " " + xxx[0] + " DEFAULT " + xxx[1]
 				} else {
-					// sqlCompare = "ALTER TABLE " + dbDataName.DataName + "." + vv.Tbl + " ADD " + vv.Column_name + " " + xxx[0]
 					sqlCompare = "ALTER TABLE " + vv.Tbl + " ADD " + vv.Column_name + " " + xxx[0]
 				}
 			} else {
