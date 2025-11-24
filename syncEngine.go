@@ -15,8 +15,7 @@ func FailOnError(ctx context.Context, err error, msg string) {
 		Logga(ctx, os.Getenv("JsonLog"), msg+" "+err.Error(), "error")
 
 		destEmail := []string{
-			"p@lanificiodigitale.com",
-			"f@lanificiodigitale.com",
+			"platform@q01.io",
 		}
 
 		hostname, _ := os.Hostname()
