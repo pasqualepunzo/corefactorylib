@@ -452,14 +452,14 @@ func Footer(loginres LoginRes, fflag map[string]interface{}) {
 		Gray = ""
 		White = ""
 	}
-	var spMs, spMono string
+	var spMs string
 
 	if loginres.CurrentSprintBranchMs.CurrentBranch != "" {
 		spMs = loginres.CurrentSprintBranchMs.CurrentBranch
 	}
-	if loginres.CurrentSprintBranchMono.CurrentBranch != "" {
-		spMono = loginres.CurrentSprintBranchMono.CurrentBranch
-	}
+	// if loginres.CurrentSprintBranchMono.CurrentBranch != "" {
+	// 	spMono = loginres.CurrentSprintBranchMono.CurrentBranch
+	// }
 
 	canaryProduction := ""
 	if fflag["Canary"] == false {
@@ -476,9 +476,9 @@ func Footer(loginres LoginRes, fflag map[string]interface{}) {
 	line2 += "*" + WriteGraphixEmptySpaces(1) + "Cluster " + Yellow + loginres.Profile + Reset + WriteGraphixEmptySpaces(28-(2+8+3+1)) + "*"
 	fmt.Println(line2)
 
-	line3 := "*" + WriteGraphixEmptySpaces(1) + "Sprint Mono " + Yellow + spMono + Reset + WriteGraphixEmptySpaces(52-(2+12+len(spMono)))
-	line3 += "*" + WriteGraphixEmptySpaces(1) + "Environment " + Yellow + loginres.Environment + Reset + WriteGraphixEmptySpaces(52-(2+12+len(loginres.Environment)))
-	fmt.Println(line3)
+	// line3 := "*" + WriteGraphixEmptySpaces(1) + "            " + Yellow + spMono + Reset + WriteGraphixEmptySpaces(52-(2+12+len(spMono)))
+	// line3 += "*" + WriteGraphixEmptySpaces(1) + "Environment " + Yellow + loginres.Environment + Reset + WriteGraphixEmptySpaces(52-(2+12+len(loginres.Environment)))
+	// fmt.Println(line3)
 }
 
 // Graphix
