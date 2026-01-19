@@ -865,7 +865,7 @@ func RenameDatabases(ctx context.Context, dbMetaName DbMetaConnMs, masterDb Mast
 
 	mysqldumpParameters := "--complete-insert=true --extended-insert=false --skip-comments"
 	// dump metadato
-	queryCommand := "mysqldump -u" + masterDb.User + " -p" + masterDb.Pass + " -h" + dbMetaName.MetaHost + " " + mysqldumpParameters + " " + dbMetaName.MetaName + " > /tmp/" + dbMetaName.MetaName + ".sql"
+	queryCommand := "mysqldump -u" + masterDb.User + " -p'" + masterDb.Pass + "' -h" + dbMetaName.MetaHost + " " + mysqldumpParameters + " " + dbMetaName.MetaName + " > /tmp/" + dbMetaName.MetaName + ".sql"
 	fmt.Println(queryCommand)
 	cmd := exec.Command("bash", "-c", queryCommand)
 	_, err = cmd.CombinedOutput()
@@ -874,7 +874,7 @@ func RenameDatabases(ctx context.Context, dbMetaName DbMetaConnMs, masterDb Mast
 	}
 
 	//dump canarino
-	queryCommand = "mysqldump -u" + masterDb.User + " -p" + masterDb.Pass + " -h" + dbMetaName.MetaHost + " " + mysqldumpParameters + " " + dbMetaName.MetaName + "_canary > /tmp/" + dbMetaName.MetaName + "_canary.sql"
+	queryCommand = "mysqldump -u" + masterDb.User + " -p'" + masterDb.Pass + "' -h" + dbMetaName.MetaHost + " " + mysqldumpParameters + " " + dbMetaName.MetaName + "_canary > /tmp/" + dbMetaName.MetaName + "_canary.sql"
 	fmt.Println(queryCommand)
 	cmd = exec.Command("bash", "-c", queryCommand)
 	_, err = cmd.CombinedOutput()
@@ -901,7 +901,7 @@ func RenameDatabases(ctx context.Context, dbMetaName DbMetaConnMs, masterDb Mast
 	CreateUser(ctx, dbMetaName, db)
 
 	//dump IN metadato
-	queryCommand = "mysql -u" + masterDb.User + " -p" + masterDb.Pass + " -h" + dbMetaName.MetaHost + " " + dbMetaName.MetaName + " < /tmp/" + dbMetaName.MetaName + "_canary.sql"
+	queryCommand = "mysql -u" + masterDb.User + " -p'" + masterDb.Pass + "' -h" + dbMetaName.MetaHost + " " + dbMetaName.MetaName + " < /tmp/" + dbMetaName.MetaName + "_canary.sql"
 	fmt.Println(queryCommand)
 	cmd = exec.Command("bash", "-c", queryCommand)
 	_, err = cmd.CombinedOutput()
@@ -910,7 +910,7 @@ func RenameDatabases(ctx context.Context, dbMetaName DbMetaConnMs, masterDb Mast
 	}
 
 	//dump IN METAOLD
-	queryCommand = "mysql -u" + masterDb.User + " -p" + masterDb.Pass + " -h" + dbMetaName.MetaHost + " " + dbMetaName.MetaName + "_METAOLD < /tmp/" + dbMetaName.MetaName + ".sql"
+	queryCommand = "mysql -u" + masterDb.User + " -p'" + masterDb.Pass + "' -h" + dbMetaName.MetaHost + " " + dbMetaName.MetaName + "_METAOLD < /tmp/" + dbMetaName.MetaName + ".sql"
 	fmt.Println(queryCommand)
 	cmd = exec.Command("bash", "-c", queryCommand)
 	_, err = cmd.CombinedOutput()
