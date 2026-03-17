@@ -209,12 +209,14 @@ type Containers struct {
 	ReadinessProbe  *ProbeDpl `json:"ReadinessProbe,omitempty"`
 	Resources       struct {
 		Limits struct {
-			CPU    string `json:"cpu,omitempty"`
-			Memory string `json:"memory,omitempty"`
+			CPU              string `json:"cpu,omitempty"`
+			Memory           string `json:"memory,omitempty"`
+			EphemeralStorage string `json:"ephemeral-storage,omitempty"`
 		} `json:"limits,omitempty"`
 		Requests struct {
-			CPU    string `json:"cpu,omitempty"`
-			Memory string `json:"memory,omitempty"`
+			CPU              string `json:"cpu,omitempty"`
+			Memory           string `json:"memory,omitempty"`
+			EphemeralStorage string `json:"ephemeral-storage,omitempty"`
 		} `json:"requests,omitempty"`
 	} `json:"resources,omitempty"`
 	TerminationMessagePath   string         `json:"terminationMessagePath,omitempty"`
