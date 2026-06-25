@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"net/smtp"
+	"net/url"
 	"os"
 	"strings"
 
@@ -133,23 +134,34 @@ func TelegramSendMessage(botToken, cftoolDevopsChatID, text string) error {
 
 	var erro error
 
+	// Guard: senza token o chat id la URL Telegram e' malformata (path /bot/sendMessage)
+	// e l'API ritorna una pagina HTML 404, non JSON -> unmarshal fallisce con
+	// "invalid character '<'". Notify non configurato = skip silenzioso.
+	if strings.TrimSpace(botToken) == "" || strings.TrimSpace(cftoolDevopsChatID) == "" {
+		return nil
+	}
+
 	clientTelegram := resty.New()
 	clientTelegram.Debug = false
 	resTelegram, errTelegram := clientTelegram.R().
 		SetHeader("Content-Type", "application/json").
-		Post("https://api.telegram.org/bot" + botToken + "/sendMessage?chat_id=" + cftoolDevopsChatID + "&text=" + text)
+		SetQueryParam("chat_id", cftoolDevopsChatID).
+		SetQueryParam("text", text).
+		Post("https://api.telegram.org/bot" + url.PathEscape(botToken) + "/sendMessage")
 
 	var telegramRes telegramResStruct
 	if errTelegram != nil {
 		return errTelegram
-	} else {
-		err1 := json.Unmarshal(resTelegram.Body(), &telegramRes)
-		if err1 != nil {
-			fmt.Println(err1.Error())
-		}
 	}
-
-	// LogJson(telegramRes)
+	err1 := json.Unmarshal(resTelegram.Body(), &telegramRes)
+	if err1 != nil {
+		// Risposta non-JSON (es. HTML 404 da token errato): ritorna corpo grezzo troncato
+		body := strings.TrimSpace(string(resTelegram.Body()))
+		if len(body) > 200 {
+			body = body[:200]
+		}
+		return fmt.Errorf("telegram: risposta non-JSON (status %d): %s", resTelegram.StatusCode(), body)
+	}
 
 	if !telegramRes.Ok {
 		erro = errors.New(telegramRes.Result.Text)
